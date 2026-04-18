@@ -1,0 +1,45 @@
+﻿# ---- Unity ----
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.pidb
+*.suo
+*.user
+*.userprefs
+*.unityproj
+*.booproj
+.vs/
+
+# ---- .NET / C# ----
+bin/
+obj/
+*.dll
+*.pdb
+*.nupkg
+packages/
+TestResults/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# ---- IDEs ----
+.idea/
+.vscode/
+.rider/
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Secrets ----
+.env
+*.env.local
