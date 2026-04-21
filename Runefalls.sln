@@ -1,38 +1,144 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{474B1B30-91D7-4644-2B9D-72D4CC92C3E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Timeline", "Unity.Timeline.csproj", "{1F79187D-04FA-6FDD-168E-19D4BAFE7DFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runefall", "Runefall.csproj", "{A9FE3BE2-9BD8-EAF8-EAC1-A80B36BD6D07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.GPUDriven.Runtime", "Unity.RenderPipelines.GPUDriven.Runtime.csproj", "{CCF74B6C-97A7-D756-59A9-66DC3E4ADD10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runefall.Tests.EditMode", "Runefall.Tests.EditMode.csproj", "{60AAC329-4811-6840-12C1-6F2C0900200F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.PlasticSCM.Editor", "Unity.PlasticSCM.Editor.csproj", "{3A3B7B23-5C1E-9DB8-4AFA-E921E453B3FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{8C2EB2C1-6264-5A06-5C92-20F196457D4A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCPForUnity.Runtime", "MCPForUnity.Runtime.csproj", "{161E76C9-8C7C-CC47-49CF-B6DC97D6B41F}"
 EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{474B1B30-91D7-4644-2B9D-72D4CC92C3E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{474B1B30-91D7-4644-2B9D-72D4CC92C3E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{474B1B30-91D7-4644-2B9D-72D4CC92C3E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{474B1B30-91D7-4644-2B9D-72D4CC92C3E5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9FE3BE2-9BD8-EAF8-EAC1-A80B36BD6D07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9FE3BE2-9BD8-EAF8-EAC1-A80B36BD6D07}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9FE3BE2-9BD8-EAF8-EAC1-A80B36BD6D07}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9FE3BE2-9BD8-EAF8-EAC1-A80B36BD6D07}.Release|Any CPU.Build.0 = Release|Any CPU
-		{60AAC329-4811-6840-12C1-6F2C0900200F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{60AAC329-4811-6840-12C1-6F2C0900200F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{60AAC329-4811-6840-12C1-6F2C0900200F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{60AAC329-4811-6840-12C1-6F2C0900200F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C2EB2C1-6264-5A06-5C92-20F196457D4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C2EB2C1-6264-5A06-5C92-20F196457D4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C2EB2C1-6264-5A06-5C92-20F196457D4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C2EB2C1-6264-5A06-5C92-20F196457D4A}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-EndGlobal
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.ShaderGraph.Editor", "Unity.ShaderGraph.Editor.csproj", "{FCEC129F-6400-A484-5EE2-4706A5106F7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Core.Runtime", "Unity.RenderPipelines.Core.Runtime.csproj", "{57C9A3E5-193E-26C4-B968-CC86E528416D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Mathematics", "Unity.Mathematics.csproj", "{602FD934-8EB9-1A11-FF8B-03DBA11AFD47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Cinemachine.Editor", "Unity.Cinemachine.Editor.csproj", "{9E551C7F-4BBD-17E3-8548-C0E3A92C97FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Timeline.Editor", "Unity.Timeline.Editor.csproj", "{D6627063-A2EB-548D-F3DC-D7143200014C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityEngine.UI", "UnityEngine.UI.csproj", "{D3E719B5-9AB7-1BA3-F6B3-98058C866280}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Multiplayer.Center.Editor", "Unity.Multiplayer.Center.Editor.csproj", "{4BBF3D7D-997F-6B35-60C1-A563291AB2CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Universal.2D.Runtime", "Unity.RenderPipelines.Universal.2D.Runtime.csproj", "{841024F8-47A9-EE12-6CCC-5CBF660EE0D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Collections", "Unity.Collections.csproj", "{1E2CD686-5D54-32B3-DA74-F10A8513FF92}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Core.Editor", "Unity.RenderPipelines.Core.Editor.csproj", "{42A39313-81AA-5A3F-8009-9D5113E11371}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.Core.Editor", "Unity.VisualScripting.Core.Editor.csproj", "{5F37674F-54DF-C269-AD9D-1879CE0D43D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Universal.Editor", "Unity.RenderPipelines.Universal.Editor.csproj", "{BD11F413-F1A3-0E9A-714A-631370EE1841}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.PerformanceTesting.Editor", "Unity.PerformanceTesting.Editor.csproj", "{5BEBAC83-CE64-D13A-4736-C7D023F47D51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityEngine.TestRunner", "UnityEngine.TestRunner.csproj", "{1A53C78D-AFD5-4FC4-336C-FBBE1D9593F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Burst", "Unity.Burst.csproj", "{F9E6AB31-DE7E-28F8-EE6D-8BCCBF68C30B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.Flow.Editor", "Unity.VisualScripting.Flow.Editor.csproj", "{7D5E1FB7-7242-2063-4A99-B9E670DB4246}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualStudio.Editor", "Unity.VisualStudio.Editor.csproj", "{788C3D4E-104E-A3A4-82F3-E3E75B413888}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.InputSystem", "Unity.InputSystem.csproj", "{A7C8ED16-9960-A6D0-9F38-393641221F85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PPv2URPConverters", "PPv2URPConverters.csproj", "{3CB95295-325C-8BA9-9A93-1A8B494EF744}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCPForUnity.Editor", "MCPForUnity.Editor.csproj", "{DE126665-0317-B3D3-FF0B-4603A03B27EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Searcher.Editor", "Unity.Searcher.Editor.csproj", "{870617B8-5441-343B-BC13-7A30933D4D14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityEditor.TestRunner", "UnityEditor.TestRunner.csproj", "{9D3F6FE6-FDBB-D2FA-EC43-E189B1493247}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.Core", "Unity.VisualScripting.Core.csproj", "{647B9A97-CC0D-CDC0-4E73-5344A7D7D8B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Universal.Runtime.csproj", "{C88AB7B3-7C4F-3502-4267-4D2EFD621C19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.AI.Navigation.Editor.ConversionSystem", "Unity.AI.Navigation.Editor.ConversionSystem.csproj", "{9861DFBE-A6D4-E132-A245-C739C99AEBDB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.State.Editor", "Unity.VisualScripting.State.Editor.csproj", "{A532741C-E58D-C444-ED53-E222DA560766}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Burst.CodeGen", "Unity.Burst.CodeGen.csproj", "{44AE7750-E88C-8DC2-1C84-20342A1B343D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Cinemachine", "Unity.Cinemachine.csproj", "{23D9DBA4-5A11-3CDF-DF31-B52F44C76837}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.Flow", "Unity.VisualScripting.Flow.csproj", "{C902693B-3886-5207-23F8-A307BC2D1C7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Splines.Editor", "Unity.Splines.Editor.csproj", "{C72131F9-062B-0200-0FD2-0BC08AC092BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Splines", "Unity.Splines.csproj", "{2A7DF414-B3FD-F8FA-899E-D500E60BE67B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.PerformanceTesting", "Unity.PerformanceTesting.csproj", "{2805999B-9BFB-A8B1-4861-09ED0D44C115}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.TextMeshPro", "Unity.TextMeshPro.csproj", "{67DFB1FD-FB2B-4072-22ED-A8E23AC8B724}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.TextMeshPro.Editor", "Unity.TextMeshPro.Editor.csproj", "{E84D8953-7139-3806-D4D5-F00CDB772E3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Rendering.LightTransport.Runtime", "Unity.Rendering.LightTransport.Runtime.csproj", "{D76F05B6-18CF-1086-335A-C835DDE6BA07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Burst.Editor", "Unity.Burst.Editor.csproj", "{604322A7-A034-AE1A-748A-2136F034DC80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Rider.Editor", "Unity.Rider.Editor.csproj", "{A10E3D18-FCD1-4F9C-6B30-D840E5F25799}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.State", "Unity.VisualScripting.State.csproj", "{6EB707C3-8B47-5813-3154-3C5818683537}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.AI.Navigation.Updater", "Unity.AI.Navigation.Updater.csproj", "{C728A039-E942-7179-5712-E43F90598CAD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityEditor.UI", "UnityEditor.UI.csproj", "{C839BEB1-1896-6237-7BDE-26C490BF249A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.AI.Navigation.Editor", "Unity.AI.Navigation.Editor.csproj", "{37E34ED0-EC1B-ABF3-FDBE-E3B7945B9BF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Multiplayer.Center.Common", "Unity.Multiplayer.Center.Common.csproj", "{FFDA224A-71E2-DFC5-99F4-3B043746E94E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.InputSystem.ForUI", "Unity.InputSystem.ForUI.csproj", "{C445DF69-FC77-78A0-03D6-DD4A335BD0D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.AI.Navigation", "Unity.AI.Navigation.csproj", "{2FA27773-3CF6-E153-3C5B-7283121F7261}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Collections.CodeGen", "Unity.Collections.CodeGen.csproj", "{DC05B855-DD1C-2EEB-132D-815B98685461}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Mathematics.Editor", "Unity.Mathematics.Editor.csproj", "{5898E4D1-C34A-EE5E-8864-B661D97813CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.SettingsProvider.Editor", "Unity.VisualScripting.SettingsProvider.Editor.csproj", "{11794745-0B59-C269-AF38-CF6A16219522}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Antigravity.Ide.Editor", "Antigravity.Ide.Editor.csproj", "{F178E17F-A1CE-A8AC-0D91-8349575B8BC5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{D475063D-F6F7-6640-A057-743D39C7D5B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{06DD3D54-16BF-43EA-368C-C39FF96E6D5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Settings.Editor", "Unity.Settings.Editor.csproj", "{ED0D6792-13B4-AB1D-3ACC-732716461B54}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.InputSystem.TestFramework", "Unity.InputSystem.TestFramework.csproj", "{DD416F80-B934-956E-46C2-20B049D2B4E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.ShaderGraph.Utilities", "Unity.ShaderGraph.Utilities.csproj", "{DD705F49-A07C-5092-4EA9-49520C1CDC36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.Shared.Editor", "Unity.VisualScripting.Shared.Editor.csproj", "{7213FDFB-F30E-1726-B1B6-7FBD520F18AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runefall", "Runefall.csproj", "{3F915289-D0DB-28B3-2D60-7B77BC39654F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runefall.Tests.EditMode", "Runefall.Tests.EditMode.csproj", "{A739F092-0E8A-3AEB-E1EB-0E20B6F8C32D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.CollabProxy.Editor", "Unity.CollabProxy.Editor.csproj", "{E2937795-1DE8-86E1-EA98-C7A0AA714787}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipeline.Universal.ShaderLibrary", "Unity.RenderPipeline.Universal.ShaderLibrary.csproj", "{63B56368-CFDA-4A60-94BA-F9123F30BD22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Rendering.LightTransport.Editor", "Unity.Rendering.LightTransport.Editor.csproj", "{27A82DC6-753C-5673-C21C-8E9856E2DCEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Universal.Shaders", "Unity.RenderPipelines.Universal.Shaders.csproj", "{5FC41F5A-F426-0E5E-A400-0D44E30D7315}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Core.Runtime.Shared", "Unity.RenderPipelines.Core.Runtime.Shared.csproj", "{C30D19B0-196F-9D14-D49F-7F9EC4CC25A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.PlasticSCM.Editor.Entities", "Unity.PlasticSCM.Editor.Entities.csproj", "{A3E9C59C-D6CC-C6AC-D4CA-F461AB258586}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Collections.Editor", "Unity.Collections.Editor.csproj", "{C29D9F46-D2D3-398A-CCA4-C3DA214AB8D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Universal.Config.Runtime", "Unity.RenderPipelines.Universal.Config.Runtime.csproj", "{669453FB-8924-DA93-F42B-D2040A6B3F2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary", "Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.csproj", "{D2363B15-31AA-08D2-2A23-432CB68423E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Core.ShaderLibrary", "Unity.RenderPipelines.Core.ShaderLibrary.csproj", "{E41A77BF-8F26-2060-0124-2B871055FCD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.RenderPipelines.Core.Editor.Shared", "Unity.RenderPipelines.Core.Editor.Shared.csproj", "{78F2D586-C6B5-7034-ADBC-2D9BF62BE001}"
+EndProject

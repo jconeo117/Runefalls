@@ -91,10 +91,9 @@ Assets/_Project/ScriptableObjects/
 
 ## Estado actual del sprint
 
-**Sprint activo:** 3 — Movimiento completo + Sistema de Datos  
-**Iniciado:** 2026-04-16 · **Tareas completadas:** 1/4  
-**Sprints anteriores:** S1 ✅ · S2 ✅  
-**Próximo paso:** Tarea 3.1 — Jerarquía de ScriptableObjects
+**Sprint activo:** 4 🔄 EN CURSO — iniciado 2026-04-20 · 0/4 tareas completadas
+**Sprints anteriores:** S1 ✅ · S2 ✅ · S3 ✅
+**Próximo paso:** Tarea 4.1 — TurnManager (dominio puro, `Combat/TurnManager.cs`)
 
 ---
 
@@ -107,6 +106,7 @@ Assets/_Project/ScriptableObjects/
 - **Abril 2026:** Assembly Definitions no configurados — deuda técnica aceptada, no bloquea MVP.
 - **Abril 2026:** Secuencias de cámara por rango de carta — `CameraSequenceData` SO asignado en cada `SkillEffect`. El dominio levanta `SkillUsedEvent`, el `CombatCameraDirector` (Presentation) lo escucha y ejecuta la secuencia. Rango 1 = Static, Rango 2 = PushIn, Rango 3 = DynamicOrbit.
 - **Sprint 2:** Salto y Dash no implementados — se completan en Tarea 3.0 al inicio del Sprint 3.
+- **Abril 2026:** Pool de Runas aumentado a 16 (era 10) — decisión final.
 - **Sprint 1:** Cámara implementada con `cam_exploration` (OrbitalFollow), `cam_combat` (Follow), `cam_lookon` (LookAt). Namespace `Unity.Cinemachine`.
 
 ---
@@ -124,4 +124,13 @@ Assets/_Project/ScriptableObjects/
 | `Presentation/Combat/CombatCameraDirector.cs` | Secuencias de cámara por rango de carta — pendiente S4 |
 | `Characters/CharacterModel.cs` | Modelo de dominio del personaje — implementado ✅ |
 | `Presentation/CharacterAnimationController.cs` | Animator desacoplado — implementado ✅ |
-| `ScriptableObjects/Combat/CameraSequenceData.cs` | SO de secuencia de cámara por skill/rango — pendiente S3 |
+| `ScriptableObjects/Combat/CameraSequenceData.cs` | SO de secuencia de cámara por skill/rango — implementado ✅ |
+| `ScriptableObjects/Characters/CharacterData.cs` | SO de personaje: stats, skills, gacha — implementado ✅ |
+| `ScriptableObjects/Cards/SkillData.cs` | SO de habilidad con efectos por rango — implementado ✅ |
+| `ScriptableObjects/Weapons/WeaponData.cs` | SO de arma con stats y bonus condicional — implementado ✅ |
+| `ScriptableObjects/Cards/RuneData.cs` | SO de runa con efecto y slot cost — implementado ✅ |
+| `ScriptableObjects/Enemies/EnemyData.cs` | SO de enemigo: stats, AI, loot, detectionRange — implementado ✅ |
+| `Characters/CharacterStats.cs` | Stats + StatModifier + operador + — implementado ✅ |
+| `Core/EncounterState.cs` | Estado compartido exploración→combate, registrado en ServiceLocator — implementado ✅ |
+| `Combat/CombatFormulas.cs` | Fórmula de daño + tabla elemental estática — implementado ✅ |
+| `ScriptableObjects/Combat/EncounterData.cs` | Datos de encuentro runtime (enemigo, nivel, transform) — implementado ✅ |

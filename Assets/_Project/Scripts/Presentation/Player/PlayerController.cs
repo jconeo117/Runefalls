@@ -45,6 +45,7 @@ namespace Runefall.Presentation.Player
         private bool    isDashing;
         private float   dashCooldownTimer;
         private bool    isGrounded;
+        private float   jumpGraceTimer;      // ignora ground check N segundos post-salto
 
         // ── API pública ──────────────────────────────────────────────────────
         /// <summary>Velocidad actual de movimiento horizontal. Leída por CharacterAnimationController.</summary>
@@ -89,11 +90,9 @@ namespace Runefall.Presentation.Player
 
             CheckGround();
 
+            HandleVertical();
             if (!isDashing)
-            {
-                HandleVertical();
                 HandleMovement();
-            }
 
             HandleRotation();
         }
@@ -104,7 +103,11 @@ namespace Runefall.Presentation.Player
         {
             Debug.Log($"[PlayerController] Jump — grounded={isGrounded}");
             if (isGrounded)
+            {
                 verticalVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                isGrounded    = false;
+                jumpGraceTimer = 0.15f;
+            }
         }
 
         private void OnDashInput()
@@ -147,6 +150,12 @@ namespace Runefall.Presentation.Player
 
         private void CheckGround()
         {
+            if (jumpGraceTimer > 0f)
+            {
+                jumpGraceTimer -= Time.deltaTime;
+                isGrounded = false;
+                return;
+            }
             Transform origin = groundCheck != null ? groundCheck : transform;
             isGrounded = Physics.CheckSphere(origin.position, groundCheckRadius, groundMask, QueryTriggerInteraction.Ignore);
         }
@@ -154,10 +163,13 @@ namespace Runefall.Presentation.Player
         private void HandleVertical()
         {
             if (isGrounded && verticalVelocity.y < 0f)
-                verticalVelocity.y = -2f;   // mantiene contacto con el suelo
+                verticalVelocity.y = -2f;
 
             verticalVelocity.y += gravity * Time.deltaTime;
-            cc.Move(verticalVelocity * Time.deltaTime);
+
+            // Durante dash el coroutine aplica verticalVelocity junto al movimiento horizontal
+            if (!isDashing)
+                cc.Move(verticalVelocity * Time.deltaTime);
         }
 
         private IEnumerator PerformDash()
@@ -174,7 +186,7 @@ namespace Runefall.Presentation.Player
 
             while (timer < dashDuration)
             {
-                cc.Move(dir * speed * Time.deltaTime);
+                cc.Move(dir * speed * Time.deltaTime + verticalVelocity * Time.deltaTime);
                 timer += Time.deltaTime;
                 yield return null;
             }

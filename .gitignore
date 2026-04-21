@@ -42,3 +42,13 @@ desktop.ini
 # ---- Secrets ----
 .env
 *.env.local
+
+# ---- Unity IDE-generated csproj (paquetes) ----
+Unity.*.csproj
+MCPForUnity.*.csproj
+Antigravity.*.csproj
+PPv2URPConverters.csproj
+UnityEditor.UI.csproj
+UnityEditor.TestRunner.csproj
+UnityEngine.UI.csproj
+UnityEngine.TestRunner.csproj
