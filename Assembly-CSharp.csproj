@@ -61,20 +61,27 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.0.73f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\CrosshairSystem.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\ColorExtensions.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapPlayerController.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\RuneData.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapCameraController.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\EncounterState.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\SkillData.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\CameraSequenceData.cs" />
-    <Compile Include="Assets\Santiago\Scripts\WorldContextMenu.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\IInteractable.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\EncounterData.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\PlayerInteractionRaycaster.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonUIPanel.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\WorldTooltipSystem.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonInteractable.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Characters\CharacterData.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\UltimateData.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Enemies\EnemyData.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Weapons\WeaponData.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\SkillEffect.cs" />
+    <Compile Include="Assets\Santiago\Scripts\MainMenuScripts\MainMenu.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\PassiveData.cs" />
   </ItemGroup>
   <ItemGroup>
