@@ -8,7 +8,7 @@
 ## Stack y Motor
 
 - **Motor:** Unity 6000.0.30f1 LTS, C#, URP
-- **Networking:** Mirror Networking (co-op 2 jugadores)
+- **Networking:** Netcode for GameObjects / NGO (migrado de Mirror en Sprint 6 — co-op 2 jugadores)
 - **Cámara:** Cinemachine 3.x — dos modos:
   - **Exploración:** orbital libre, jugador controla ángulo con mouse/stick derecho. `CinemachineOrbitalFollow`.
   - **Combate:** estática detrás del hombro apuntando al enemigo. No se mueve durante turnos. `CinemachineFollow` + `CinemachineHardLookAt`. Blend 0.5s al entrar, 0.3s al salir.
@@ -91,9 +91,15 @@ Assets/_Project/ScriptableObjects/
 
 ## Estado actual del sprint
 
-**Sprint activo:** 4 🔄 EN CURSO — iniciado 2026-04-20 · 0/4 tareas completadas
-**Sprints anteriores:** S1 ✅ · S2 ✅ · S3 ✅
-**Próximo paso:** Tarea 4.1 — TurnManager (dominio puro, `Combat/TurnManager.cs`)
+**Sprint activo:** 6 🔄 EN CURSO — iniciado 2026-05-16 · 0/6 tareas
+**Sprint anterior:** 5 ✅ COMPLETO — iniciado 2026-04-27 · cerrado 2026-05-15 · 8/8 tareas
+**Sprints anteriores:** S1 ✅ · S2 ✅ · S3 ✅ · S4 ✅ (4.1 ✅ · 4.2 ✅ · 4.3 🔶 parcial · 4.4 ❌ → migrado a S5)
+**Completadas S5:** 5.0 ✅ · 5.1 ✅ · 5.2 ✅ · 5.3 ✅ · 5.4 ✅ · 5.5 ✅ · 5.6 ✅ · 5.7 ✅
+- 5.6: Ultimate Gauge — `CheckUltimateInsertion()`, `_ultimateGauge[actor]`, 7 orbs HUD, wired en Bootstrapper
+- 5.5: CombatCameraDirector + deuda técnica arquitectónica completa (IEnemyPhaseAnimator, ICombatPresenter, CombatAnimationDriver split, SkillUsedPayload → dominio)
+- 5.7: Sistema de efectos completo — EffectDefinition pipeline, ActorEffects + 11 EffectDefs
+**Bonus S5 (2026-05-15):** Fix Animation Events (primary/safety-net), multi-hit support, Shoot event separado ranged, `CombatVFXPlayer` + `SkillVFXConfig` SO pipeline.
+**S6 en curso:** 6.0 CombatArenaAssembler · 6.1 EncounterState Wiring · 6.2 SceneTransitionSystem · 6.3 EquipmentScreen · 6.4 BossRoomData · 6.5 NGO Groundwork
 
 ---
 
@@ -108,6 +114,16 @@ Assets/_Project/ScriptableObjects/
 - **Sprint 2:** Salto y Dash no implementados — se completan en Tarea 3.0 al inicio del Sprint 3.
 - **Abril 2026:** Pool de Runas aumentado a 16 (era 10) — decisión final.
 - **Sprint 1:** Cámara implementada con `cam_exploration` (OrbitalFollow), `cam_combat` (Follow), `cam_lookon` (LookAt). Namespace `Unity.Cinemachine`.
+- **Sprint 4 (2026-04-27):** Runefall.asmdef movido de `Scripts/` a `_Project/` — cubre Scripts/ y ScriptableObjects/ en mismo assembly. Fix crítico para que `Runefall.Data` sea visible desde `Runefall.Combat`.
+- **Sprint 4 (2026-04-27):** C# events (no GameEvent<T>) para dominio→presentación en combate. GameEvent<T> SOs siguen siendo el target de producción; el bridge MonoBehaviour se implementa en Tarea 4.4.
+- **Sprint 4 (2026-04-27):** CardHand: HandSize = 3 + fieldCount + (hasBench?1:0); ActionsPerTurn = fieldCount; merge cascade por adyacencia misma-skill mismo-rank → rank+1 max 3.
+- **Sprint 5 (2026-05-05):** Lunge placeholder en `LungePawn` coroutine (Transform.Lerp). Migración a Animator = swap solo de `LungePawn` + Animation Event bridge. Queue, grouping, timing hooks no cambian.
+- **Sprint 5 (2026-05-05):** Camera orbit en combate: playerAnchor = Edit-Mode cam position; enemyAnchor = mirror XZ a través de fieldCenter preservando Y. TurnManager hooks: `EnemyPhaseRunner` inserta delay antes del turno enemigo.
+- **Sprint 5 (2026-05-05):** Card order en mano: iteración reversa de playerTeam children — pawn más a la derecha en jerarquía → cartas más a la izquierda en mano.
+- **Sprint 5 (2026-05-13):** EffectDefinition pipeline (strategy pattern SOs) reemplaza damageMultiplier legacy. CombatResolver mantiene fallback legacy para compatibilidad con assets existentes.
+- **Sprint 5 (2026-05-13):** ArrebatoEffectDef usa GroupId + LinkedActor para expiración bidireccional. Ataque/Defensa = fracción multiplicativa del base propio; sub-stats = flat aditivo.
+- **Sprint 5 (2026-05-13):** SkillUsedPayload movido a Runefall.Combat (dominio) — Data SO puede referenciar dominio sin violar capas. IEnemyPhaseAnimator: TurnManager recibe por constructor, pasa callbacks propios (executeTurn, onComplete) — animator nunca importa TurnManager. CombatBootstrapper reducido a Composition Root puro (~250 líneas). CombatAnimationDriver extrae toda la lógica de lunge/impact/queue. CombatCameraDirector suscribe a SkillUsedEvent SO: R1=Static, R2=PushIn (+2u forward), R3=DynamicOrbit (60°).
+- **Sprint 6 (2026-05-13):** Networking migrado de Mirror a Netcode for GameObjects (NGO). Host = autoridad total sobre TurnManager. Clientes envían ServerRpc, reciben ClientRpc + NetworkVariable. Unity Relay (sin abrir puertos) = Sprint 7. Mazmorras son escenarios prediseñados — BSP descartado definitivamente.
 
 ---
 
@@ -134,3 +150,28 @@ Assets/_Project/ScriptableObjects/
 | `Core/EncounterState.cs` | Estado compartido exploración→combate, registrado en ServiceLocator — implementado ✅ |
 | `Combat/CombatFormulas.cs` | Fórmula de daño + tabla elemental estática — implementado ✅ |
 | `ScriptableObjects/Combat/EncounterData.cs` | Datos de encuentro runtime (enemigo, nivel, transform) — implementado ✅ |
+| `Combat/ICombatActor.cs` | Interfaz unificada jugador/enemigo para combate — implementado ✅ |
+| `Combat/CombatContext.cs` | Estado runtime del encuentro: jugadores, enemigos, turno — implementado ✅ |
+| `Combat/CombatActionResult.cs` | Resultado readonly struct de una acción — implementado ✅ |
+| `Combat/IEnemyTurnHandler.cs` | Interfaz para acción de enemigo, desacopla TurnManager — implementado ✅ |
+| `Combat/CardHand.cs` | Mano de cartas: deal, merge cascade, refill, ultimate insert — implementado ✅ |
+| `Combat/TurnManager.cs` | Árbitro de fases: PlayerTurn↔EnemyTurn, eventos C# — implementado ✅ |
+| `Combat/PlayerActor.cs` | ICombatActor wrapping CharacterData — implementado ✅ |
+| `Enemies/EnemyAgent.cs` | ICombatActor + IEnemyTurnHandler, BehaviorTree dispatch — implementado ✅ |
+| `Presentation/Combat/CombatBootstrapper.cs` | Blockout: crea CharacterData/EnemyData runtime, arranca TurnManager — implementado ✅ |
+| `Presentation/Combat/CombatBlockoutPresenter.cs` | UI blockout: cartas, HP, log, slots de acción — implementado ✅ |
+| `Presentation/Combat/CombatCameraController.cs` | Orbit entre playerAnchor/enemyAnchor, lerp LateUpdate. playerAnchor=Edit-Mode pos, enemyAnchor=mirror XZ preservando Y — implementado ✅ |
+| `Scenes/CombatBlockout.unity` | Escena blockout completa — implementado ✅ (verificar HP arrays en Inspector) |
+| `Presentation/Combat/CombatIntroSequencer.cs` | Reveal enemy+player teams antes de StartCombat; custom Transform anchors Inspector; drop+settle anim — implementado ✅ |
+| `Presentation/Combat/ImpactContext.cs` | Struct payload del ImpactEvent: attacker, target, damage, isCrit, AttackType, HitPosition — implementado ✅ |
+| `ScriptableObjects/Combat/ImpactEvent.cs` | GameEvent\<ImpactContext\> SO — dispatch de impacto por hit; VFX/audio suscriben aquí — implementado ✅ |
+| `Presentation/Combat/CombatCameraDirector.cs` | Director de cámara: suscribe SkillUsedEvent SO, R1=Static/R2=PushIn/R3=DynamicOrbit, restaura anchor de fase — implementado ✅ |
+| `Combat/IEnemyPhaseAnimator.cs` | Interfaz DI: TurnManager pasa callbacks propios al animator, sin dependencia cruzada — implementado ✅ |
+| `Presentation/Combat/ICombatPresenter.cs` | Contrato del presentador — Bootstrapper depende de interfaz, no de clase concreta — implementado ✅ |
+| `Combat/SkillUsedPayload.cs` | Payload en dominio (movido de Presentation) — SkillUsedEvent SO legal — implementado ✅ |
+| `Presentation/Combat/CombatAnimationDriver.cs` | Toda la animación de combate: lunge, impacto, damage numbers, fase enemigo animada — implementado ✅ |
+| `Presentation/Combat/HPBarPresenter.cs` | HP bar world-space billboard por pawn, suscrita a OnHPChanged — implementado ✅ |
+| `Presentation/Combat/CombatVFXPlayer.cs` | Suscrito a ImpactEvent SO → onImpactVFX; llamado por CombatAnimationDriver → onStartVFX — implementado ✅ |
+| `ScriptableObjects/Combat/SkillVFXConfig.cs` | SO con onStartVFX + onImpactVFX prefabs, offsets, autoDestroyAfter — implementado ✅ |
+| `Presentation/Combat/CharacterSlot.cs` | MonoBehaviour slot jugador: CharacterData + hpBarOffset — implementado ✅ |
+| `Presentation/Combat/EnemySlot.cs` | MonoBehaviour slot enemigo: EnemyData + hpBarOffset — implementado ✅ |

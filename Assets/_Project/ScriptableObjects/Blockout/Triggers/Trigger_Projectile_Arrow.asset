@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdba2a29c39752f4199875aea41b984c, type: 3}
+  m_Name: Trigger_Projectile_Arrow
+  m_EditorClassIdentifier: 
+  projectilePrefab: {fileID: 7136312173254533144, guid: 8bdcd3132d618c546a6d5db622eda14b, type: 3}
+  speed: 20
+  heightOffset: 1.2
+  arrivalThreshold: 0.15
+  releaseDelay: 0.5

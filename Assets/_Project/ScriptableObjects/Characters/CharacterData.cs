@@ -22,6 +22,11 @@ namespace Runefall.Data
         public UltimateData ultimate;
         public PassiveData passive;
 
+        [Header("Combat Animations")]
+        public AnimationClip animApproach;
+        public AnimationClip animGetHit;
+        public AnimationClip animDeath;
+
         [Header("Gacha")]
         [Range(0f, 1f)] public float baseDropRate;
     }

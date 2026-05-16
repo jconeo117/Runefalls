@@ -7,10 +7,20 @@ namespace Runefall.Tests.EditMode
     {
         private CharacterModel model;
 
+        private static CharacterStats MakeStats(float ps, float ataque = 10f, float defensa = 5f)
+        {
+            return new CharacterStats
+            {
+                ofensivas  = new OffensiveStats { ataque = ataque },
+                defensivas = new DefensiveStats { defensa = defensa },
+                vitales    = new VitalStats { ps = ps }
+            };
+        }
+
         [SetUp]
         public void SetUp()
         {
-            model = new CharacterModel("TestHero", 100f, 50f, 10f, 5f);
+            model = new CharacterModel("TestHero", MakeStats(100f), maxMP: 50f);
         }
 
         // ── HP ───────────────────────────────────────────────────────────────
@@ -58,6 +68,17 @@ namespace Runefall.Tests.EditMode
         }
 
         [Test]
+        public void Heal_AmplifiedByTasaRecuperacion()
+        {
+            var stats = MakeStats(100f);
+            stats.vitales.tasaRecuperacion = 0.5f; // +50% heal
+            var hero = new CharacterModel("Hero", stats);
+            hero.TakeDamage(60f);
+            hero.Heal(20f); // effective = 20 * 1.5 = 30
+            Assert.AreEqual(70f, hero.CurrentHP, 0.001f);
+        }
+
+        [Test]
         public void IsAlive_TrueWhenHPAboveZero()
         {
             Assert.IsTrue(model.IsAlive);
@@ -68,6 +89,27 @@ namespace Runefall.Tests.EditMode
         {
             model.TakeDamage(100f);
             Assert.IsFalse(model.IsAlive);
+        }
+
+        // ── ApplyRegen ───────────────────────────────────────────────────────
+
+        [Test]
+        public void ApplyRegen_RecoversFractionOfLostHP()
+        {
+            var stats = MakeStats(100f);
+            stats.vitales.tasaRegen = 0.1f; // 10% of lost HP
+            var hero = new CharacterModel("Hero", stats);
+            hero.TakeDamage(50f);    // lost = 50
+            hero.ApplyRegen();       // regain = 50 * 0.1 = 5
+            Assert.AreEqual(55f, hero.CurrentHP, 0.001f);
+        }
+
+        [Test]
+        public void ApplyRegen_ZeroRate_DoesNothing()
+        {
+            model.TakeDamage(50f);
+            model.ApplyRegen(); // tasaRegen = 0
+            Assert.AreEqual(50f, model.CurrentHP, 0.001f);
         }
 
         // ── MP ───────────────────────────────────────────────────────────────
@@ -163,7 +205,7 @@ namespace Runefall.Tests.EditMode
             Assert.AreEqual(30f, received, 0.001f);
         }
 
-        // ── Constructor Validation & Edge Cases ──────────────────────────────
+        // ── Constructor Validation ────────────────────────────────────────────
 
         [Test]
         public void Heal_NegativeOrZero_DoesNothing()
@@ -194,14 +236,14 @@ namespace Runefall.Tests.EditMode
         public void Constructor_NullName_Throws()
         {
             Assert.Throws<System.ArgumentException>(
-                () => new CharacterModel(null, 100f, 50f, 10f, 5f));
+                () => new CharacterModel(null, MakeStats(100f)));
         }
 
         [Test]
-        public void Constructor_ZeroMaxHP_Throws()
+        public void Constructor_ZeroPS_Throws()
         {
             Assert.Throws<System.ArgumentOutOfRangeException>(
-                () => new CharacterModel("Hero", 0f, 50f, 10f, 5f));
+                () => new CharacterModel("Hero", MakeStats(0f)));
         }
     }
 }
