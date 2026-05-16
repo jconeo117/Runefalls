@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a9d3a25f6b99fc4391e680c2c4ba4f2, type: 3}
+  m_Name: Titan
+  m_EditorClassIdentifier: 
+  runeName: Titan
+  runeArt: {fileID: 0}
+  runeType: 0
+  element: 5
+  rarity: 2
+  slotCost: 1
+  effect:
+    effectDescription: 
+    statModifier:
+      ataqueBonus: 0
+      perforacionBonus: 0
+      critChanceBonus: 0
+      "critDa\xF1oBonus": 0
+      defensaBonus: 0.25
+      resistenciaBonus: 0.15
+      defensaCritBonus: 0
+      resistenciaCritBonus: 0.08
+      roboDeVidaBonus: 0
+      tasaRegenBonus: 0
+      tasaRecuperacionBonus: 0
+    bonusElement: 0
+    bonusValue: 0
+  baseDropRate: 0

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bed373b8dbd329d40924e5d08a09d92a, type: 3}
+  m_Name: Grito_de_Guerra
+  m_EditorClassIdentifier: 
+  skillName: Grito_de_Guerra
+  cardArt: {fileID: 0}
+  type: 0
+  element: 1
+  targetType: 1
+  isRanged: 0
+  impactAfterClipIndex: 1
+  returnAtClipIndex: -1
+  impactTrigger: {fileID: 11400000, guid: fc831bd5338593e409e951e43fc23bec, type: 2}
+  vfxConfig: {fileID: 11400000, guid: 348479c9a0912d24e8be6fa62dc1c9cd, type: 2}
+  ultimateChargeAmount: 0
+  animSequence:
+  - {fileID: 7400000, guid: 99b323d71d522734aae0dc0e5c4774c9, type: 3}
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}
+  - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  effectsByRank:
+  - effects: []
+    damageMultiplier: 0.8
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 1.2
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 1.8
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}

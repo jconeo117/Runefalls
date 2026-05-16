@@ -6,16 +6,6 @@ namespace Runefall.Data
     public enum WeaponType { Sword, Staff, Dagger, Hammer }
 
     [System.Serializable]
-    public class WeaponStats
-    {
-        public float attack;
-        public float defense;
-        public float speed;
-        [Range(0f, 1f)] public float critChance;
-        public float critMultiplier;
-    }
-
-    [System.Serializable]
     public class ConditionalBonus
     {
         [TextArea] public string conditionDescription;
@@ -34,7 +24,7 @@ namespace Runefall.Data
         public RarityType rarity;
 
         [Header("Stats")]
-        public WeaponStats stats;
+        public CharacterStats stats;
 
         [Header("Conditional Bonus")]
         public ConditionalBonus conditionalBonus;

@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50d01381d32719440aca900f6cf07ed1, type: 3}
+  m_Name: Orco
+  m_EditorClassIdentifier: 
+  enemyName: Orco
+  prefab: {fileID: 0}
+  portrait: {fileID: 0}
+  element: 3
+  stats:
+    ofensivas:
+      ataque: 300
+      perforacion: 0
+      critChance: 0.05
+      "critDa\xF1o": 1.6
+    defensivas:
+      defensa: 310
+      resistencia: 0.15
+      defensaCrit: 0.18
+      resistenciaCrit: 0.05
+    vitales:
+      ps: 4200
+      roboDeVida: 0
+      tasaRegen: 0.05
+      tasaRecuperacion: 0.05
+  maxMP: 60
+  combatClass: 75
+  detectionRange: 8
+  patrolRadius: 4
+  respawnsOnRoomExit: 1
+  skill1: {fileID: 11400000, guid: 5d944360c42b5114ab745718650e258e, type: 2}
+  skill2: {fileID: 11400000, guid: 31987216c9a742a439ddd2678e853c3c, type: 2}
+  ultimate: {fileID: 11400000, guid: 57c313fbe4cf3f24c8dc4428ccdeccd1, type: 2}
+  animApproach: {fileID: 7400000, guid: 925a82d85fbb6ee48afea5b23bfb5731, type: 3}
+  animAttackSequence:
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  - {fileID: 7400000, guid: c52633ad3251d4841878d77a31df9981, type: 3}
+  - {fileID: 7400000, guid: 612f67681eb72134cab89971a6f99058, type: 3}
+  - {fileID: 7400000, guid: 96c82557c50d8034c8a70a979e417227, type: 3}
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  animGetHit: {fileID: 7400000, guid: e1b93524a1b3a9e418f918ccf831ad3d, type: 3}
+  animDeath: {fileID: 7400000, guid: a16cbf1e833a9a245959413aaed82913, type: 3}
+  attackTrigger: {fileID: 11400000, guid: 063046d461253934e818da138200707c, type: 2}
+  behaviorTree: 1
+  dropReward:
+    goldMin: 0
+    goldMax: 0
+    possibleRunes: []
+    runeDropChance: 0

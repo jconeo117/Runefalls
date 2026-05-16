@@ -1177,111 +1177,292 @@ public class EnemyModel {
 
 ---
 
-## SPRINT 6 — Dungeon Procedural
-**Semana 6 · 11–17 Mayo**  
-**Objetivo:** Generación de pisos con BSP. Tipos de sala. Transición entre salas.
+## SPRINT 6 — Core Loop + Mazmorras de Jefe + Terreno Multijugador
+**Semana 6 · 18–24 Mayo**  
+**Objetivo:** Core loop completo Exploración→Equipamiento→Combate. Mazmorras de jefe prediseñadas. Groundwork Netcode for GameObjects para co-op.
+
+> **Decisión:** Las mazmorras son escenarios prediseñados (no procedurales). BSP descartado.  
+> **Networking:** Migración de Mirror a Netcode for GameObjects (NGO / Unity Multiplayer).
 
 ---
 
-### Tarea 6.1 — BSP Room Generator
+### Tarea 6.0 — CombatArenaAssembler
+
+Spawna los pawns del jugador y enemigo en el punto de encuentro del mundo antes de que arranque `CombatBootstrapper`.  
+Recibe las referencias del `EncounterState` (registrado en `ServiceLocator`) y las materializa en la escena.
 
 ```csharp
-// Dungeon/BSPSplitter.cs
-public class BSPSplitter {
-    private readonly int minRoomSize;
-    private readonly System.Random rng;
+// Presentation/Combat/CombatArenaAssembler.cs
+public class CombatArenaAssembler : MonoBehaviour
+{
+    [SerializeField] private Transform playerSpawnRoot;
+    [SerializeField] private Transform enemySpawnRoot;
 
-    public List<RectInt> Generate(RectInt bounds, int depth) {
-        if (depth == 0 || !CanSplit(bounds)) return new List<RectInt> { bounds };
+    // Prefab references — asignados por CharacterSlot / EnemySlot en Inspector
+    [SerializeField] private CharacterSlot[] characterSlots;
+    [SerializeField] private EnemySlot[]     enemySlots;
 
-        bool splitHorizontal = bounds.width < bounds.height ||
-            (bounds.width == bounds.height && rng.NextDouble() > 0.5);
+    public void Assemble(EncounterState state)
+    {
+        // Posiciona pawns de jugador en playerSpawnRoot según fieldChars
+        for (int i = 0; i < state.FieldCharacters.Count && i < characterSlots.Length; i++)
+            characterSlots[i].Bind(state.FieldCharacters[i]);
 
-        var (left, right) = splitHorizontal
-            ? SplitHorizontal(bounds)
-            : SplitVertical(bounds);
-
-        var rooms = new List<RectInt>();
-        rooms.AddRange(Generate(left, depth - 1));
-        rooms.AddRange(Generate(right, depth - 1));
-        return rooms;
-    }
-
-    private (RectInt, RectInt) SplitVertical(RectInt bounds) {
-        int splitX = rng.Next(bounds.x + minRoomSize, bounds.xMax - minRoomSize);
-        return (
-            new RectInt(bounds.x, bounds.y, splitX - bounds.x, bounds.height),
-            new RectInt(splitX,   bounds.y, bounds.xMax - splitX, bounds.height)
-        );
-    }
-}
-
-// Dungeon/DungeonGenerator.cs
-public class DungeonGenerator {
-    private readonly BSPSplitter splitter;
-    private readonly RoomFactory roomFactory;
-
-    public DungeonLayout Generate(int floor) {
-        var bounds = new RectInt(0, 0, 100, 100);
-        var spaces = splitter.Generate(bounds, depth: 4);
-
-        var rooms = spaces
-            .Select(s => roomFactory.Create(s, AssignRoomType(floor)))
-            .ToList();
-
-        ConnectRooms(rooms);
-        rooms.Last().Type = RoomType.Boss; // última sala siempre jefe
-
-        return new DungeonLayout(rooms, floor);
-    }
-
-    private RoomType AssignRoomType(int floor) {
-        // Pesos de tipos de sala por piso
-        float roll = Random.value;
-        return roll switch {
-            < 0.6f => RoomType.Combat,
-            < 0.8f => RoomType.Elite,
-            _      => RoomType.Rest
-        };
+        // Posiciona pawn de enemigo según EncounterData
+        if (state.PendingEncounter != null && enemySlots.Length > 0)
+            enemySlots[0].Bind(state.PendingEncounter.enemyData);
     }
 }
 ```
 
+**Entregable:** Pawns spawneados en posición correcta antes del intro sequencer, sin hardcodear CharacterData.
+
 ---
 
-### Tarea 6.2 — RoomManager y Transiciones
+### Tarea 6.1 — EncounterState Wiring (Exploración → Combate)
+
+Conecta la detección de enemigo en exploración con la transición a la escena de combate.  
+`EnemyAgent` ya existe; este task añade el trigger de detección en exploración y el puente hacia `SceneTransitionSystem`.
 
 ```csharp
-// Dungeon/RoomManager.cs
-public class RoomManager : MonoBehaviour {
-    [SerializeField] private GameEvent<RoomData> onRoomEntered;
-    [SerializeField] private GameEvent onRoomCleared;
-    [SerializeField] private GameEvent<RuneData[]> onChestSpawned;
+// Presentation/Enemies/EnemyEncounterTrigger.cs
+public class EnemyEncounterTrigger : MonoBehaviour
+{
+    [SerializeField] private EnemyData      enemyData;
+    [SerializeField] private GameEvent<EncounterData> onEncounterTriggered;
 
-    private RoomData currentRoom;
-    private EnemySpawner spawner;
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
 
-    public void LoadRoom(RoomData room) {
-        currentRoom = room;
-        spawner.SpawnEnemies(room.enemies);
-        onRoomEntered.Raise(room);
-    }
+        // Guardar en EncounterState via ServiceLocator
+        var state = ServiceLocator.Get<EncounterState>();
+        state.SetPendingEncounter(new EncounterData
+        {
+            enemyData  = enemyData,
+            spawnPoint = transform
+        });
 
-    // Llamado cuando todos los enemigos de la sala mueren
-    public void OnRoomCleared() {
-        onRoomCleared.Raise();
-        if (currentRoom.Type == RoomType.Combat || currentRoom.Type == RoomType.Elite)
-            SpawnChest();
-    }
-
-    private void SpawnChest() {
-        var runeOffer = GachaSystem.RollRuneChest(currentRoom.Floor, playerAffinity);
-        onChestSpawned.Raise(runeOffer);
+        onEncounterTriggered.Raise(state.PendingEncounter);
     }
 }
 ```
 
-**Entregable:** Dungeon de 1 piso generado proceduralmente con salas conectadas y tipos asignados.
+El `GameEvent<EncounterData>` desencadena la transición de escena (ver 6.2).  
+**Entregable:** Correr hacia un enemigo en exploración carga la escena de combate con el enemigo correcto.
+
+---
+
+### Tarea 6.2 — SceneTransitionSystem
+
+Fade in/out centralizado. Registrado en `ServiceLocator`. Usado por exploración, equipamiento y combate.
+
+```csharp
+// Core/SceneTransitionSystem.cs  (puro C#, sin MonoBehaviour)
+public interface ISceneTransition
+{
+    void GoTo(string sceneName, float fadeDuration = 0.3f);
+}
+
+// Presentation/SceneTransitionRunner.cs  (MonoBehaviour — DontDestroyOnLoad)
+public class SceneTransitionRunner : MonoBehaviour, ISceneTransition
+{
+    [SerializeField] private CanvasGroup fadeOverlay;
+
+    private void Awake() => ServiceLocator.Register<ISceneTransition>(this);
+
+    public void GoTo(string sceneName, float fadeDuration = 0.3f)
+        => StartCoroutine(FadeAndLoad(sceneName, fadeDuration));
+
+    private IEnumerator FadeAndLoad(string sceneName, float duration)
+    {
+        // Fade out
+        for (float t = 0; t < duration; t += Time.deltaTime)
+        {
+            fadeOverlay.alpha = t / duration;
+            yield return null;
+        }
+        fadeOverlay.alpha = 1f;
+
+        yield return SceneManager.LoadSceneAsync(sceneName);
+
+        // Fade in
+        for (float t = 0; t < duration; t += Time.deltaTime)
+        {
+            fadeOverlay.alpha = 1f - t / duration;
+            yield return null;
+        }
+        fadeOverlay.alpha = 0f;
+    }
+}
+```
+
+Flujo completo: `Exploration` → fade → `EquipmentScreen` → fade → `Combat` → fade → `Exploration`.  
+**Entregable:** Transición suave entre las tres escenas sin parpadeos ni estado corrupto.
+
+---
+
+### Tarea 6.3 — EquipmentScreen (Between Fights)
+
+Panel UI Toolkit entre confrontación y combate. El jugador ajusta arma + runas antes de entrar.  
+Solo observa y modifica `EquipmentState` (SO de datos en memoria); no toca lógica de dominio.
+
+```csharp
+// ScriptableObjects/Characters/EquipmentState.cs
+[CreateAssetMenu(menuName = "Runefall/Characters/EquipmentState")]
+public class EquipmentState : ScriptableObject
+{
+    public CharacterData activeCharacter;
+    public WeaponData    equippedWeapon;
+    public RuneData[]    equippedRunes = new RuneData[4];
+
+    public void Apply(CharacterData cd)
+    {
+        activeCharacter = cd;
+        // Cargar último equipamiento guardado para este personaje
+    }
+}
+
+// Presentation/UI/EquipmentScreenPresenter.cs
+public class EquipmentScreenPresenter : MonoBehaviour
+{
+    [SerializeField] private EquipmentState equipmentState;
+    [SerializeField] private UIDocument     document;
+
+    private void OnEnable()
+    {
+        var root    = document.rootVisualElement;
+        var btnEnter = root.Q<Button>("btn-enter");
+        btnEnter.clicked += OnEnterCombat;
+        RefreshUI();
+    }
+
+    private void OnEnterCombat()
+        => ServiceLocator.Get<ISceneTransition>().GoTo("Combat");
+}
+```
+
+**Entregable:** Panel funcional con slots de arma y runas. Botón "Entrar al combate" transiciona correctamente.
+
+---
+
+### Tarea 6.4 — BossRoomData + BossEncounterTrigger
+
+Mazmorras prediseñadas con sala de jefe. `BossRoomData` extiende `EncounterData` con fases del jefe.
+
+```csharp
+// ScriptableObjects/Combat/BossRoomData.cs
+[CreateAssetMenu(menuName = "Runefall/Combat/BossRoomData")]
+public class BossRoomData : EncounterData
+{
+    [Header("Boss Config")]
+    public string      bossDisplayName;
+    public BossPhase[] phases;           // fase 1 (>60% HP), fase 2 (<60%), fase 3 (<30%)
+    public bool        blockExitUntilDefeated = true;
+}
+
+[System.Serializable]
+public struct BossPhase
+{
+    public float     hpThreshold;        // 1f = inicio, 0.6f = fase 2, 0.3f = fase 3
+    public EnemyData enemyDataOverride;  // null = mismo enemigo, override = transformación
+    public string    phaseTransitionTrigger;  // Animator trigger al entrar en esta fase
+}
+
+// Presentation/Combat/BossPhaseController.cs  (escucha OnHPChanged del enemigo)
+public class BossPhaseController : MonoBehaviour
+{
+    [SerializeField] private BossRoomData bossData;
+    private int _currentPhase = 0;
+
+    public void OnEnemyHPChanged(float hpPercent)
+    {
+        if (_currentPhase >= bossData.phases.Length) return;
+        var next = bossData.phases[_currentPhase];
+        if (hpPercent <= next.hpThreshold)
+        {
+            _currentPhase++;
+            // Trigger animación + override stats si aplica
+        }
+    }
+}
+```
+
+**Entregable:** Sala de jefe prediseñada con 2 fases funcionales (HP threshold + animator trigger).
+
+---
+
+### Tarea 6.5 — NGO Groundwork (Netcode for GameObjects)
+
+Migrar de Mirror a NGO. Establece la base para co-op 2 jugadores sin romper el dominio puro.  
+**Regla:** El dominio (`TurnManager`, `CombatResolver`, etc.) NO sabe de networking. Solo el host ejecuta lógica; los clientes reciben resultados via `NetworkVariable` y `ClientRpc`.
+
+**Setup de paquete:**
+```
+com.unity.netcode.gameobjects  (instalar desde Package Manager)
+com.unity.multiplayer.tools    (opcional, para debugging)
+```
+
+```csharp
+// Presentation/Combat/NetworkedTurnManager.cs
+// MonoBehaviour wrapper — solo en Presentation/
+public class NetworkedTurnManager : NetworkBehaviour
+{
+    // Dominio puro — no hereda de NetworkBehaviour
+    private TurnManager _tm;
+
+    // State visible a todos los clientes
+    public NetworkVariable<int>         Round        = new(0);
+    public NetworkVariable<CombatPhase> Phase        = new(CombatPhase.Idle);
+    public NetworkVariable<float>       PlayerHP     = new(0f);
+    public NetworkVariable<float>       EnemyHP      = new(0f);
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsHost) return;
+        _tm = new TurnManager();
+        _tm.OnPlayerTurnStarted += r  => Round.Value = r;
+        _tm.OnActionResolved    += SyncStateToClients;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SubmitSkillServerRpc(int cardIndex, ulong targetNetId)
+    {
+        if (!IsHost) return;
+        _tm.SubmitSkill(cardIndex);          // host ejecuta lógica de dominio
+        SyncPhase();
+    }
+
+    private void SyncStateToClients(CombatActionResult r)
+    {
+        // Actualizar NetworkVariables → UI de todos los clientes se actualiza automáticamente
+        PlayerHP.Value = r.Caster?.Model.CurrentHP ?? 0f;
+        EnemyHP.Value  = r.Target?.Model.CurrentHP ?? 0f;
+    }
+
+    [ClientRpc]
+    private void NotifyActionResolvedClientRpc(float damage, bool isCrit)
+    {
+        // Solo para efectos visuales/audio en clientes
+    }
+}
+
+// Core/NetworkConfig.cs — constantes de red
+public static class NetworkConfig
+{
+    public const int  MaxPlayers       = 2;
+    public const int  DefaultPort      = 7777;
+    public const bool IsRelayEnabled   = false;   // Unity Relay: Sprint 7+
+}
+```
+
+**Decisiones técnicas:**
+- Host = autoridad total sobre `TurnManager`. Clientes envían `ServerRpc`, reciben `ClientRpc` + `NetworkVariable`.
+- `NetworkObject` en prefabs de jugador y enemigo — creados por host al inicio del combate.
+- Unity Relay (para jugar sin abrir puertos) se implementa en Sprint 7 junto con lobby.
+- Mirror queda removido del `manifest.json` al completar esta tarea.
+
+**Entregable:** Dos clientes en la misma red pueden completar un combate. Host y cliente ven el mismo HP en tiempo real.
 
 ---
 
@@ -1523,7 +1704,7 @@ Antes de exportar la build de entrega:
 | S3 | 3 | 🔄 | Salto + Dash funcionales · Todos los SO definidos incluyendo EncounterData · Assets creados |
 | S4 | 4 | — | Sistema de encuentro (popup + pre-combate) · Combate 2.5D con cartas, rank-up, gauge, resolución |
 | S5 | 5 | — | 4 enemigos con Behavior Trees propios · Patrulla y detección de rango en exploración |
-| S6 | 6 | — | Dungeon de 1 piso generado proceduralmente · Reaparición de enemigos al salir de sala |
+| S6 | 6 | — | Core loop Exploración→Equipamiento→Combate · Mazmorras de jefe prediseñadas · NGO groundwork |
 | S7 | 7 | — | Gacha local con pity · Resonancia aplicando modifiers · UI funcional de combate y exploración |
 | S8 | 8 | — | Todo integrado · Director de IA activo · Build PC + Android publicable |
 

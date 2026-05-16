@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bed373b8dbd329d40924e5d08a09d92a, type: 3}
+  m_Name: Golpe_Furtivo
+  m_EditorClassIdentifier: 
+  skillName: Golpe_Furtivo
+  cardArt: {fileID: 0}
+  type: 0
+  element: 1
+  targetType: 0
+  isRanged: 0
+  impactAfterClipIndex: 1
+  returnAtClipIndex: -1
+  impactTrigger: {fileID: 0}
+  vfxConfig: {fileID: 0}
+  ultimateChargeAmount: 0
+  animSequence:
+  - {fileID: 7400000, guid: 216bf759b6d8a7246b151807db8c61de, type: 3}
+  - {fileID: 7400000, guid: 43b3bf1526e697f4f8b06e53457dfa2b, type: 3}
+  - {fileID: 7400000, guid: 216bf759b6d8a7246b151807db8c61de, type: 3}
+  effectsByRank:
+  - effects: []
+    damageMultiplier: 1.2
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 1.8
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 2.5
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}

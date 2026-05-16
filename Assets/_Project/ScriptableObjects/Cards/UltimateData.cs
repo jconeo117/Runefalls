@@ -9,6 +9,10 @@ namespace Runefall.Data
         public string ultimateName;
         public Sprite cardArt;
         public ElementType element;
+        public TargetType targetType = TargetType.SingleEnemy;
         public SkillEffect effect;
+
+        [Header("Animations")]
+        public AnimationClip[] animSequence;
     }
 }

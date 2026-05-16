@@ -8,7 +8,7 @@ namespace Runefall.Combat
     {
         public EnemyData enemyData;
         public int enemyLevel;
-        public int approximatePower;   // enemyData.stats * levelMultiplier
+        public float combatClass;      // cacheado desde enemyData.combatClass al inicio del encuentro
         public Transform enemyTransform; // cámara de combate lo apunta
     }
 }

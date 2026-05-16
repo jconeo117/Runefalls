@@ -6,15 +6,6 @@ namespace Runefall.Data
     public enum BehaviorTreeType { GoblinScout, OrcGuardian, ShadowMage, BossElite }
 
     [System.Serializable]
-    public class EnemyStats
-    {
-        public float maxHP;
-        public float attack;
-        public float defense;
-        public float speed;
-    }
-
-    [System.Serializable]
     public class EnemyReward
     {
         public int goldMin;
@@ -33,13 +24,29 @@ namespace Runefall.Data
         public ElementType element;
 
         [Header("Stats")]
-        public EnemyStats stats;
-        public int approximatePower;
+        public CharacterStats stats;
+        public float maxMP;
+
+        [Header("Combat Class")]
+        [Tooltip("Valor asignado manualmente. Determina orden de turno.")]
+        public float combatClass;
 
         [Header("Exploration")]
-        public float detectionRange = 8f;
-        public float patrolRadius = 4f;
-        public bool respawnsOnRoomExit = true;
+        public float detectionRange  = 8f;
+        public float patrolRadius    = 4f;
+        public bool  respawnsOnRoomExit = true;
+
+        [Header("Skills")]
+        [Tooltip("Definidas para uso futuro del BehaviorTree. El blockout usa BasicAttack con stats.")]
+        public SkillData    skill1;
+        public SkillData    skill2;
+        public UltimateData ultimate;
+
+        [Header("Combat Animations")]
+        public AnimationClip animApproach;
+        public AnimationClip animGetHit;
+        public AnimationClip animDeath;
+
 
         [Header("Combat")]
         public BehaviorTreeType behaviorTree;

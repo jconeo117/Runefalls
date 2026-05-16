@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7034d796ce063424e98a259d5a7b1449, type: 3}
+  m_Name: Guerrero
+  m_EditorClassIdentifier: 
+  characterName: Guerrero
+  portrait: {fileID: 0}
+  prefab: {fileID: 0}
+  rarity: 1
+  element: 1
+  baseStats:
+    ofensivas:
+      ataque: 270
+      perforacion: 0
+      critChance: 0.05
+      "critDa\xF1o": 1.5
+    defensivas:
+      defensa: 150
+      resistencia: 0.1
+      defensaCrit: 0.15
+      resistenciaCrit: 0.05
+    vitales:
+      ps: 2400
+      roboDeVida: 0
+      tasaRegen: 0.04
+      tasaRecuperacion: 0.05
+  skill1: {fileID: 11400000, guid: 9fa8b334e15661f48ba69152f04a9d8b, type: 2}
+  skill2: {fileID: 11400000, guid: e58676f1f2b35db4a9451792a66fd9f8, type: 2}
+  ultimate: {fileID: 11400000, guid: f3427f38280b63f4482bd108889f29c6, type: 2}
+  passive: {fileID: 0}
+  animApproach: {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  animSkill1Sequence:
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  animSkill2Sequence:
+  - {fileID: 7400000, guid: 99b323d71d522734aae0dc0e5c4774c9, type: 3}
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  - {fileID: 7400000, guid: 16b4a0031272510489ca40cdfd99c114, type: 3}
+  - {fileID: 7400000, guid: f9a41b3feea198048b4d8a29a9268d72, type: 3}
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  animUltimateSequence: []
+  animGetHit: {fileID: 7400000, guid: e1b93524a1b3a9e418f918ccf831ad3d, type: 3}
+  animDeath: {fileID: 7400000, guid: a16cbf1e833a9a245959413aaed82913, type: 3}
+  baseDropRate: 0

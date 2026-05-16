@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Maga
+  m_Controller: {fileID: 9100000, guid: 1c939d5c041b0c84d912aeb95bbb30f7, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: ac683d7ab8b353f4a9cc76e1694442e9, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: b320c1eda692a2649b10f2d8dbb19bb1, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 78ca89ac85d25cb45b7b6a40501e76cc, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 5e2c83d7c29bbd64cb4e8431239e7313, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: d910969c350815147a214d3d5910994d, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: cc649f12dee812447884cf66d8479cbe, type: 3}
