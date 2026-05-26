@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Arquera
   portrait: {fileID: 0}
-  prefab: {fileID: 0}
+  prefab: {fileID: 7032674573589518563, guid: 299e4a51015ab13488cef36ad45c3156, type: 3}
   rarity: 1
   element: 3
   baseStats:
@@ -36,17 +36,9 @@ MonoBehaviour:
   skill1: {fileID: 11400000, guid: d6fbd7e8b8757e64b8c40c87cf600dfb, type: 2}
   skill2: {fileID: 11400000, guid: 4ced79a70407e19468133c40a182f780, type: 2}
   ultimate: {fileID: 11400000, guid: f450f53b66acaa44ea1902899ec31fab, type: 2}
-  passive: {fileID: 0}
+  passive: {fileID: 11400000, guid: d66e70728b9159a4982e740f698fa09c, type: 2}
+  animatorController: {fileID: 22100000, guid: 4e6ec6d28c91bb648954be04abd052f8, type: 2}
   animApproach: {fileID: 0}
-  animSkill1Sequence:
-  - {fileID: 7400000, guid: 24d693751e9fd0b42ba8f9595d8b5f5e, type: 3}
-  - {fileID: 7400000, guid: 24d693751e9fd0b42ba8f9595d8b5f5e, type: 3}
-  animSkill2Sequence:
-  - {fileID: 7400000, guid: 06f0f7244c8a9d44cbccdcd439d03a4c, type: 3}
-  - {fileID: 7400000, guid: 53ddfb67396ece24ba7f176345cb3c96, type: 3}
-  - {fileID: 7400000, guid: c23971557f2d433459489e34cfffe31b, type: 3}
-  - {fileID: 7400000, guid: 6c06abe464d25514d84efe52dcfa0139, type: 3}
-  animUltimateSequence: []
   animGetHit: {fileID: 7400000, guid: 237e625cffdcc8e4499e1997d7299d8a, type: 3}
   animDeath: {fileID: 7400000, guid: 677509311bebcd54a89ef50613d1cfa7, type: 3}
   baseDropRate: 0

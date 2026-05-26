@@ -50,7 +50,7 @@ namespace Runefall.Presentation.Combat
         private readonly List<Transform>                                        _activeSlots      = new();
 
         private ICombatActor  _selectedTarget;
-        private Image[]       _slotImages    = Array.Empty<Image>();
+        private Image[]       _slotImages = Array.Empty<Image>();
         private readonly List<Image> _orbImages = new();
         private int           _movesThisTurn = 0;
         private StringBuilder _log           = new();
@@ -166,13 +166,14 @@ namespace Runefall.Presentation.Combat
             if (cvIndex >= 0 && cvIndex < _prevCardInfo.Count)
                 _prevCardInfo.RemoveAt(cvIndex);
 
-            cv.transform.SetParent(_activeSlots[slotIndex], false);
             var rt = cv.GetComponent<RectTransform>();
+            cv.transform.SetParent(_activeSlots[slotIndex], false);
             if (rt != null)
             {
                 rt.anchorMin        = new Vector2(0.5f, 0.5f);
                 rt.anchorMax        = new Vector2(0.5f, 0.5f);
                 rt.anchoredPosition = Vector2.zero;
+                rt.sizeDelta        = new Vector2(130f, 170f); // match slot size
             }
             var btn = cv.GetComponent<Button>();
             if (btn != null) { btn.onClick.RemoveAllListeners(); btn.interactable = false; }
@@ -252,10 +253,7 @@ namespace Runefall.Presentation.Combat
             if (slotIndex < 0 || slotIndex >= _activeSlots.Count) return;
 
             if (slotIndex < _slotImages.Length && _slotImages[slotIndex] != null)
-            {
-                _slotImages[slotIndex].gameObject.SetActive(true);
                 _slotImages[slotIndex].color = new Color(0.15f, 0.30f, 0.50f, 0.85f);
-            }
 
             var slot = _activeSlots[slotIndex];
             var lbl  = slot.Find("MoveLabel");
@@ -571,18 +569,16 @@ namespace Runefall.Presentation.Combat
         {
             if (actionSlotContainer == null || actionSlotPrefab == null) return;
 
-            int alive = 0;
-            for (int i = 0; i < _ctx.Players.Count; i++)
-                if (_ctx.Players[i].IsAlive) alive++;
+            int slotCount = _tm?.Hand != null ? _tm.Hand.ActionsPerTurn : 3;
 
-            if (alive == _activeSlots.Count) return;
+            if (slotCount == _activeSlots.Count) return;
 
             foreach (var s in _activeSlots) if (s != null) Destroy(s.gameObject);
             _activeSlots.Clear();
             for (int i = actionSlotContainer.childCount - 1; i >= 0; i--)
                 Destroy(actionSlotContainer.GetChild(i).gameObject);
 
-            for (int i = 0; i < alive; i++)
+            for (int i = 0; i < slotCount; i++)
             {
                 var go = Instantiate(actionSlotPrefab, actionSlotContainer);
                 if (go.GetComponent<CanvasGroup>() == null)
@@ -590,11 +586,14 @@ namespace Runefall.Presentation.Combat
                 _activeSlots.Add(go.transform);
             }
 
-            _slotImages = new Image[alive];
-            for (int i = 0; i < alive; i++)
+            _slotImages = new Image[slotCount];
+            for (int i = 0; i < slotCount; i++)
             {
                 var inner = _activeSlots[i].Find("Inner");
                 _slotImages[i] = inner?.GetComponent<Image>();
+                // Inner stays visible — dark color = empty slot, blue = MOVE state.
+                if (_slotImages[i] != null)
+                    _slotImages[i].color = new Color(0.06f, 0.06f, 0.10f, 0.92f);
             }
         }
 
@@ -650,6 +649,12 @@ namespace Runefall.Presentation.Combat
             {
                 var slot = _activeSlots[i];
                 if (slot == null) continue;
+
+                // FadeOutActionSlot may have deactivated this slot and zeroed its alpha.
+                slot.gameObject.SetActive(true);
+                var cg = slot.GetComponent<CanvasGroup>();
+                if (cg != null) cg.alpha = 1f;
+
                 for (int c = slot.childCount - 1; c >= 0; c--)
                 {
                     var go = slot.GetChild(c).gameObject;
@@ -659,7 +664,7 @@ namespace Runefall.Presentation.Combat
                 if (i < _slotImages.Length && _slotImages[i] != null)
                 {
                     _slotImages[i].gameObject.SetActive(true);
-                    _slotImages[i].color = new Color(0.08f, 0.08f, 0.08f, 0.85f);
+                    _slotImages[i].color = new Color(0.06f, 0.06f, 0.10f, 0.92f);
                 }
             }
         }
@@ -669,23 +674,21 @@ namespace Runefall.Presentation.Combat
             if (actionSlotContainer == null) return;
             if (_slotAnim != null) StopCoroutine(_slotAnim);
             _slotAnim = StartCoroutine(active ? AnimateSlotExpand() : AnimateSlotShrink());
+
+            // Fade move slots immediately when shrinking — they have no skill animation to trigger their fade.
+            if (!active)
+                for (int i = 0; i < _movesThisTurn && i < _activeSlots.Count; i++)
+                    StartCoroutine(FadeOutActionSlot(i));
         }
 
         public override void NotifyActionAnimationComplete(int actionIndex)
         {
-            Debug.Log($"[Slots-DBG] NotifyActionAnimationComplete({actionIndex}) — activeSlots={_activeSlots.Count}");
-            if (actionIndex < 0 || actionIndex >= _activeSlots.Count)
-            {
-                Debug.LogWarning($"[Slots-DBG] index {actionIndex} out of range (count={_activeSlots.Count}), skip");
-                return;
-            }
-            if (_activeSlots[actionIndex] == null)
-            {
-                Debug.LogWarning($"[Slots-DBG] slot[{actionIndex}] is null, skip");
-                return;
-            }
-            Debug.Log($"[Slots-DBG] Starting FadeOutActionSlot({actionIndex}) on GO={_activeSlots[actionIndex].name}");
-            StartCoroutine(FadeOutActionSlot(actionIndex));
+            // Skill animations are indexed 0, 1, 2… but move slots occupy the first
+            // _movesThisTurn indices, so offset to reach the correct skill slot.
+            int slotIndex = actionIndex + _movesThisTurn;
+            if (slotIndex < 0 || slotIndex >= _activeSlots.Count) return;
+            if (_activeSlots[slotIndex] == null) return;
+            StartCoroutine(FadeOutActionSlot(slotIndex));
         }
 
         private IEnumerator FadeOutActionSlot(int actionIndex)

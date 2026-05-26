@@ -13,7 +13,7 @@ namespace Runefall.Combat
         public StatId stat;
         [Tooltip("Signed value. Ataque/Defensa: fractional (0.2 = +20%). Sub-stats: additive flat.")]
         public float[] valueByRank    = { 0f, 0f, 0f };
-        [Tooltip("Duration in rounds. Use large value (99) for permanent-until-cleansed.")]
+        [Tooltip("Duration in rounds. -1 = permanent for the whole combat (survives Tick). 99 = long-lasting but cleansable.")]
         public int[]   durationByRank = { 2, 3, 4 };
 
         public override void Execute(EffectExecutionContext ctx)
@@ -32,7 +32,6 @@ namespace Runefall.Combat
             {
                 Source         = this,
                 Tag            = tag,
-                Flag           = EffectFlag.None,
                 Applier        = ctx.Caster,
                 TurnsRemaining = duration,
                 Stacks         = 1,

@@ -34,7 +34,6 @@ namespace Runefall.Combat
             {
                 Source         = this,
                 Tag            = EffectTag.Disadvantage,
-                Flag           = EffectFlag.None,
                 Applier        = ctx.Caster,
                 TurnsRemaining = durationByRank[durIdx],
                 Stacks         = 1,

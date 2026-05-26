@@ -15,12 +15,12 @@ namespace Runefall.Combat
 
             ctx.Target.Effects.Apply(new ActiveEffect
             {
-                Source         = this,
-                Tag            = EffectTag.Disadvantage,
-                Flag           = EffectFlag.Llamarada,
-                Applier        = ctx.Caster,
-                TurnsRemaining = durationByRank[durIdx],
-                Stacks         = 1
+                Source              = this,
+                Tag                 = EffectTag.Disadvantage,
+                Applier             = ctx.Caster,
+                TurnsRemaining      = durationByRank[durIdx],
+                Stacks              = 1,
+                IncomingDamageBonus = 0.10f
             });
         }
     }

@@ -9,7 +9,7 @@ namespace Runefall.Enemies
     /// Runtime enemy participant. Implements ICombatActor (identity + model)
     /// and IEnemyTurnHandler (AI decision each enemy phase).
     ///
-    /// Blockout AI: all BehaviorTreeTypes resolve to BasicAttack.
+    /// Blockout AI: all BehaviorTreeTypes map to a single-target PendingAction.
     /// Switch structure kept so each type can diverge without touching TurnManager.
     /// </summary>
     public class EnemyAgent : ICombatActor, IEnemyTurnHandler
@@ -33,37 +33,29 @@ namespace Runefall.Enemies
             Effects = new ActorEffects(this);
         }
 
-        public CombatActionResult TakeTurn(CombatContext context, ICombatActor target)
+        public PendingAction TakeTurn(CombatContext context, ICombatActor target)
         {
-            if (!IsAlive || !target.IsAlive)
-                return new CombatActionResult(this, target, null, 1, 0f, false, 0f, 0f);
+            if (!IsAlive || target == null)
+                return default;
 
             return _data.behaviorTree switch
             {
-                BehaviorTreeType.GoblinScout  => BasicAttack(target),
-                BehaviorTreeType.OrcGuardian  => BasicAttack(target),
-                BehaviorTreeType.ShadowMage   => BasicAttack(target),
-                BehaviorTreeType.BossElite    => BasicAttack(target),
-                _                             => BasicAttack(target)
+                BehaviorTreeType.GoblinScout  => BuildAttack(target),
+                BehaviorTreeType.OrcGuardian  => BuildAttack(target),
+                BehaviorTreeType.ShadowMage   => BuildAttack(target),
+                BehaviorTreeType.BossElite    => BuildAttack(target),
+                _                             => BuildAttack(target)
             };
         }
 
-        private CombatActionResult BasicAttack(ICombatActor target)
-        {
-            var dr = CombatFormulas.CalculateDamage(
-                Model.EffectiveStats, target.Model.EffectiveStats,
-                Element, target.Element);
-
-            target.Model.TakeDamage(dr.damage);
-
-            float lifeSteal = 0f;
-            if (dr.lifeSteal > 0f)
-            {
-                lifeSteal = dr.lifeSteal;
-                Model.Heal(lifeSteal);
-            }
-
-            return new CombatActionResult(this, target, _data.skill1, 1, dr.damage, dr.isCrit, lifeSteal, 0f);
-        }
+        private PendingAction BuildAttack(ICombatActor target) =>
+            new PendingAction(
+                caster:     this,
+                target:     target,
+                skill:      _data.skill1,
+                ultimate:   null,
+                rank:       1,
+                targetType: TargetType.SingleEnemy,
+                isUltimate: false);
     }
 }

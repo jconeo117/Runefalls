@@ -91,7 +91,7 @@ Assets/_Project/ScriptableObjects/
 
 ## Estado actual del sprint
 
-**Sprint activo:** 6 🔄 EN CURSO — iniciado 2026-05-16 · 0/6 tareas
+**Sprint activo:** 6 🔄 EN CURSO — iniciado 2026-05-16 · 2/6 tareas completas · 6.2 en progreso ~30%
 **Sprint anterior:** 5 ✅ COMPLETO — iniciado 2026-04-27 · cerrado 2026-05-15 · 8/8 tareas
 **Sprints anteriores:** S1 ✅ · S2 ✅ · S3 ✅ · S4 ✅ (4.1 ✅ · 4.2 ✅ · 4.3 🔶 parcial · 4.4 ❌ → migrado a S5)
 **Completadas S5:** 5.0 ✅ · 5.1 ✅ · 5.2 ✅ · 5.3 ✅ · 5.4 ✅ · 5.5 ✅ · 5.6 ✅ · 5.7 ✅
@@ -99,7 +99,10 @@ Assets/_Project/ScriptableObjects/
 - 5.5: CombatCameraDirector + deuda técnica arquitectónica completa (IEnemyPhaseAnimator, ICombatPresenter, CombatAnimationDriver split, SkillUsedPayload → dominio)
 - 5.7: Sistema de efectos completo — EffectDefinition pipeline, ActorEffects + 11 EffectDefs
 **Bonus S5 (2026-05-15):** Fix Animation Events (primary/safety-net), multi-hit support, Shoot event separado ranged, `CombatVFXPlayer` + `SkillVFXConfig` SO pipeline.
-**S6 en curso:** 6.0 CombatArenaAssembler · 6.1 EncounterState Wiring · 6.2 SceneTransitionSystem · 6.3 EquipmentScreen · 6.4 BossRoomData · 6.5 NGO Groundwork
+**S6 en curso:** 6.0 ✅ · 6.1 ✅ · 6.2 🔄 (anim+post-combate) · 6.3 🔲 (BossPhases) · 6.4 🔲 (NGO co-op) · 6.5 🔲 (pulidos)
+**S6 sesión 2026-05-19:** Pipeline exploración→combate funcional end-to-end. Fade negro, arena spawn, CombatHUDPresenter (prefab de Combat.unity), intro sequencer wired, cámara combate desde geometría arena.
+**S6 sesión 2026-05-22:** Exploración visual completa — modelos RPG-Character en player y 7 enemigos, AnimatorControllers exploración (ExplorationPlayer/Enemy.controller), drivers de animación, run clips asignados (Start/Loop/Stop con Humanoid), stop instantáneo al soltar tecla, ExplorationPlayer lleva CharacterData, EnemyEncounterTrigger + EnemyData en todos los enemigos del Dungeon. Diseño completo de pasivas: 3 personajes (Hielo/Fuego/Sombra) + bosses documentados en Docs/.
+**Próximo paso 6.2:** Victory/Defeat screens (popup mínimo) + enemy respawn post-combate.
 
 ---
 
@@ -124,6 +127,7 @@ Assets/_Project/ScriptableObjects/
 - **Sprint 5 (2026-05-13):** ArrebatoEffectDef usa GroupId + LinkedActor para expiración bidireccional. Ataque/Defensa = fracción multiplicativa del base propio; sub-stats = flat aditivo.
 - **Sprint 5 (2026-05-13):** SkillUsedPayload movido a Runefall.Combat (dominio) — Data SO puede referenciar dominio sin violar capas. IEnemyPhaseAnimator: TurnManager recibe por constructor, pasa callbacks propios (executeTurn, onComplete) — animator nunca importa TurnManager. CombatBootstrapper reducido a Composition Root puro (~250 líneas). CombatAnimationDriver extrae toda la lógica de lunge/impact/queue. CombatCameraDirector suscribe a SkillUsedEvent SO: R1=Static, R2=PushIn (+2u forward), R3=DynamicOrbit (60°).
 - **Sprint 6 (2026-05-13):** Networking migrado de Mirror a Netcode for GameObjects (NGO). Host = autoridad total sobre TurnManager. Clientes envían ServerRpc, reciben ClientRpc + NetworkVariable. Unity Relay (sin abrir puertos) = Sprint 7. Mazmorras son escenarios prediseñados — BSP descartado definitivamente.
+- **Sprint 6 (2026-05-17):** Cámara exploración — `CinemachineOrbitalFollow` (body) + `CinemachineHardLookAt` (aim) + `CinemachineInputAxisController`. `CinemachineDeoccluder` descartado definitivamente (errático). Colisión = `CameraWallAvoidance` custom MonoBehaviour `[DefaultExecutionOrder(1000)]` — SphereCast pivot→cam, solo acorta distancia. `CameraManager` null-safe (combatCam/lockOnCam opcionales). `ThirdPersonCamera.cs` existe como referencia pero debe quitarse de Main Camera en Inspector.
 
 ---
 
@@ -174,4 +178,9 @@ Assets/_Project/ScriptableObjects/
 | `Presentation/Combat/CombatVFXPlayer.cs` | Suscrito a ImpactEvent SO → onImpactVFX; llamado por CombatAnimationDriver → onStartVFX — implementado ✅ |
 | `ScriptableObjects/Combat/SkillVFXConfig.cs` | SO con onStartVFX + onImpactVFX prefabs, offsets, autoDestroyAfter — implementado ✅ |
 | `Presentation/Combat/CharacterSlot.cs` | MonoBehaviour slot jugador: CharacterData + hpBarOffset — implementado ✅ |
+| `Presentation/Combat/CombatArenaAssembler.cs` | AssembleInRoom/SpawnFromEncounterState: pawns desde EncounterState, PlayerRoot/EnemyRoot (cam anchors), slots dinámicos 1-3, Teardown — implementado ✅ |
+| `Presentation/Dungeon/RoomVolume.cs` | BoxCollider room bounds + GetArenaLayout(lineHalfSpan) — implementado ✅ |
+| `Presentation/Dungeon/RoomRegistry.cs` | FindNearest(Vector3) → RoomVolume más cercana — implementado ✅ |
+| `Presentation/UI/EncounterPromptPresenter.cs` | Panel encuentro: info enemigo + Enfrentar/cerrar, bloqueo input, swap cámara via CombatBootstrapper — implementado ✅ |
+| `ScriptableObjects/Combat/EncounterAcceptedEvent.cs` | GameEvent\<EncounterData\> concreto — implementado ✅ |
 | `Presentation/Combat/EnemySlot.cs` | MonoBehaviour slot enemigo: EnemyData + hpBarOffset — implementado ✅ |

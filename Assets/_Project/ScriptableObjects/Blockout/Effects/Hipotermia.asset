@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 205eb517d5ab2cd4281b69050b1b1027, type: 3}
+  m_Name: Hipotermia
+  m_EditorClassIdentifier: 
+  effectName: Hipotermia
+  description: "DEF -20%. Recibe 30% m\xE1s da\xF1o."
+  icon: {fileID: 0}
+  tag: 2
+  behavior: 0
+  stackBySource: 1
+  stackable: 0
+  defensaPenalty: -0.2
+  incomingDamageBonus: 0.3
+  durationByRank: 020000000200000002000000

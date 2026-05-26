@@ -27,7 +27,6 @@ namespace Runefall.Combat
             {
                 Source         = this,
                 Tag            = EffectTag.Stance,
-                Flag           = EffectFlag.None,
                 Applier        = ctx.Caster,
                 TurnsRemaining = dur,
                 Stacks         = 1

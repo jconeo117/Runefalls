@@ -29,17 +29,17 @@ namespace Runefall.Presentation.Player
 
         public void SwitchToExploration()
         {
-            explorationCam.Priority = priorityActive;
-            combatCam.Priority      = priorityInactive;
-            lockOnCam.Priority      = priorityInactive;
+            if (explorationCam != null) explorationCam.Priority = priorityActive;
+            if (combatCam      != null) combatCam.Priority      = priorityInactive;
+            if (lockOnCam      != null) lockOnCam.Priority      = priorityInactive;
             currentMode = CameraMode.Exploration;
         }
 
         public void SwitchToCombat()
         {
-            combatCam.Priority      = priorityActive;
-            explorationCam.Priority = priorityInactive;
-            lockOnCam.Priority      = priorityInactive;
+            if (combatCam      != null) combatCam.Priority      = priorityActive;
+            if (explorationCam != null) explorationCam.Priority = priorityInactive;
+            if (lockOnCam      != null) lockOnCam.Priority      = priorityInactive;
             currentMode = CameraMode.Combat;
         }
 
@@ -51,18 +51,17 @@ namespace Runefall.Presentation.Player
                 return;
             }
 
-            // Asignar target al LookAt del lockOnCam
-            lockOnCam.LookAt = target;
+            if (lockOnCam == null) return;
+            lockOnCam.LookAt        = target;
             lockOnCam.Priority      = priorityLockOn;
-            explorationCam.Priority = priorityInactive;
-            combatCam.Priority      = priorityInactive;
+            if (explorationCam != null) explorationCam.Priority = priorityInactive;
+            if (combatCam      != null) combatCam.Priority      = priorityInactive;
             currentMode = CameraMode.LockOn;
         }
 
         public void ClearLockOn()
         {
-            lockOnCam.Priority = priorityInactive;
-            // Volver al modo anterior
+            if (lockOnCam != null) lockOnCam.Priority = priorityInactive;
             if (currentMode == CameraMode.LockOn)
                 SwitchToExploration();
         }
@@ -82,9 +81,9 @@ namespace Runefall.Presentation.Player
             if (explorationCam == null)
                 Debug.LogError("[CameraManager] explorationCam no asignada.", this);
             if (combatCam == null)
-                Debug.LogError("[CameraManager] combatCam no asignada.", this);
+                Debug.LogWarning("[CameraManager] combatCam no asignada — modo combate no disponible.", this);
             if (lockOnCam == null)
-                Debug.LogError("[CameraManager] lockOnCam no asignada.", this);
+                Debug.LogWarning("[CameraManager] lockOnCam no asignada — lock-on no disponible.", this);
         }
     }
 }

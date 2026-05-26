@@ -29,5 +29,17 @@ namespace Runefall.Data
         [Header("Timing")]
         [Tooltip("Auto-destroys spawned VFX after this many seconds. 0 = let the prefab self-destroy.")]
         public float autoDestroyAfter = 3f;
+
+        [Header("Loop Hold")]
+        [Tooltip("Hold animLoopClipIndex until this onStartVFX GameObject is destroyed, then advance to next clip.")]
+        public bool holdAnimLoopUntilVFXDone;
+        [Tooltip("Clip index in animSequence to hold. Typically 1 for start/loop/end sequences.")]
+        public int animLoopClipIndex = 1;
+
+        [Header("Spawn Override")]
+        [Tooltip("Spawn onStartVFX at action start before any Animation Event fires (no SlashVFX AE needed).")]
+        public bool spawnOnStartImmediately;
+        [Tooltip("Spawn onStartVFX at the target center instead of the caster weapon bone.")]
+        public bool spawnOnStartAtTarget;
     }
 }

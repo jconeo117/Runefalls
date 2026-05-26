@@ -44,13 +44,17 @@ namespace Runefall.Presentation.Combat
 
         // ── Called by CombatAnimationDriver at skill animation start ──────────────
 
-        public void PlayOnStartVFX(SkillVFXConfig config, Transform casterPawn, Vector3 targetPos)
+        public GameObject PlayOnStartVFX(SkillVFXConfig config, Transform casterPawn, Vector3 targetPos)
         {
-            if (config?.onStartVFX == null) return;
+            if (config?.onStartVFX == null) return null;
+
+            if (config.spawnOnStartAtTarget)
+            {
+                Vector3 pos = targetPos + config.onStartOffset;
+                return Spawn(config.onStartVFX, pos, Quaternion.identity, config.autoDestroyAfter);
+            }
 
             var anim = casterPawn.GetComponentInChildren<CombatPawnAnimator>();
-            // bladeRoot = weapon socket GO aligned with blade edge (preferred)
-            // weaponBone = fallback if no socket assigned
             Transform bone = anim != null ? (anim.bladeRoot != null ? anim.bladeRoot : anim.weaponBone) : null;
 
             if (bone != null)
@@ -62,12 +66,13 @@ namespace Runefall.Presentation.Combat
                     go.transform.localPosition = config.onStartOffset;
                     go.transform.localRotation = Quaternion.Euler(config.startRotationOffset);
                 }
+                return go;
             }
             else
             {
                 Vector3    pos = casterPawn.position + config.onStartOffset;
                 Quaternion rot = FaceToward(pos, targetPos);
-                Spawn(config.onStartVFX, pos, rot, config.autoDestroyAfter);
+                return Spawn(config.onStartVFX, pos, rot, config.autoDestroyAfter);
             }
         }
 
@@ -104,11 +109,24 @@ namespace Runefall.Presentation.Combat
             return dir.sqrMagnitude > 0.001f ? Quaternion.LookRotation(dir) : Quaternion.identity;
         }
 
+        // Fallback lifetime for prefabs whose only ParticleSystems are looping
+        // (CalcVFXDuration returns 0 for them, so without this they never get destroyed).
+        private const float k_LoopFallback = 3f;
+
         private GameObject Spawn(GameObject prefab, Vector3 pos, Quaternion rot, float destroyAfter)
         {
             var go = Instantiate(prefab, pos, rot);
+
+            // Force one-shot: disable loop on every PS regardless of prefab setting.
+            foreach (var ps in go.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                var m  = ps.main;
+                m.loop = false;
+            }
+
             float duration = destroyAfter > 0f ? destroyAfter : CalcVFXDuration(go);
-            if (duration > 0f) Destroy(go, duration);
+            if (duration <= 0f) duration = k_LoopFallback;
+            Destroy(go, duration);
             return go;
         }
 

@@ -11,6 +11,6 @@ namespace Runefall.Presentation.Combat
         [Tooltip("Fallback Y offset above pawn pivot (used when model has no humanoid rig).")]
         public float hpBarOffset = 3.5f;
         [Tooltip("Y offset above the head bone.")]
-        public float headBoneOffset = 0.25f;
+        public float headBoneOffset = 0.5f;
     }
 }

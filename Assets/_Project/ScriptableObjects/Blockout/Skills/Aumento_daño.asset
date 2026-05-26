@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "Aumento_da\xF1o"
   m_EditorClassIdentifier: 
   tag: 1
-  effectTarget: 1
+  effectTarget: 0
   stat: 0
   valueByRank:
   - 0.2

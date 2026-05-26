@@ -69,9 +69,16 @@ namespace Runefall.Presentation.Combat
 
         private void ApplyOverrides(RuntimeAnimatorController baseController, Dictionary<string, AnimationClip> clips)
         {
-            if (baseController == null) return;
+            // Unwrap the override chain: find the deepest non-AOC base controller.
+            // Collect all existing clip overrides so they survive the new AOC creation.
+            // (Unity does NOT inherit overrides when nesting AOCs at runtime via GetOverrides.)
+            var source   = _animator.runtimeAnimatorController ?? baseController;
+            var deepBase = UnwrapBase(source) ?? UnwrapBase(baseController) ?? baseController;
+            if (deepBase == null) return;
 
-            var oc    = new AnimatorOverrideController(baseController);
+            var existing = CollectOverrides(source);
+
+            var oc    = new AnimatorOverrideController(deepBase);
             var pairs = new List<KeyValuePair<AnimationClip, AnimationClip>>(oc.overridesCount);
             oc.GetOverrides(pairs);
 
@@ -79,12 +86,35 @@ namespace Runefall.Presentation.Combat
             {
                 var key = pairs[i].Key;
                 if (key == null) continue;
+                // Existing overrides first (character-specific idle, approach, etc.)
+                if (existing.TryGetValue(key.name, out var ex) && ex != null)
+                    pairs[i] = new KeyValuePair<AnimationClip, AnimationClip>(key, ex);
+                // Runtime overrides take priority (cd.animApproach, animGetHit, animDeath)
                 if (clips.TryGetValue(key.name, out var replacement) && replacement != null)
                     pairs[i] = new KeyValuePair<AnimationClip, AnimationClip>(key, replacement);
             }
 
             oc.ApplyOverrides(pairs);
             _animator.runtimeAnimatorController = oc;
+        }
+
+        private static RuntimeAnimatorController UnwrapBase(RuntimeAnimatorController ctrl)
+        {
+            while (ctrl is AnimatorOverrideController aoc)
+                ctrl = aoc.runtimeAnimatorController;
+            return ctrl;
+        }
+
+        private static Dictionary<string, AnimationClip> CollectOverrides(RuntimeAnimatorController ctrl)
+        {
+            var result = new Dictionary<string, AnimationClip>();
+            if (ctrl is not AnimatorOverrideController aoc) return result;
+            var pairs = new List<KeyValuePair<AnimationClip, AnimationClip>>(aoc.overridesCount);
+            aoc.GetOverrides(pairs);
+            foreach (var p in pairs)
+                if (p.Key != null && p.Value != null)
+                    result[p.Key.name] = p.Value;
+            return result;
         }
 
         // ── Animation Event hooks ─────────────────────────────────────────────────
@@ -104,6 +134,9 @@ namespace Runefall.Presentation.Combat
             Debug.Log($"[CombatPawnAnimator] 'SlashVFX' on '{gameObject.name}'");
             OnSlashVFX?.Invoke();
         }
+
+        /// <summary>Called from Animation Event named "Hit" on ExplosiveLLC clips — alias for ImpactFrame.</summary>
+        public void Hit() => ImpactFrame();
 
         /// <summary>Called from Animation Event named "ImpactFrame" on melee/generic attack clips.</summary>
         public void ImpactFrame()
@@ -144,7 +177,9 @@ namespace Runefall.Presentation.Combat
         /// </summary>
         public IEnumerator PlaySkillSequence(AnimationClip[] clips,
                                              System.Action onImpact = null,
-                                             int impactAfterClipIndex = -1)
+                                             int impactAfterClipIndex = -1,
+                                             int holdClipIndex = -1,
+                                             System.Func<bool> shouldAdvanceFromHold = null)
         {
             if (clips == null || clips.Length == 0) { onImpact?.Invoke(); yield break; }
             if (_skillGraph.IsValid()) _skillGraph.Destroy();
@@ -205,17 +240,33 @@ namespace Runefall.Presentation.Combat
                 hasActive   = true;
                 prevClipLen = clip.length;
 
-                // Reserve time for blend-out into next non-null clip
+                // Reserve time for blend-out into next non-null clip (skipped for held clip)
                 float waitBlend = 0f;
-                for (int j = i + 1; j < clips.Length; j++)
+                if (i != holdClipIndex)
                 {
-                    if (clips[j] == null) continue;
-                    waitBlend = Mathf.Min(_blendDuration, clip.length * 0.45f, clips[j].length * 0.45f);
-                    break;
+                    for (int j = i + 1; j < clips.Length; j++)
+                    {
+                        if (clips[j] == null) continue;
+                        waitBlend = Mathf.Min(_blendDuration, clip.length * 0.45f, clips[j].length * 0.45f);
+                        break;
+                    }
                 }
 
-                float wait = Mathf.Max(0f, clip.length - bdSpent - waitBlend);
-                if (wait > 0f) yield return new WaitForSeconds(wait);
+                if (i == holdClipIndex && shouldAdvanceFromHold != null)
+                {
+                    // Loop clip in-place until the external condition is met (e.g. VFX destroyed)
+                    while (!shouldAdvanceFromHold())
+                    {
+                        if (clip.length > 0 && playable.GetTime() >= clip.length)
+                            playable.SetTime(0);
+                        yield return null;
+                    }
+                }
+                else
+                {
+                    float wait = Mathf.Max(0f, clip.length - bdSpent - waitBlend);
+                    if (wait > 0f) yield return new WaitForSeconds(wait);
+                }
 
                 if (i == impactAfterClipIndex) onImpact?.Invoke();
             }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MagoSombra
   m_EditorClassIdentifier: 
   enemyName: Mago Sombra
-  prefab: {fileID: 0}
+  prefab: {fileID: 7032674573589518563, guid: 299e4a51015ab13488cef36ad45c3156, type: 3}
   portrait: {fileID: 0}
   element: 2
   stats:
@@ -33,18 +33,17 @@ MonoBehaviour:
       tasaRegen: 0.05
       tasaRecuperacion: 0.05
   maxMP: 80
-  combatClass: 125
+  combatClass: 5150
   detectionRange: 8
   patrolRadius: 4
   respawnsOnRoomExit: 1
   skill1: {fileID: 11400000, guid: d52a9b46444b25a4f9a3d9037256f0f8, type: 2}
   skill2: {fileID: 11400000, guid: 50ef38d567da25942818f1952feb2ba4, type: 2}
   ultimate: {fileID: 11400000, guid: 57988a6d815210b408f14c0c531b2206, type: 2}
+  animatorController: {fileID: 22100000, guid: 4d6e55e63d3e71f47a31a117c3610e95, type: 2}
   animApproach: {fileID: 0}
-  animAttackSequence: []
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}
-  attackTrigger: {fileID: 11400000, guid: bc99f4c8916e0dc4583969eed2c49947, type: 2}
   behaviorTree: 2
   dropReward:
     goldMin: 0

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Maga
   portrait: {fileID: 0}
-  prefab: {fileID: 0}
+  prefab: {fileID: 7032674573589518563, guid: 299e4a51015ab13488cef36ad45c3156, type: 3}
   rarity: 2
   element: 2
   baseStats:
@@ -37,6 +37,7 @@ MonoBehaviour:
   skill2: {fileID: 11400000, guid: 4e1dfceceaa10864382d0d9c21ca6cf0, type: 2}
   ultimate: {fileID: 11400000, guid: 43463a70b52ea0d43ae8acf6b577d333, type: 2}
   passive: {fileID: 0}
+  animatorController: {fileID: 22100000, guid: 3968006ba748e474e9bf85437463f19a, type: 2}
   animApproach: {fileID: 0}
   animGetHit: {fileID: 7400000, guid: cc649f12dee812447884cf66d8479cbe, type: 3}
   animDeath: {fileID: 7400000, guid: 5e2c83d7c29bbd64cb4e8431239e7313, type: 3}

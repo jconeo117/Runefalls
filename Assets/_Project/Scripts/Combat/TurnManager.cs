@@ -27,13 +27,26 @@ namespace Runefall.Combat
         public CombatPhase   Phase   { get; private set; } = CombatPhase.Idle;
         public int           Round   { get; private set; }
 
+        /// <summary>Fires immediately when player turn logic begins. Use for camera repositioning.</summary>
+        public event Action<int>                OnPlayerTurnBegin;
+        /// <summary>Fires after PlayerTurnStartHandler delay (or immediately if handler is null). Use for passives, UI, card display.</summary>
         public event Action<int>                OnPlayerTurnStarted;  // round number
         public event Action                     OnEnemyTurnStarted;
+        /// <summary>Fires when a skill/ultimate is submitted but NOT yet resolved. CombatAnimationDriver enqueues this for deferred resolution at impact frame.</summary>
+        public event Action<PendingAction>      OnActionPending;
+        /// <summary>Fires when damage/heal is actually applied (at animation impact frame via ResolveAction). SkillEventBridge, HUD, and camera director subscribe here.</summary>
         public event Action<CombatActionResult> OnActionResolved;
         public event Action<bool>               OnCombatEnded;        // playerWon
         public event Action<string, int>        OnMergeOccurred;      // skillName, newRank
         /// <summary>Fires whenever a player's ultimate gauge changes. (actor, currentOrbs) — max = UltimateGaugeMax (7).</summary>
         public event Action<ICombatActor, int> OnGaugeChanged;
+
+        /// <summary>
+        /// Optional. When set, BeginPlayerTurn fires OnPlayerTurnBegin immediately (camera),
+        /// then calls this handler with a "fire" callback. Invoke the callback when ready
+        /// (e.g., after camera settles) to trigger OnPlayerTurnStarted. If null, fires immediately.
+        /// </summary>
+        public Action<Action> PlayerTurnStartHandler;
 
         /// <summary>
         /// Fires when the player has used all action slots but before EndPlayerTurn runs.
@@ -112,12 +125,13 @@ namespace Runefall.Combat
         /// explicitTarget: pass the player-selected enemy for SingleEnemy skills.
         ///   Pass null to let TurnManager resolve automatically (random for SingleEnemy,
         ///   all-enemies for AllEnemies, caster for Self, etc.).
-        /// Fires OnActionResolved once per target hit (multiple times for AoE).
+        /// Fires OnActionPending — damage is deferred to ResolveAction() at animation impact frame.
         /// Returns false if phase is wrong, card index invalid, or no valid target exists.
         /// </summary>
         public bool SubmitSkill(int cardIndex, ICombatActor explicitTarget = null)
         {
             if (Phase != CombatPhase.PlayerTurn) return false;
+            if (Context != null && Context.IsOver) return false;
             if (!Hand.TryUse(cardIndex, out var slot, out _)) return false;
 
             var caster = ResolveCaster(slot);
@@ -127,60 +141,83 @@ namespace Runefall.Combat
                 ? (slot.Ultimate?.targetType ?? TargetType.SingleEnemy)
                 : (slot.Skill?.targetType    ?? TargetType.SingleEnemy);
 
+            ICombatActor singleTarget = null;
             switch (targetType)
+            {
+                case TargetType.Self:
+                    singleTarget = caster;
+                    break;
+
+                case TargetType.AllEnemies:
+                case TargetType.AllAllies:
+                    singleTarget = null;   // resolved from context at impact time
+                    break;
+
+                default: // SingleEnemy, RandomEnemy
+                    singleTarget = (targetType == TargetType.SingleEnemy)
+                        ? (explicitTarget != null && explicitTarget.IsAlive ? explicitTarget : RandomAliveEnemy())
+                        : RandomAliveEnemy();
+                    if (singleTarget == null) return false;
+                    break;
+            }
+
+            var pending = new PendingAction(
+                caster:     caster,
+                target:     singleTarget,
+                skill:      slot.IsUltimate ? null : slot.Skill,
+                ultimate:   slot.IsUltimate ? slot.Ultimate : null,
+                rank:       slot.Rank,
+                targetType: targetType,
+                isUltimate: slot.IsUltimate);
+
+            OnActionPending?.Invoke(pending);
+
+            if (Hand.ActionsRemaining == 0) NotifyActionsExhausted();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Called by CombatAnimationDriver at the animation impact frame.
+        /// Applies damage/heal, fires OnActionResolved per target, and checks for death/combat end.
+        /// Returns one result per target hit (array of 1 for single-target, N for AoE).
+        /// </summary>
+        public CombatActionResult[] ResolveAction(PendingAction pending)
+        {
+            if (pending.Caster == null) return System.Array.Empty<CombatActionResult>();
+
+            switch (pending.TargetType)
             {
                 case TargetType.AllEnemies:
                 {
-                    var results = slot.IsUltimate
-                        ? CombatResolver.ExecuteUltimateAll(slot.Ultimate, caster, Context.Enemies)
-                        : CombatResolver.ExecuteAll(slot.Skill, slot.Rank, caster, Context.Enemies);
-                    for (int i = 0; i < results.Length; i++)
-                        Resolve(results[i]);
-                    break;
+                    var results = pending.IsUltimate
+                        ? CombatResolver.ExecuteUltimateAll(pending.Ultimate, pending.Caster, Context.Enemies)
+                        : CombatResolver.ExecuteAll(pending.Skill, pending.Rank, pending.Caster, Context.Enemies);
+                    for (int i = 0; i < results.Length; i++) Resolve(results[i]);
+                    return results;
                 }
 
                 case TargetType.AllAllies:
                 {
-                    for (int i = 0; i < Context.Players.Count; i++)
-                    {
-                        if (!Context.Players[i].IsAlive) continue;
-                        var r = slot.IsUltimate
-                            ? CombatResolver.ExecuteUltimate(slot.Ultimate, caster, Context.Players[i])
-                            : CombatResolver.Execute(slot.Skill, slot.Rank, caster, Context.Players[i]);
-                        Resolve(r);
-                    }
-                    break;
+                    var results = pending.IsUltimate
+                        ? CombatResolver.ExecuteUltimateAll(pending.Ultimate, pending.Caster, Context.Players)
+                        : CombatResolver.ExecuteAll(pending.Skill, pending.Rank, pending.Caster, Context.Players);
+                    for (int i = 0; i < results.Length; i++) Resolve(results[i]);
+                    return results;
                 }
 
-                case TargetType.Self:
+                default: // SingleEnemy, RandomEnemy, Self
                 {
-                    var r = slot.IsUltimate
-                        ? CombatResolver.ExecuteUltimate(slot.Ultimate, caster, caster)
-                        : CombatResolver.Execute(slot.Skill, slot.Rank, caster, caster);
+                    var target = pending.Target;
+                    if (target == null || !target.IsAlive)
+                        return System.Array.Empty<CombatActionResult>();
+                    var r = pending.IsUltimate
+                        ? CombatResolver.ExecuteUltimate(pending.Ultimate, pending.Caster, target)
+                        : CombatResolver.Execute(pending.Skill, pending.Rank, pending.Caster, target);
                     Resolve(r);
-                    break;
-                }
-
-                default: // SingleEnemy and RandomEnemy
-                {
-                    ICombatActor target = (targetType == TargetType.SingleEnemy)
-                        ? (explicitTarget != null && explicitTarget.IsAlive ? explicitTarget : RandomAliveEnemy())
-                        : RandomAliveEnemy();
-
-                    if (target == null) return false;
-
-                    var r = slot.IsUltimate
-                        ? CombatResolver.ExecuteUltimate(slot.Ultimate, caster, target)
-                        : CombatResolver.Execute(slot.Skill, slot.Rank, caster, target);
-                    OnActionResolved?.Invoke(r);
-                    break;
+                    return new[] { r };
                 }
             }
-
-            if (Context.IsOver)             { FinishCombat(); return true; }
-            if (Hand.ActionsRemaining == 0) NotifyActionsExhausted();
-
-            return true;
         }
 
         /// <summary>
@@ -207,6 +244,7 @@ namespace Runefall.Combat
         public void EndPlayerTurn()
         {
             if (Phase != CombatPhase.PlayerTurn) return;
+            if (Context.IsOver) { FinishCombat(); return; }
             Phase = CombatPhase.EnemyTurn;
             OnEnemyTurnStarted?.Invoke();
 
@@ -235,7 +273,14 @@ namespace Runefall.Combat
             Context.TurnNumber = Round;
             Hand.ResetActions();
             CheckUltimateInsertion();
-            OnPlayerTurnStarted?.Invoke(Round);
+
+            OnPlayerTurnBegin?.Invoke(Round);   // immediate: camera starts moving
+
+            void Fire() => OnPlayerTurnStarted?.Invoke(Round);
+            if (PlayerTurnStartHandler != null)
+                PlayerTurnStartHandler(Fire);
+            else
+                Fire();
         }
 
         private void ProcessEnemyPhase()
@@ -252,10 +297,11 @@ namespace Runefall.Combat
         private void ExecuteSingleEnemyTurn(ICombatActor enemy)
         {
             if (!enemy.IsAlive) return;
+            if (enemy.Effects.HasBehavior(EffectBehavior.SkipTurn)) return;
             var player = GetAlivePlayer();
             if (player == null) return;
             if (enemy is IEnemyTurnHandler handler)
-                Resolve(handler.TakeTurn(Context, player));
+                OnActionPending?.Invoke(handler.TakeTurn(Context, player));
         }
 
         private void EndOfRound()

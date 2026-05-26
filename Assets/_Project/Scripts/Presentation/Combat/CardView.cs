@@ -30,6 +30,7 @@ namespace Runefall.Presentation.Combat
 
         private RectTransform _rt;
         private Canvas        _canvas;
+        private RectTransform _canvasRT;
         private CanvasGroup   _cg;
         private Transform     _originParent;
         private int           _originSibling;
@@ -37,9 +38,10 @@ namespace Runefall.Presentation.Combat
 
         void Awake()
         {
-            _rt     = GetComponent<RectTransform>();
-            _canvas = GetComponentInParent<Canvas>();
-            _cg     = GetComponent<CanvasGroup>();
+            _rt       = GetComponent<RectTransform>();
+            _canvas   = GetComponentInParent<Canvas>();
+            _canvasRT = _canvas != null ? _canvas.GetComponent<RectTransform>() : null;
+            _cg       = GetComponent<CanvasGroup>();
             if (_cg == null) _cg = gameObject.AddComponent<CanvasGroup>();
         }
 
@@ -77,6 +79,9 @@ namespace Runefall.Presentation.Combat
             StopAllCoroutines();
             transform.localScale = Vector3.one;
             if (_cg != null) _cg.alpha = 1f;
+            // Snap back to layout position so reparenting after cancel is clean.
+            if (transform.parent != null)
+                transform.localPosition = Vector3.zero;
         }
 
         public void PlayDrawAnimation(float delay, CardAnimationConfig cfg)
@@ -100,10 +105,18 @@ namespace Runefall.Presentation.Combat
 
         private IEnumerator AnimateIn(float delay, CardAnimationConfig cfg)
         {
-            Vector3 worldTarget = transform.position;
-            Vector3 worldStart  = new Vector3(worldTarget.x - Screen.width, worldTarget.y, worldTarget.z);
+            // Hide immediately to avoid one-frame flicker at layout position
+            _cg.alpha = 0f;
 
-            _cg.alpha          = 0f;
+            // Wait one frame so Unity's layout system resolves final positions
+            yield return null;
+
+            Vector3 worldTarget = transform.position;
+            float canvasWidth   = _canvasRT != null
+                ? _canvasRT.rect.width * _canvas.scaleFactor
+                : Screen.width;
+            Vector3 worldStart  = new Vector3(worldTarget.x - canvasWidth, worldTarget.y, worldTarget.z);
+
             transform.position = worldStart;
 
             if (delay > 0f) yield return new WaitForSeconds(delay);

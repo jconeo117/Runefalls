@@ -33,6 +33,8 @@ namespace Runefall.Data
 
         [Header("Exploration")]
         public float detectionRange  = 8f;
+        [Tooltip("Radio del trigger que abre el panel de encuentro. Debe ser menor que detectionRange.")]
+        public float encounterRange  = 1.8f;
         public float patrolRadius    = 4f;
         public bool  respawnsOnRoomExit = true;
 
@@ -43,6 +45,8 @@ namespace Runefall.Data
         public UltimateData ultimate;
 
         [Header("Combat Animations")]
+        [Tooltip("Base animator controller applied to this enemy's pawn at spawn. Required for non-T-pose.")]
+        public RuntimeAnimatorController animatorController;
         public AnimationClip animApproach;
         public AnimationClip animGetHit;
         public AnimationClip animDeath;

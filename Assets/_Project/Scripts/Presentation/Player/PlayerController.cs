@@ -1,63 +1,55 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Runefall.Core;
 
 namespace Runefall.Presentation.Player
 {
-    /// <summary>
-    /// Mueve al jugador con aceleración/deceleración suave, salto y dash.
-    /// El personaje rota hacia donde se mueve; la cámara es independiente.
-    /// Asignar InputReader SO en el inspector.
-    /// Requiere CharacterController en el mismo GameObject.
-    /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
-        [Header("Referencia de input")]
+        [Header("Input")]
         [SerializeField] private InputReader input;
 
         [Header("Movimiento")]
-        [SerializeField] private float moveSpeed      = 5f;
-        [SerializeField] private float acceleration   = 8f;
-        [SerializeField] private float deceleration   = 12f;
+        [SerializeField] private float moveSpeed    = 5f;
+        [SerializeField] private float acceleration = 8f;
+        [SerializeField] private float deceleration = 12f;
 
         [Header("Rotación")]
-        [SerializeField] private float rotationSpeed  = 10f;
-
-        [Header("Salto")]
-        [SerializeField] private float jumpHeight        = 1.8f;
-        [SerializeField] private float gravity           = -20f;
-        [SerializeField] private Transform groundCheck;      // Transform vacío en los pies del personaje
-        [SerializeField] private float groundCheckRadius    = 0.2f;
-        [SerializeField] private LayerMask groundMask       = ~0;  // todo por defecto
+        [SerializeField] private float rotationSpeed = 10f;
 
         [Header("Dash")]
-        [SerializeField] private float dashDistance   = 4f;
-        [SerializeField] private float dashDuration   = 0.15f;
-        [SerializeField] private float dashCooldown   = 1.2f;
+        [SerializeField] private float dashDistance       = 4f;
+        [SerializeField] private float dashDuration       = 0.15f;
+        [SerializeField] private float dashBetweenCooldown = 0.5f;   // espera entre dashs
+        [SerializeField] private float dashChargeRecovery  = 1.8f;   // recuperación por carga
 
         // ── Estado interno ───────────────────────────────────────────────────
-        private CharacterController cc;
-        private Transform cachedCamTransform;
-        private Vector3 moveDirection;       // dirección normalizada en world-space
-        private float   currentSpeed;        // velocidad actual (con aceleración)
-        private Vector3 verticalVelocity;    // velocidad vertical (salto + gravedad)
-        private bool    isDashing;
-        private float   dashCooldownTimer;
-        private bool    isGrounded;
-        private float   jumpGraceTimer;      // ignora ground check N segundos post-salto
+        private CharacterController _cc;
+        private Transform           _camTransform;
+        private Vector3             _moveDirection;
+        private float               _currentSpeed;
+        private float               _verticalVelocity;
+
+        private const float Gravity    = -20f;
+        private const int   MaxCharges = 3;
+
+        private int         _charges          = MaxCharges;
+        private float       _betweenDashTimer = 0f;
+        private bool        _isDashing;
+        private readonly List<float> _chargeTimers = new();   // countdown por carga gastada
 
         // ── API pública ──────────────────────────────────────────────────────
-        /// <summary>Velocidad actual de movimiento horizontal. Leída por CharacterAnimationController.</summary>
-        public float CurrentSpeed  => currentSpeed;
-        public bool  IsGrounded    => isGrounded;
-        public bool  IsDashing     => isDashing;
+        public float CurrentSpeed  => _currentSpeed;
+        public bool  IsDashing     => _isDashing;
+        public int   DashCharges   => _charges;
 
         // ── Ciclo de vida ────────────────────────────────────────────────────
 
         private void Awake()
         {
-            cc = GetComponent<CharacterController>();
+            _cc = GetComponent<CharacterController>();
 
             if (input == null)
             {
@@ -66,133 +58,108 @@ namespace Runefall.Presentation.Player
                 return;
             }
 
-            cachedCamTransform = Camera.main != null ? Camera.main.transform : null;
-            if (cachedCamTransform == null)
+            _camTransform = Camera.main != null ? Camera.main.transform : null;
+            if (_camTransform == null)
                 Debug.LogError("[PlayerController] Camera.main no encontrada.", this);
         }
 
-        private void OnEnable()
-        {
-            input.JumpEvent += OnJump;
-            input.DashEvent += OnDashInput;
-        }
-
-        private void OnDisable()
-        {
-            input.JumpEvent -= OnJump;
-            input.DashEvent -= OnDashInput;
-        }
+        private void OnEnable()  => input.DashEvent += OnDashInput;
+        private void OnDisable() => input.DashEvent -= OnDashInput;
 
         private void Update()
         {
-            if (dashCooldownTimer > 0f)
-                dashCooldownTimer -= Time.deltaTime;
-
-            CheckGround();
-
-            HandleVertical();
-            if (!isDashing)
+            TickDashTimers();
+            ApplyGravity();
+            if (!_isDashing)
                 HandleMovement();
-
             HandleRotation();
         }
 
-        // ── Input callbacks ──────────────────────────────────────────────────
-
-        private void OnJump()
-        {
-            Debug.Log($"[PlayerController] Jump — grounded={isGrounded}");
-            if (isGrounded)
-            {
-                verticalVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-                isGrounded    = false;
-                jumpGraceTimer = 0.15f;
-            }
-        }
+        // ── Input ────────────────────────────────────────────────────────────
 
         private void OnDashInput()
         {
-            Debug.Log($"[PlayerController] Dash — isDashing={isDashing} cooldown={dashCooldownTimer:F2}");
-            if (!isDashing && dashCooldownTimer <= 0f)
-                StartCoroutine(PerformDash());
+            if (_isDashing || _charges <= 0 || _betweenDashTimer > 0f) return;
+            StartCoroutine(PerformDash());
         }
 
-        // ── Lógica de movimiento ─────────────────────────────────────────────
+        // ── Movimiento ───────────────────────────────────────────────────────
 
         private void HandleMovement()
         {
-            Transform cam = cachedCamTransform;
-            if (cam == null) return;
+            if (_camTransform == null) return;
 
-            Vector3 camFwd   = Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized;
-            Vector3 camRight = cam.right;
+            Vector3 camFwd   = Vector3.ProjectOnPlane(_camTransform.forward, Vector3.up).normalized;
+            Vector3 camRight = _camTransform.right;
             Vector3 inputDir = camFwd * input.MoveInput.y + camRight * input.MoveInput.x;
 
-            if (inputDir.sqrMagnitude > 1f)
-                inputDir.Normalize();
-
-            moveDirection = inputDir;
+            if (inputDir.sqrMagnitude > 1f) inputDir.Normalize();
+            _moveDirection = inputDir;
 
             float targetSpeed = inputDir.sqrMagnitude > 0.01f ? moveSpeed : 0f;
-            float accel       = targetSpeed > currentSpeed ? acceleration : deceleration;
-            currentSpeed      = Mathf.MoveTowards(currentSpeed, targetSpeed, accel * Time.deltaTime);
+            if (targetSpeed == 0f)
+                _currentSpeed = 0f;
+            else
+                _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, acceleration * Time.deltaTime);
 
-            cc.Move(moveDirection * currentSpeed * Time.deltaTime);
+            _cc.Move(_moveDirection * _currentSpeed * Time.deltaTime);
         }
 
         private void HandleRotation()
         {
-            if (moveDirection.sqrMagnitude < 0.01f) return;
-
-            Quaternion targetRot = Quaternion.LookRotation(moveDirection);
-            transform.rotation   = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            if (_moveDirection.sqrMagnitude < 0.01f) return;
+            Quaternion target  = Quaternion.LookRotation(_moveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, target, rotationSpeed * Time.deltaTime);
         }
 
-        private void CheckGround()
+        private void ApplyGravity()
         {
-            if (jumpGraceTimer > 0f)
+            if (_cc.isGrounded && _verticalVelocity < 0f)
+                _verticalVelocity = -2f;
+            else
+                _verticalVelocity += Gravity * Time.deltaTime;
+
+            if (!_isDashing)
+                _cc.Move(Vector3.up * _verticalVelocity * Time.deltaTime);
+        }
+
+        // ── Dash ─────────────────────────────────────────────────────────────
+
+        private void TickDashTimers()
+        {
+            if (_betweenDashTimer > 0f)
+                _betweenDashTimer -= Time.deltaTime;
+
+            for (int i = _chargeTimers.Count - 1; i >= 0; i--)
             {
-                jumpGraceTimer -= Time.deltaTime;
-                isGrounded = false;
-                return;
+                _chargeTimers[i] -= Time.deltaTime;
+                if (_chargeTimers[i] <= 0f)
+                {
+                    _chargeTimers.RemoveAt(i);
+                    _charges = Mathf.Min(MaxCharges, _charges + 1);
+                }
             }
-            Transform origin = groundCheck != null ? groundCheck : transform;
-            isGrounded = Physics.CheckSphere(origin.position, groundCheckRadius, groundMask, QueryTriggerInteraction.Ignore);
-        }
-
-        private void HandleVertical()
-        {
-            if (isGrounded && verticalVelocity.y < 0f)
-                verticalVelocity.y = -2f;
-
-            verticalVelocity.y += gravity * Time.deltaTime;
-
-            // Durante dash el coroutine aplica verticalVelocity junto al movimiento horizontal
-            if (!isDashing)
-                cc.Move(verticalVelocity * Time.deltaTime);
         }
 
         private IEnumerator PerformDash()
         {
-            isDashing = true;
+            _isDashing = true;
+            _charges--;
+            _betweenDashTimer = dashBetweenCooldown;
+            _chargeTimers.Add(dashChargeRecovery);
 
-            // Dirección: última moveDirection o forward si está quieto
-            Vector3 dir = moveDirection.sqrMagnitude > 0.01f
-                ? moveDirection
-                : transform.forward;
-
-            float speed = dashDistance / dashDuration;
-            float timer = 0f;
+            Vector3 dir   = _moveDirection.sqrMagnitude > 0.01f ? _moveDirection : transform.forward;
+            float   speed = dashDistance / dashDuration;
+            float   timer = 0f;
 
             while (timer < dashDuration)
             {
-                cc.Move(dir * speed * Time.deltaTime + verticalVelocity * Time.deltaTime);
+                _cc.Move(dir * speed * Time.deltaTime + Vector3.up * _verticalVelocity * Time.deltaTime);
                 timer += Time.deltaTime;
                 yield return null;
             }
 
-            isDashing         = false;
-            dashCooldownTimer = dashCooldown;
+            _isDashing = false;
         }
     }
 }

@@ -56,6 +56,30 @@ namespace Runefall.Presentation.Combat
             _target = _playerAnchor;
         }
 
+        /// <summary>
+        /// Initializes anchors from a designer-placed layout anchor.
+        /// playerAnchor position and rotation are used as-is.
+        /// Enemy-side anchor is mirrored XZ through fieldCenter (Y preserved).
+        /// </summary>
+        public void InitFromAnchors(Transform cameraAnchor, Vector3 fieldCenter)
+        {
+            if (cameraAnchor == null) return;
+
+            Vector3 playerCamPos = cameraAnchor.position;
+            Vector3 enemyCamPos  = new Vector3(
+                2f * fieldCenter.x - playerCamPos.x,
+                playerCamPos.y,
+                2f * fieldCenter.z - playerCamPos.z);
+
+            if (_playerAnchor != null) Destroy(_playerAnchor.gameObject);
+            if (_enemyAnchor  != null) Destroy(_enemyAnchor.gameObject);
+
+            _playerAnchor = CreateAnchor("PlayerSide", playerCamPos, fieldCenter, cameraAnchor.rotation);
+            _enemyAnchor  = CreateAnchor("EnemySide",  enemyCamPos,  fieldCenter);
+
+            _target = _playerAnchor;
+        }
+
         public void OnPlayerTurnStarted(int round) => _target = _playerAnchor;
 
         public void OnEnemyTurnStarted() => _target = _enemyAnchor;

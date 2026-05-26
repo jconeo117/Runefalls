@@ -17,7 +17,6 @@ namespace Runefall.Combat
             {
                 Source         = this,
                 Tag            = EffectTag.Disadvantage,
-                Flag           = EffectFlag.Infected,
                 Applier        = ctx.Caster,
                 TurnsRemaining = durationByRank[durIdx],
                 Stacks         = 1

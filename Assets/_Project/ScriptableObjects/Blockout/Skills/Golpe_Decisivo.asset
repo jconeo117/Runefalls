@@ -26,7 +26,6 @@ MonoBehaviour:
   animSequence:
   - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
   - {fileID: 7400000, guid: f9a41b3feea198048b4d8a29a9268d72, type: 3}
-  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
   effectsByRank:
   - effects: []
     damageMultiplier: 1.4

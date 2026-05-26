@@ -12,8 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ab13661f89840746b47d6f452b21eb1, type: 3}
   m_Name: Guerrero_Skill2
   m_EditorClassIdentifier: 
-  onStartVFX: {fileID: 3153472991145048103, guid: 3407e378c048bb5438424b28c7740b48, type: 3}
+  onStartVFX: {fileID: 5942177893964023165, guid: 438c0b7b02dcafa4996592b62d22671f, type: 3}
   onStartOffset: {x: 0, y: 1, z: 0.5}
-  onImpactVFX: {fileID: 1758473627833946668, guid: 9b21333b068a5084ba09535839bee3c8, type: 3}
+  startRotationOffset: {x: 0, y: 0, z: 0}
+  onImpactVFX: {fileID: 358637981425055526, guid: 8eb503696b886e04faff8fc0f480d473, type: 3}
   onImpactOffset: {x: 0, y: 0, z: 0}
-  autoDestroyAfter: 3
+  autoDestroyAfter: 0
+  holdAnimLoopUntilVFXDone: 0
+  animLoopClipIndex: 1
+  spawnOnStartImmediately: 0
+  spawnOnStartAtTarget: 0

@@ -1,5 +1,6 @@
 using UnityEngine;
 using Runefall.Characters;
+using Runefall.Combat;
 
 namespace Runefall.Data
 {
@@ -20,9 +21,11 @@ namespace Runefall.Data
         public SkillData skill1;
         public SkillData skill2;
         public UltimateData ultimate;
-        public PassiveData passive;
+        public PassiveDefinition passive;
 
         [Header("Combat Animations")]
+        [Tooltip("Base animator controller applied to this character's pawn at spawn. Required for non-T-pose.")]
+        public RuntimeAnimatorController animatorController;
         public AnimationClip animApproach;
         public AnimationClip animGetHit;
         public AnimationClip animDeath;

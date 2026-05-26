@@ -30,9 +30,8 @@ namespace Runefall.Combat
             {
                 Source         = this,
                 Tag            = EffectTag.Advantage,
-                Flag           = EffectFlag.None,
                 Applier        = ctx.Caster,
-                TurnsRemaining = 99,  // Shield lasts until consumed or cleansed
+                TurnsRemaining = 99,
                 Stacks         = 1,
                 StoredValue    = amount
             });

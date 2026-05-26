@@ -20,13 +20,12 @@ MonoBehaviour:
   isRanged: 0
   impactAfterClipIndex: 0
   returnAtClipIndex: -1
-  impactTrigger: {fileID: 0}
+  impactTrigger: {fileID: 11400000, guid: fc831bd5338593e409e951e43fc23bec, type: 2}
   vfxConfig: {fileID: 0}
   ultimateChargeAmount: 0
   animSequence:
   - {fileID: 7400000, guid: 216bf759b6d8a7246b151807db8c61de, type: 3}
   - {fileID: 7400000, guid: cb140d8df12930e40bbb2bd5b2a74557, type: 3}
-  - {fileID: 7400000, guid: 216bf759b6d8a7246b151807db8c61de, type: 3}
   effectsByRank:
   - effects: []
     damageMultiplier: 1

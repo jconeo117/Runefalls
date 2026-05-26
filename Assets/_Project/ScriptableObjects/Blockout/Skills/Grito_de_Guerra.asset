@@ -28,7 +28,6 @@ MonoBehaviour:
   - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
   - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}
   - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}
-  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
   effectsByRank:
   - effects: []
     damageMultiplier: 0.8

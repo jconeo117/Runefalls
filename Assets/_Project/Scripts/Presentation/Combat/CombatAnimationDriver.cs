@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using Runefall.Combat;
 using Runefall.Data;
 using Runefall.Enemies;
@@ -39,21 +38,39 @@ namespace Runefall.Presentation.Combat
         [Tooltip("Handles spawning of skill VFX. Optional — assign the CombatVFXPlayer in the scene.")]
         [SerializeField] private CombatVFXPlayer vfxPlayer;
 
+        [Header("Damage Numbers")]
+        [Tooltip("FloatingDamage prefab with DamageNumber component. Spawned per hit.")]
+        [SerializeField] private GameObject _damageNumberPrefab;
+
+        [Header("Turn Transition")]
+        [Tooltip("Seconds between last player animation finishing and enemy turn starting.")]
+        [SerializeField] private float _postPlayerTurnDelay = 0.8f;
+
+        [Header("Last Hit Drama")]
+        [Tooltip("Time.timeScale during the killing blow slow-mo.")]
+        [SerializeField] private float _lastHitSlowMoScale    = 0.05f;
+        [Tooltip("Real seconds the slow-mo lasts.")]
+        [SerializeField] private float _lastHitSlowMoDuration = 0.55f;
+        [Tooltip("Real seconds of normal speed before the result screen appears.")]
+        [SerializeField] private float _lastHitPauseDuration  = 0.30f;
+
         // Injected by CombatBootstrapper via Init()
         private CombatContext                                     _ctx;
+        private TurnManager                                       _tm;
         private IReadOnlyDictionary<ICombatActor, Transform>      _actorPawns;
         private IReadOnlyDictionary<ICombatActor, CharacterData>  _actorCharData;
         private IReadOnlyDictionary<ICombatActor, EnemyData>      _actorEnemyData;
         private IReadOnlyDictionary<ICombatActor, HPBarPresenter> _actorHPBars;
         private ICombatPresenter                                   _presenter;
 
-        private readonly Queue<CombatActionResult> _animQueue = new();
+        private readonly Queue<PendingAction> _animQueue = new();
         private Camera _camera;
 
         // ── init ─────────────────────────────────────────────────────────────────
 
         public void Init(
             CombatContext                                     ctx,
+            TurnManager                                       tm,
             IReadOnlyDictionary<ICombatActor, Transform>      actorPawns,
             IReadOnlyDictionary<ICombatActor, CharacterData>  actorCharData,
             IReadOnlyDictionary<ICombatActor, EnemyData>      actorEnemyData,
@@ -61,6 +78,7 @@ namespace Runefall.Presentation.Combat
             ICombatPresenter                                   presenter)
         {
             _ctx            = ctx;
+            _tm             = tm;
             _actorPawns     = actorPawns;
             _actorCharData  = actorCharData;
             _actorEnemyData = actorEnemyData;
@@ -96,8 +114,9 @@ namespace Runefall.Presentation.Combat
 
             for (int i = 0; i < enemies.Count; i++)
             {
+                if (_ctx != null && _ctx.IsOver) break;
                 if (!enemies[i].IsAlive) continue;
-                executeTurn(enemies[i]);                     // fires TM.OnActionResolved → Enqueue()
+                executeTurn(enemies[i]);                     // fires TM.OnActionPending → Bootstrapper.Enqueue()
                 yield return StartCoroutine(DrainQueue(null));
             }
 
@@ -106,8 +125,8 @@ namespace Runefall.Presentation.Combat
 
         // ── public API called by CombatBootstrapper ───────────────────────────────
 
-        /// <summary>Queues a resolved combat action for visual animation.</summary>
-        public void Enqueue(CombatActionResult result) => _animQueue.Enqueue(result);
+        /// <summary>Queues a pending action for deferred resolution at animation impact frame.</summary>
+        public void Enqueue(PendingAction pending) => _animQueue.Enqueue(pending);
 
         /// <summary>
         /// Drains the animation queue with full visual feedback.
@@ -127,32 +146,19 @@ namespace Runefall.Presentation.Combat
             int slotIndex = 0;
             while (_animQueue.Count > 0)
             {
-                var group = DrainActionGroup();
-                yield return StartCoroutine(PlayActionGroup(group));
+                // Combat may have ended during a previous group — skip remaining actions.
+                if (_ctx != null && _ctx.IsOver) break;
+                var pending = _animQueue.Dequeue();
+                yield return StartCoroutine(PlayActionGroup(pending));
                 if (fadeSlots)
                     _presenter?.NotifyActionAnimationComplete(slotIndex++);
+                if (_ctx != null && _ctx.IsOver) break;
             }
+            if (_ctx != null && _ctx.IsOver)
+                yield return StartCoroutine(LastHitDrama());
+            if (onComplete != null && fadeSlots && _postPlayerTurnDelay > 0f)
+                yield return new WaitForSeconds(_postPlayerTurnDelay);
             onComplete?.Invoke();
-        }
-
-        // Groups consecutive AoE results from the same caster; single-target stays alone.
-        private List<CombatActionResult> DrainActionGroup()
-        {
-            var group = new List<CombatActionResult>();
-            if (_animQueue.Count == 0) return group;
-
-            var first = _animQueue.Dequeue();
-            group.Add(first);
-
-            if (first.IsAoe)
-            {
-                while (_animQueue.Count > 0
-                    && _animQueue.Peek().Caster == first.Caster
-                    && _animQueue.Peek().IsAoe)
-                    group.Add(_animQueue.Dequeue());
-            }
-
-            return group;
         }
 
         // ── pawn animators ────────────────────────────────────────────────────────
@@ -173,28 +179,51 @@ namespace Runefall.Presentation.Combat
 
         // ── action group ──────────────────────────────────────────────────────────
 
-        private IEnumerator PlayActionGroup(List<CombatActionResult> group)
+        private IEnumerator PlayActionGroup(PendingAction pending)
         {
-            if (group.Count == 0) yield break;
-
-            var first = group[0];
-            if (first.Caster == null || !_actorPawns.TryGetValue(first.Caster, out var casterPawn))
+            if (pending.Caster == null || !_actorPawns.TryGetValue(pending.Caster, out var casterPawn))
                 yield break;
             if (!casterPawn.gameObject.activeSelf) yield break;
 
-            bool isRanged   = first.Skill != null && first.Skill.isRanged;
+            bool isRanged   = pending.Skill != null && pending.Skill.isRanged;
             var  casterAnim = casterPawn.GetComponentInChildren<CombatPawnAnimator>();
-            var  clips      = GetSkillClips(first);
-            int  impactIdx  = GetImpactClipIndex(first);
-            var  trigger    = ResolveTrigger(first, casterPawn, GetTargetTransform(first), clips);
+            var  clips      = GetSkillClips(pending);
+            int  impactIdx  = GetImpactClipIndex(pending);
+            var  trigger    = ResolveTrigger(pending, casterPawn, GetTargetTransform(pending), clips);
             float blend     = casterAnim != null ? casterAnim.BlendDuration : 0f;
 
-            Vector3    targetPos        = GetTargetPosition(first);
+            Vector3    targetPos        = GetTargetPosition(pending);
             Quaternion originalRotation = casterPawn.rotation;
 
-            // SlashVFX AE on the attack clip drives onStartVFX timing precisely
-            var vfxConfig = ResolveVFXConfig(first);
-            void HandleSlashVFX() => vfxPlayer?.PlayOnStartVFX(vfxConfig, casterPawn, targetPos);
+            // SlashVFX AE drives onStartVFX timing.
+            // Debounce: AE baked on multiple frames fires many times per clip — only allow
+            // one spawn per 80 ms window. Clips >80 ms apart (always true) each get their VFX.
+            var   vfxConfig      = ResolveVFXConfig(pending);
+            bool  holdLoop       = vfxConfig != null && vfxConfig.holdAnimLoopUntilVFXDone;
+            int   loopClipIdx    = holdLoop ? vfxConfig.animLoopClipIndex : -1;
+            float lastSlashTime  = float.MinValue;
+            const float kSlashDebounce = 0.08f;
+            GameObject slashGO   = null;
+
+            // Capture after slashGO is declared so the closure sees the variable, not the value.
+            System.Func<bool> exitLoopWhen = holdLoop ? () => slashGO == null : (System.Func<bool>)null;
+
+            // Immediate spawn: no SlashVFX AE needed (e.g. mage casting circle at enemy center).
+            if (vfxConfig?.spawnOnStartImmediately == true)
+                slashGO = vfxPlayer?.PlayOnStartVFX(vfxConfig, casterPawn, targetPos);
+
+            void HandleSlashVFX()
+            {
+                // Skip if already spawned via spawnOnStartImmediately.
+                if (vfxConfig?.spawnOnStartImmediately == true) return;
+                if (Time.time - lastSlashTime < kSlashDebounce) return;
+                lastSlashTime = Time.time;
+                // Stop previous slash VFX emission before spawning the next one.
+                if (slashGO != null)
+                    foreach (var ps in slashGO.GetComponentsInChildren<ParticleSystem>())
+                        ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                slashGO = vfxPlayer?.PlayOnStartVFX(vfxConfig, casterPawn, targetPos);
+            }
             if (casterAnim != null) casterAnim.OnSlashVFX += HandleSlashVFX;
             try
             {
@@ -206,22 +235,28 @@ namespace Runefall.Presentation.Combat
 
                 if (trigger != null)
                 {
-                    trigger.Arm(() => RaiseImpactGroup(group));
+                    trigger.Arm(() => RaiseImpactGroup(pending));
                     bool animDone = casterAnim == null;
                     if (casterAnim != null)
-                        StartCoroutine(RunThenSignal(casterAnim.PlaySkillSequence(clips), () => animDone = true));
+                        StartCoroutine(RunThenSignal(
+                            casterAnim.PlaySkillSequence(clips,
+                                holdClipIndex: loopClipIdx,
+                                shouldAdvanceFromHold: exitLoopWhen),
+                            () => animDone = true));
                     yield return new WaitUntil(() => animDone && trigger.HasFired);
                 }
                 else
                 {
-                    RaiseImpactGroup(group);
+                    RaiseImpactGroup(pending);
                     if (casterAnim != null)
-                        yield return StartCoroutine(casterAnim.PlaySkillSequence(clips));
+                        yield return StartCoroutine(casterAnim.PlaySkillSequence(clips,
+                            holdClipIndex: loopClipIdx,
+                            shouldAdvanceFromHold: exitLoopWhen));
                 }
             }
             else
             {
-                int returnIdx = ResolveReturnClipIndex(first, clips);
+                int returnIdx = ResolveReturnClipIndex(pending, clips);
 
                 Vector3 origin      = casterPawn.position;
                 Vector3 lungeTarget = ComputeLungeTarget(casterPawn, targetPos);
@@ -236,28 +271,33 @@ namespace Runefall.Presentation.Combat
                 if (approachDur > 0f)
                     StartCoroutine(DelayedLungeTo(casterPawn, lungeTarget, approachDelay, approachDur));
 
-                // Return: rotate toward origin using any time available before the lunge starts,
-                // so rotation completes without delaying physical movement.
+                // Return: when returnIdx < clips.Length, overlap return with that clip (explicit).
+                // When returnIdx >= clips.Length (default), do a clean sequential return after
+                // the sequence so attacks play fully before the model moves home.
+                bool      afterAll    = returnIdx >= (clips?.Length ?? 0);
                 Coroutine returnLunge = null;
-                if (returnIdx >= 0)
+                if (!afterAll && returnIdx >= 0)
                 {
                     float rawReturn  = SumClipDurations(clips, 0, returnIdx - 1);
                     float rotStart   = Mathf.Max(0f, rawReturn - blend);
                     float returnDur  = clips != null && returnIdx < clips.Length
                                        ? clips[returnIdx]?.length ?? 0.5f : 0.5f;
-                    // Start rotation as early as possible so it finishes before lunge begins.
                     float rotBegin   = Mathf.Max(0f, rotStart - returnRotateDuration);
-                    float lungeStart = rotBegin + returnRotateDuration; // lunge after rotation
+                    float lungeStart = rotBegin + returnRotateDuration;
                     StartCoroutine(SmoothRotateTo(casterPawn, origin, rotBegin, returnRotateDuration));
                     returnLunge = StartCoroutine(DelayedLungeTo(casterPawn, origin, lungeStart, returnDur, snapOnEnd: true));
                 }
 
                 if (trigger != null)
                 {
-                    trigger.Arm(() => RaiseImpactGroup(group));
+                    trigger.Arm(() => RaiseImpactGroup(pending));
                     bool animDone = casterAnim == null;
                     if (casterAnim != null)
-                        StartCoroutine(RunThenSignal(casterAnim.PlaySkillSequence(clips), () => animDone = true));
+                        StartCoroutine(RunThenSignal(
+                            casterAnim.PlaySkillSequence(clips,
+                                holdClipIndex: loopClipIdx,
+                                shouldAdvanceFromHold: exitLoopWhen),
+                            () => animDone = true));
                     yield return new WaitUntil(() => animDone && trigger.HasFired);
                 }
                 else
@@ -265,54 +305,62 @@ namespace Runefall.Presentation.Combat
                     if (casterAnim != null)
                         yield return StartCoroutine(casterAnim.PlaySkillSequence(
                             clips,
-                            () => RaiseImpactGroup(group),
-                            impactIdx));
+                            () => RaiseImpactGroup(pending),
+                            impactIdx,
+                            holdClipIndex: loopClipIdx,
+                            shouldAdvanceFromHold: exitLoopWhen));
                     else
-                        RaiseImpactGroup(group);
+                        RaiseImpactGroup(pending);
                 }
 
-                // PlayableGraph gone — CrossFade to walk for any remaining lunge time.
-                if (returnLunge != null) casterAnim?.PlayApproach();
-
-                if (returnLunge != null) yield return returnLunge;
-                casterAnim?.PlayReturn();
-                casterPawn.rotation = originalRotation;
-            }
-
-            foreach (var r in group)
-            {
-                if (r.Target != null && !r.Target.IsAlive
-                    && _actorPawns.TryGetValue(r.Target, out var deadPawn))
+                if (afterAll)
                 {
-                    deadPawn.GetComponentInChildren<CombatPawnAnimator>()?.PlayDeath();
-                    StartCoroutine(HidePawnDelayed(deadPawn.gameObject, 1.2f));
+                    // Sequential return: full sequence done → rotate → approach back → idle.
+                    // Uses actual approach-clip length so animation and movement are locked.
+                    float approachLen = GetApproachClipDuration(pending.Caster);
+                    yield return StartCoroutine(SmoothRotateTo(casterPawn, origin, 0f, returnRotateDuration));
+                    casterAnim?.PlayApproach();
+                    yield return StartCoroutine(LungeTo(casterPawn, origin, approachLen));
+                    casterAnim?.PlayReturn();
                 }
+                else
+                {
+                    if (returnLunge != null) casterAnim?.PlayApproach();
+                    if (returnLunge != null) yield return returnLunge;
+                    casterAnim?.PlayReturn();
+                }
+                casterPawn.rotation = originalRotation;
             }
 
             } // try
             finally
             {
                 if (casterAnim != null) casterAnim.OnSlashVFX -= HandleSlashVFX;
+
+                // Stop slash VFX emission when action ends so it doesn't overstay.
+                // Existing particles finish their natural lifetime (no hard pop).
+                if (slashGO != null)
+                {
+                    foreach (var ps in slashGO.GetComponentsInChildren<ParticleSystem>())
+                        ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                }
             }
         }
 
         // ── trigger helpers ───────────────────────────────────────────────────────
 
-        private SkillVFXConfig ResolveVFXConfig(CombatActionResult first)
+        private SkillVFXConfig ResolveVFXConfig(PendingAction pending) => pending.Skill?.vfxConfig;
+
+        private IImpactTrigger ResolveTrigger(PendingAction pending, Transform casterPawn, Transform targetPawn, AnimationClip[] allClips = null)
         {
-            return first.Skill?.vfxConfig;
+            return pending.Skill?.impactTrigger?.Create(casterPawn, targetPawn, this, allClips);
         }
 
-        private IImpactTrigger ResolveTrigger(CombatActionResult first, Transform casterPawn, Transform targetPawn, AnimationClip[] allClips = null)
+        private Transform GetTargetTransform(PendingAction pending)
         {
-            return first.Skill?.impactTrigger?.Create(casterPawn, targetPawn, this, allClips);
-        }
-
-        private Transform GetTargetTransform(CombatActionResult result)
-        {
-            if (result.Target != null && _actorPawns.TryGetValue(result.Target, out var tp))
+            if (pending.Target != null && _actorPawns.TryGetValue(pending.Target, out var tp))
                 return tp;
-            bool isEnemy = result.Caster is EnemyAgent;
+            bool isEnemy = pending.Caster is EnemyAgent;
             var side = isEnemy
                 ? (IReadOnlyList<ICombatActor>)_ctx.Players
                 : _ctx.Enemies;
@@ -335,10 +383,17 @@ namespace Runefall.Presentation.Combat
 
         // ── impact ────────────────────────────────────────────────────────────────
 
-        private void RaiseImpactGroup(List<CombatActionResult> group)
+        private void RaiseImpactGroup(PendingAction pending)
         {
-            foreach (var r in group)
+            if (_tm == null) return;
+
+            // Damage applied here — this is the real-time resolution moment.
+            var results = _tm.ResolveAction(pending);
+
+            // Fire ImpactEvent individually per target (damage numbers + HP bar).
+            for (int i = 0; i < results.Length; i++)
             {
+                var r      = results[i];
                 Vector3 hitPos = r.Target != null && _actorPawns.TryGetValue(r.Target, out var tp)
                     ? tp.position + Vector3.up * 1.2f
                     : Vector3.zero;
@@ -349,6 +404,18 @@ namespace Runefall.Presentation.Combat
                 else
                     OnImpactReceived(ctx);
             }
+
+            // Death check per target — accurate because damage was just applied above.
+            for (int i = 0; i < results.Length; i++)
+            {
+                var r = results[i];
+                if (r.Target != null && !r.Target.IsAlive
+                    && _actorPawns.TryGetValue(r.Target, out var deadPawn))
+                {
+                    deadPawn.GetComponentInChildren<CombatPawnAnimator>()?.PlayDeath();
+                    StartCoroutine(HidePawnDelayed(deadPawn.gameObject, 1.2f));
+                }
+            }
         }
 
         /// <summary>
@@ -357,11 +424,12 @@ namespace Runefall.Presentation.Combat
         /// </summary>
         private void OnImpactReceived(ImpactContext ctx)
         {
-            if (ctx.DamageDealt > 0f && ctx.Target != null
-                && _actorPawns.TryGetValue(ctx.Target, out var targetPawn))
+            Transform targetPawn = null;
+            bool hasPawn = ctx.Target != null && _actorPawns.TryGetValue(ctx.Target, out targetPawn);
+            if (ctx.DamageDealt > 0f && ctx.Target != null && hasPawn)
             {
                 targetPawn.GetComponentInChildren<CombatPawnAnimator>()?.PlayHit();
-                StartCoroutine(FloatDamageNumber(targetPawn, ctx.DamageDealt, ctx.IsCrit));
+                SpawnDamageNumber(targetPawn, ctx.DamageDealt, ctx.IsCrit);
             }
 
             if (ctx.Target != null && _actorHPBars.TryGetValue(ctx.Target, out var targetBar))
@@ -377,21 +445,31 @@ namespace Runefall.Presentation.Combat
 
         // ── lunge helpers ─────────────────────────────────────────────────────────
 
+        private IEnumerator LastHitDrama()
+        {
+            Time.timeScale = _lastHitSlowMoScale;
+            yield return new WaitForSecondsRealtime(_lastHitSlowMoDuration);
+            Time.timeScale = 1f;
+            yield return new WaitForSecondsRealtime(_lastHitPauseDuration);
+        }
+
         private IEnumerator HidePawnDelayed(GameObject pawn, float delay)
         {
             yield return new WaitForSeconds(delay);
             if (pawn != null) pawn.SetActive(false);
         }
 
-        private Vector3 GetTargetPosition(CombatActionResult result)
+        private Vector3 GetTargetPosition(PendingAction pending)
         {
-            bool casterIsEnemy = result.Caster is EnemyAgent;
+            bool isAoe = pending.TargetType == TargetType.AllEnemies
+                      || pending.TargetType == TargetType.AllAllies;
 
-            if (result.IsAoe)
+            if (isAoe)
             {
-                var targets = casterIsEnemy
-                    ? (IReadOnlyList<ICombatActor>)_ctx.Players
-                    : _ctx.Enemies;
+                // AllEnemies → _ctx.Enemies; AllAllies → _ctx.Players.
+                var targets = pending.TargetType == TargetType.AllEnemies
+                    ? (IReadOnlyList<ICombatActor>)_ctx.Enemies
+                    : _ctx.Players;
                 Vector3 centroid = Vector3.zero;
                 int     count    = 0;
                 foreach (var a in targets)
@@ -400,7 +478,7 @@ namespace Runefall.Presentation.Combat
                 return count > 0 ? centroid / count : Vector3.zero;
             }
 
-            if (result.Target != null && _actorPawns.TryGetValue(result.Target, out var tp))
+            if (pending.Target != null && _actorPawns.TryGetValue(pending.Target, out var tp))
                 return tp.position;
 
             return Vector3.zero;
@@ -467,31 +545,41 @@ namespace Runefall.Presentation.Combat
 
         // ── clip helpers ──────────────────────────────────────────────────────────
 
-        private AnimationClip[] GetSkillClips(CombatActionResult result)
+        private AnimationClip[] GetSkillClips(PendingAction pending)
         {
-            if (result.Skill != null)
-                return result.Skill.animSequence;
+            if (pending.Skill != null)
+                return pending.Skill.animSequence;
 
             // Ultimate: Skill is null — look up via CharacterData or EnemyData
-            if (_actorCharData.TryGetValue(result.Caster, out var cd) && cd.ultimate != null)
-                return cd.ultimate.animSequence;
-            if (_actorEnemyData.TryGetValue(result.Caster, out var ed) && ed.ultimate != null)
-                return ed.ultimate.animSequence;
+            if (pending.IsUltimate)
+            {
+                if (_actorCharData.TryGetValue(pending.Caster, out var cd) && cd.ultimate != null)
+                    return cd.ultimate.animSequence;
+                if (_actorEnemyData.TryGetValue(pending.Caster, out var ed) && ed.ultimate != null)
+                    return ed.ultimate.animSequence;
+            }
 
             return null;
         }
 
-        private int GetImpactClipIndex(CombatActionResult result)
+        private int GetImpactClipIndex(PendingAction pending) => pending.Skill?.impactAfterClipIndex ?? 0;
+
+        private int ResolveReturnClipIndex(PendingAction pending, AnimationClip[] clips)
         {
-            return result.Skill?.impactAfterClipIndex ?? 0;
+            int raw = pending.Skill?.returnAtClipIndex ?? -1;
+            // -1 → "after all clips": use clips.Length as sentinel so rawReturn sums ALL clips
+            if (raw < 0 && clips != null && clips.Length > 0)
+                return clips.Length;
+            return raw;
         }
 
-        private int ResolveReturnClipIndex(CombatActionResult result, AnimationClip[] clips)
+        private float GetApproachClipDuration(ICombatActor actor)
         {
-            int raw = result.Skill?.returnAtClipIndex ?? -1;
-            if (raw < 0 && clips != null && clips.Length > 0)
-                return clips.Length - 1;
-            return raw;
+            if (_actorCharData.TryGetValue(actor, out var cd) && cd.animApproach != null)
+                return cd.animApproach.length;
+            if (_actorEnemyData.TryGetValue(actor, out var ed) && ed.animApproach != null)
+                return ed.animApproach.length;
+            return 0.5f;
         }
 
         private static float SumClipDurations(AnimationClip[] clips, int from, int to)
@@ -505,49 +593,21 @@ namespace Runefall.Presentation.Combat
 
         // ── damage number ─────────────────────────────────────────────────────────
 
-        private IEnumerator FloatDamageNumber(Transform pawn, float damage, bool isCrit)
+        private void SpawnDamageNumber(Transform targetPawn, float damage, bool isCrit)
         {
-            var go = new GameObject("DmgNum");
-            go.transform.position   = pawn.position + Vector3.up * 2f;
-            go.transform.localScale = Vector3.one * 0.012f;
+            if (_damageNumberPrefab == null) return;
 
-            var canvas = go.AddComponent<Canvas>();
-            canvas.renderMode      = RenderMode.WorldSpace;
-            canvas.overrideSorting = true;
-            canvas.sortingOrder    = 200;
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(300f, 80f);
+            Vector3 offset = new Vector3(
+                UnityEngine.Random.Range(-0.3f, 0.3f),
+                1.8f + UnityEngine.Random.Range(0f, 0.35f),
+                UnityEngine.Random.Range(-0.15f, 0.15f));
 
-            var txtGO = new GameObject("T");
-            txtGO.transform.SetParent(go.transform, false);
-            var txtRT = txtGO.AddComponent<RectTransform>();
-            txtRT.anchorMin = Vector2.zero;
-            txtRT.anchorMax = Vector2.one;
-            txtRT.offsetMin = txtRT.offsetMax = Vector2.zero;
+            var go  = Instantiate(_damageNumberPrefab, targetPawn.position + offset, Quaternion.identity);
+            var dmg = go.GetComponent<DamageNumber>();
 
-            var text       = txtGO.AddComponent<Text>();
-            text.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.text      = isCrit ? $"CRIT {damage:F0}!" : $"{damage:F0}";
-            text.fontSize  = isCrit ? 52 : 40;
-            text.color     = isCrit ? new Color(1f, 0.45f, 0f) : Color.white;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.fontStyle = FontStyle.Bold;
-
-            float   duration = 1.4f;
-            float   elapsed  = 0f;
-            Vector3 start    = go.transform.position;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float p  = elapsed / duration;
-                go.transform.position = start + Vector3.up * (2.5f * p);
-                if (_camera != null)
-                    go.transform.rotation = _camera.transform.rotation;
-                text.color = new Color(text.color.r, text.color.g, text.color.b, 1f - p);
-                yield return null;
-            }
-
-            Destroy(go);
+            string text     = $"{damage:F0}";
+            float  fontSize = isCrit ? 16f : 12f;
+            dmg?.Show(text, fontSize, isCrit);
         }
     }
 }

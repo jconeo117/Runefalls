@@ -66,16 +66,22 @@
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\BillboardCanvas.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CardPool.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatPresenterBase.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\Passives\PassiveDefinition.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\UI\EncounterPromptPresenter.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\SkillEventBridge.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\StatModEffectDef.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\IEnemyPhaseAnimator.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\RuneData.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\ImpactTriggers\ProjectileTriggerData.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\Effects\MarkerEffectDef.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Dungeon\RoomVolume.cs" />
     <Compile Include="Assets\_Project\Scripts\Characters\ElementType.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatVFXPlayer.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\ArrebatoEffectDef.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\RPGCharacterAnimatorEvents.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CharacterSlot.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Player\CameraManager.cs" />
+    <Compile Include="Assets\_Project\ScriptableObjects\Combat\EncounterReadyEvent.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatCameraDirector.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatHUDPresenter.cs" />
     <Compile Include="Assets\_Project\Scripts\Core\GameEvent.cs" />
@@ -83,19 +89,25 @@
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\LifestealEffectDef.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\HPBarPresenter.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\ShieldEffectDef.cs" />
+    <Compile Include="Assets\_Project\ScriptableObjects\Combat\EncounterAcceptedEvent.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\InfectEffectDef.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Combat\VictorySequencer.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatIntroSequencer.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\EncounterState.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\SkillData.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\ICombatActor.cs" />
-    <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatBlockoutPresenter.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\PendingAction.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\DepletarEffectDef.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Player\CameraWallAvoidance.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\CameraSequenceData.cs" />
+    <Compile Include="Assets\_Project\Scripts\Enemies\ExplorationBrain.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Player\PlayerController.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Player\ThirdPersonCamera.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\ActiveEffect.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\PlayerActor.cs" />
     <Compile Include="Assets\_Project\Scripts\Characters\RarityType.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\HealEffectDef.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Player\CursorController.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\SkillUsedEvent.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\ImpactEvent.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\LlamaradaEffectDef.cs" />
@@ -108,22 +120,32 @@
     <Compile Include="Assets\_Project\Scripts\Characters\CharacterModel.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CardView.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\SkillUsedPayload.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatArenaAssembler.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatPawnAnimator.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Dungeon\EnemyEncounterTrigger.cs" />
     <Compile Include="Assets\_Project\Scripts\Core\ServiceLocator.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CombatFormulas.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Dungeon\RoomRegistry.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatCameraController.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\DamageEffectDef.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CombatHand.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\Passives\DominioGlacialPassive.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatTransitionScreen.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\CardAnimationConfig.cs" />
+    <Compile Include="Assets\_Project\ScriptableObjects\Combat\ArenaData.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\Effects\HipotermiaEffectDef.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\ActorEffects.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Player\CharacterAnimationController.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CombatResolver.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Combat\DamageNumber.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\ImpactContext.cs" />
     <Compile Include="Assets\_Project\Scripts\Characters\CharacterStats.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Enemies\EnemyController.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CombatContext.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\SkillVFXConfig.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Characters\CharacterData.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\IEnemyTurnHandler.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Enemies\EnemyAnimationDriver.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CardHandAnimator.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\IImpactTrigger.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\UltimateData.cs" />
@@ -133,14 +155,17 @@
     <Compile Include="Assets\_Project\ScriptableObjects\Enemies\EnemyData.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Weapons\WeaponData.cs" />
     <Compile Include="Assets\_Project\Scripts\Core\GameInputActions.cs" />
+    <Compile Include="Assets\_Project\Scripts\Enemies\EnemyState.cs" />
     <Compile Include="Assets\_Project\Scripts\Core\InputReader.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatBootstrapper.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\ImpactTriggerData.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\SkillEffect.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Player\ExplorationPlayer.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\PassiveData.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\DoTEffectDef.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\Effects\EffectExecutionContext.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\EnemySlot.cs" />
+    <Compile Include="Assets\_Project\Scripts\Presentation\Player\PlayerAnimationDriver.cs" />
     <Compile Include="Assets\_Project\Scripts\Presentation\Combat\CombatAnimationDriver.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1213,6 +1238,10 @@
     </Reference>
     <Reference Include="Unity.Cinemachine">
       <HintPath>Library\ScriptAssemblies\Unity.Cinemachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">
