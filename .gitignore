@@ -43,6 +43,18 @@ desktop.ini
 .env
 *.env.local
 
+# ---- Third-party asset packs (no subir al repo) ----
+Assets/ExplosiveLLC/
+Assets/Hovl Studio/
+Assets/Kevin Iglesias/
+Assets/NamuFX/
+Assets/PurePoly/
+Assets/_Project/Animations/Idle_Animations/
+Assets/_Project/Animations/Run_animations/
+
+# ---- Capturas de pantalla de desarrollo ----
+Assets/Screenshots/
+
 # ---- Unity IDE-generated csproj (paquetes) ----
 Unity.*.csproj
 MCPForUnity.*.csproj
