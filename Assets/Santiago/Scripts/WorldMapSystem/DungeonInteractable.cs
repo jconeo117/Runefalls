@@ -1,5 +1,8 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
 /// Attach this to the Dungeon GameObject.
@@ -24,6 +27,16 @@ public class DungeonInteractable : MonoBehaviour, IInteractable
     [TextArea(2, 4)]
     [SerializeField] private string dungeonDescription = "A long-forgotten dungeon of unspeakable terror.";
 
+    [Header("Scene Transition")]
+    [Tooltip("Name of the scene to load when entering this dungeon. Must be added in Build Settings.")]
+    [SerializeField] private string dungeonSceneName = "";
+
+    [Tooltip("Black image that covers the screen for the fade out. Must be a UI Image inside a Canvas.")]
+    [SerializeField] private Image fadeOverlay;
+
+    [Tooltip("How long the fade out takes before loading the scene")]
+    [SerializeField] private float fadeOutDuration = 0.8f;
+
     [Header("Events")]
     [Tooltip("Fired when the player enters this dungeon (panel open)")]
     public UnityEvent onDungeonEnter;
@@ -37,6 +50,7 @@ public class DungeonInteractable : MonoBehaviour, IInteractable
     #region Private State
 
     private bool _isHovered;
+    private bool _isLoadingScene;
     private static readonly int s_OutlineID = Shader.PropertyToID("_OutlineEnabled");
 
     // Cache the renderer for outline toggling (optional visual feedback)
@@ -47,9 +61,10 @@ public class DungeonInteractable : MonoBehaviour, IInteractable
     // ─────────────────────────────────────────────────────────────
     #region Properties
 
-    public string DungeonName        => dungeonName;
+    public string DungeonName => dungeonName;
     public string DungeonDescription => dungeonDescription;
-    public bool   IsInRange          => playerTransform != null &&
+    public string DungeonSceneName => dungeonSceneName;
+    public bool IsInRange => playerTransform != null &&
                                         Vector3.Distance(transform.position, playerTransform.position) <= interactionRange;
 
     #endregion
@@ -69,6 +84,15 @@ public class DungeonInteractable : MonoBehaviour, IInteractable
                 playerTransform = go.transform;
             else
                 Debug.LogWarning($"[DungeonInteractable] '{name}': No Player tag found. Assign playerTransform manually.", this);
+        }
+
+        // Asegurar que el overlay arranque transparente e invisible
+        if (fadeOverlay != null)
+        {
+            Color c = fadeOverlay.color;
+            c.a = 0f;
+            fadeOverlay.color = c;
+            fadeOverlay.gameObject.SetActive(false);
         }
     }
 
@@ -119,6 +143,80 @@ public class DungeonInteractable : MonoBehaviour, IInteractable
         }
 
         DungeonUIPanel.Instance?.Open(this);
+    }
+
+    #endregion
+
+    // ─────────────────────────────────────────────────────────────
+    #region Public API
+
+    /// <summary>
+    /// Loads the scene configured in the Inspector (dungeonSceneName) with a fade out.
+    /// Can be called from UnityEvents (e.g. onDungeonEnter) or other scripts.
+    /// </summary>
+    public void LoadDungeonScene()
+    {
+        if (string.IsNullOrEmpty(dungeonSceneName))
+        {
+            Debug.LogWarning($"[DungeonInteractable] '{name}': No scene name configured in the Inspector.", this);
+            return;
+        }
+
+        LoadSceneByName(dungeonSceneName);
+    }
+
+    /// <summary>
+    /// Loads any scene by name with a fade out. Useful when you want to call it from a UnityEvent
+    /// and pick the scene from the Inspector without changing the dungeonSceneName field.
+    /// </summary>
+    public void LoadSceneByName(string sceneName)
+    {
+        if (_isLoadingScene) return; // evita disparar dos veces
+
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogWarning($"[DungeonInteractable] '{name}': Tried to load an empty scene name.", this);
+            return;
+        }
+
+        _isLoadingScene = true;
+        StartCoroutine(FadeOutAndLoad(sceneName));
+    }
+
+    #endregion
+
+    // ─────────────────────────────────────────────────────────────
+    #region Scene Transition
+
+    private IEnumerator FadeOutAndLoad(string sceneName)
+    {
+        // si no hay overlay asignado, cargamos directo
+        if (fadeOverlay == null)
+        {
+            Debug.LogWarning($"[DungeonInteractable] '{name}': No fadeOverlay assigned, loading scene without fade.", this);
+            SceneManager.LoadScene(sceneName);
+            yield break;
+        }
+
+        fadeOverlay.gameObject.SetActive(true);
+        fadeOverlay.raycastTarget = true; // bloquea clicks durante el fade
+
+        Color c = fadeOverlay.color;
+        float elapsed = 0f;
+        float startAlpha = c.a;
+
+        while (elapsed < fadeOutDuration)
+        {
+            elapsed += Time.deltaTime;
+            c.a = Mathf.Lerp(startAlpha, 1f, Mathf.Clamp01(elapsed / fadeOutDuration));
+            fadeOverlay.color = c;
+            yield return null;
+        }
+
+        c.a = 1f;
+        fadeOverlay.color = c;
+
+        SceneManager.LoadScene(sceneName);
     }
 
     #endregion

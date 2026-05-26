@@ -62,12 +62,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\CrosshairSystem.cs" />
+    <Compile Include="Assets\Santiago\Scripts\PlayerScripts\ThirdPersonController.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\ColorExtensions.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapPlayerController.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\RuneData.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapCameraController.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\EncounterState.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Cards\SkillData.cs" />
+    <Compile Include="Assets\Santiago\Scripts\GachaSceneScripts\CardDrawAnimation.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\CameraSequenceData.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\IInteractable.cs" />
     <Compile Include="Assets\_Project\ScriptableObjects\Combat\EncounterData.cs" />
