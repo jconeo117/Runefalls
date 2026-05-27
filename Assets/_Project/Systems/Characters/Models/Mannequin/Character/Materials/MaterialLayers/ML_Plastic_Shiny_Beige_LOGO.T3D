@@ -1,0 +1,109 @@
+Begin Object Class=/Script/Engine.MaterialFunction Name="ML_Plastic_Shiny_Beige_LOGO" ExportPath="/Script/Engine.MaterialFunction'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO'"
+   Begin Object Class=/Script/Engine.MaterialFunctionEditorOnlyData Name="ML_Plastic_Shiny_Beige_LOGOEditorOnlyData" ExportPath="/Script/Engine.MaterialFunctionEditorOnlyData'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:ML_Plastic_Shiny_Beige_LOGOEditorOnlyData'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionComment Name="MaterialExpressionComment_2" ExportPath="/Script/Engine.MaterialExpressionComment'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionComment_2'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionConstant Name="MaterialExpressionConstant_5" ExportPath="/Script/Engine.MaterialExpressionConstant'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant_5'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionConstant3Vector Name="MaterialExpressionConstant3Vector_3" ExportPath="/Script/Engine.MaterialExpressionConstant3Vector'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant3Vector_3'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionFunctionInput Name="MaterialExpressionFunctionInput_8" ExportPath="/Script/Engine.MaterialExpressionFunctionInput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionInput_8'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionFunctionOutput Name="MaterialExpressionFunctionOutput_0" ExportPath="/Script/Engine.MaterialExpressionFunctionOutput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionOutput_0'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMakeMaterialAttributes Name="MaterialExpressionMakeMaterialAttributes_3" ExportPath="/Script/Engine.MaterialExpressionMakeMaterialAttributes'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionMakeMaterialAttributes_3'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSample Name="MaterialExpressionTextureSample_2" ExportPath="/Script/Engine.MaterialExpressionTextureSample'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionTextureSample_2'"
+   End Object
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0" ExportPath="/Script/UnrealEd.SceneThumbnailInfoWithPrimitive'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:SceneThumbnailInfoWithPrimitive_0'"
+   End Object
+   Begin Object Class=/Script/Engine.Material Name="Material_0" ExportPath="/Script/Engine.Material'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:Material_0'"
+      Begin Object Class=/Script/Engine.MaterialEditorOnlyData Name="Material_0EditorOnlyData" ExportPath="/Script/Engine.MaterialEditorOnlyData'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:Material_0.Material_0EditorOnlyData'"
+      End Object
+   End Object
+   Begin Object Name="ML_Plastic_Shiny_Beige_LOGOEditorOnlyData" ExportPath="/Script/Engine.MaterialFunctionEditorOnlyData'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:ML_Plastic_Shiny_Beige_LOGOEditorOnlyData'"
+      ExpressionCollection=(Expressions=("/Script/Engine.MaterialExpressionFunctionOutput'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionOutput_0'","/Script/Engine.MaterialExpressionMakeMaterialAttributes'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionMakeMaterialAttributes_3'","/Script/Engine.MaterialExpressionConstant'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant_5'","/Script/Engine.MaterialExpressionTextureSample'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionTextureSample_2'","/Script/Engine.MaterialExpressionConstant3Vector'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant3Vector_3'","/Script/Engine.MaterialExpressionFunctionInput'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionInput_8'"),EditorComments=("/Script/Engine.MaterialExpressionComment'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionComment_2'"))
+   End Object
+   Begin Object Name="MaterialExpressionComment_2" ExportPath="/Script/Engine.MaterialExpressionComment'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionComment_2'"
+      SizeX=470
+      SizeY=262
+      Text="Color"
+      CommentColor=(R=0.880000,G=1.000000,B=1.000000,A=1.000000)
+      MaterialExpressionEditorX=-480
+      MaterialExpressionEditorY=-112
+      MaterialExpressionGuid=F7F0F5DB4EBD4BDACECD1E87D863E5F8
+      Function="/Script/Engine.MaterialFunction'ML_Plastic_Shiny_Beige_LOGO'"
+   End Object
+   Begin Object Name="MaterialExpressionConstant_5" ExportPath="/Script/Engine.MaterialExpressionConstant'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant_5'"
+      R=0.100000
+      MaterialExpressionEditorX=-16
+      MaterialExpressionEditorY=384
+      MaterialExpressionGuid=5A462F35485939F7382DF88EC41F2477
+      Function="/Script/Engine.MaterialFunction'ML_Plastic_Shiny_Beige_LOGO'"
+   End Object
+   Begin Object Name="MaterialExpressionConstant3Vector_3" ExportPath="/Script/Engine.MaterialExpressionConstant3Vector'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant3Vector_3'"
+      Constant=(R=0.450000,G=0.405412,B=0.357750,A=0.000000)
+      MaterialExpressionEditorX=-432
+      MaterialExpressionEditorY=-48
+      MaterialExpressionGuid=C6339DA04AA8A34001E9D39716FAE395
+      Function="/Script/Engine.MaterialFunction'ML_Plastic_Shiny_Beige_LOGO'"
+   End Object
+   Begin Object Name="MaterialExpressionFunctionInput_8" ExportPath="/Script/Engine.MaterialExpressionFunctionInput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionInput_8'"
+      Preview=(Expression="/Script/Engine.MaterialExpressionConstant3Vector'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant3Vector_3'")
+      InputName="LogoColor"
+      Id=878819C943BFEFF044040AAE3755842A
+      bUsePreviewValueAsDefault=True
+      MaterialExpressionEditorX=-256
+      MaterialExpressionEditorY=-64
+      MaterialExpressionGuid=BD24449347B09DACFBCB6C94AD51D6DC
+      Function="/Script/Engine.MaterialFunction'ML_Plastic_Shiny_Beige_LOGO'"
+   End Object
+   Begin Object Name="MaterialExpressionFunctionOutput_0" ExportPath="/Script/Engine.MaterialExpressionFunctionOutput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionOutput_0'"
+      A=(Expression="/Script/Engine.MaterialExpressionMakeMaterialAttributes'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionMakeMaterialAttributes_3'")
+      bLastPreviewed=True
+      Id=9CE3E8334E850358E85C4D8B983C5493
+      MaterialExpressionEditorX=656
+      MaterialExpressionEditorY=288
+      MaterialExpressionGuid=979BF10A4E985CEAFAA06086C75A6C29
+      Function="/Script/Engine.MaterialFunction'ML_Plastic_Shiny_Beige_LOGO'"
+   End Object
+   Begin Object Name="MaterialExpressionMakeMaterialAttributes_3" ExportPath="/Script/Engine.MaterialExpressionMakeMaterialAttributes'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionMakeMaterialAttributes_3'"
+      BaseColor=(Expression="/Script/Engine.MaterialExpressionFunctionInput'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionInput_8'")
+      Roughness=(Expression="/Script/Engine.MaterialExpressionConstant'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant_5'")
+      Opacity=(OutputIndex=4,Mask=1,MaskA=1)
+      OpacityMask=(Expression="/Script/Engine.MaterialExpressionTextureSample'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionTextureSample_2'",OutputIndex=4,Mask=1,MaskA=1)
+      AmbientOcclusion=(Mask=1,MaskR=1,MaskG=1,MaskB=1)
+      Refraction=(Mask=1,MaskR=1,MaskG=1)
+      MaterialExpressionEditorX=384
+      MaterialExpressionEditorY=272
+      MaterialExpressionGuid=B6BE447B46CEBA27653F648EDC8B6F04
+      Function="/Script/Engine.MaterialFunction'ML_Plastic_Shiny_Beige_LOGO'"
+   End Object
+   Begin Object Name="MaterialExpressionTextureSample_2" ExportPath="/Script/Engine.MaterialExpressionTextureSample'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionTextureSample_2'"
+      Texture="/Script/Engine.Texture2D'/Game/Sword_Animations/Demo/Mannequin/Character/Textures/UE4_LOGO_CARD.UE4_LOGO_CARD'"
+      SamplerType=SAMPLERTYPE_LinearColor
+      MaterialExpressionEditorX=-32
+      MaterialExpressionEditorY=576
+      MaterialExpressionGuid=2E8747DC4A18B650849B90A5AE204FB7
+      Function="/Script/Engine.MaterialFunction'ML_Plastic_Shiny_Beige_LOGO'"
+      Desc="Logo Mask"
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0" ExportPath="/Script/UnrealEd.SceneThumbnailInfoWithPrimitive'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:SceneThumbnailInfoWithPrimitive_0'"
+   End Object
+   Begin Object Name="Material_0" ExportPath="/Script/Engine.Material'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:Material_0'"
+      Begin Object Name="Material_0EditorOnlyData" ExportPath="/Script/Engine.MaterialEditorOnlyData'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO:Material_0.Material_0EditorOnlyData'"
+         MaterialAttributes=(Expression="/Script/Engine.MaterialExpressionFunctionOutput'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionOutput_0'")
+         ExpressionCollection=(Expressions=("/Script/Engine.MaterialExpressionFunctionOutput'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionOutput_0'","/Script/Engine.MaterialExpressionMakeMaterialAttributes'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionMakeMaterialAttributes_3'","/Script/Engine.MaterialExpressionConstant'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant_5'","/Script/Engine.MaterialExpressionTextureSample'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionTextureSample_2'","/Script/Engine.MaterialExpressionConstant3Vector'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionConstant3Vector_3'","/Script/Engine.MaterialExpressionFunctionInput'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionFunctionInput_8'"),EditorComments=("/Script/Engine.MaterialExpressionComment'ML_Plastic_Shiny_Beige_LOGO:MaterialExpressionComment_2'"))
+      End Object
+      bUseMaterialAttributes=True
+      StateId=1671F34F49B98D47ACBB3887AAC08165
+      EditorOnlyData="/Script/Engine.MaterialEditorOnlyData'Material_0EditorOnlyData'"
+      ThumbnailInfo="/Script/UnrealEd.SceneThumbnailInfoWithPrimitive'ML_Plastic_Shiny_Beige_LOGO:SceneThumbnailInfoWithPrimitive_0'"
+      LightingGuid=B13817AB4AF7E3FC55450B91DC27AC7A
+   End Object
+   EditorOnlyData="/Script/Engine.MaterialFunctionEditorOnlyData'ML_Plastic_Shiny_Beige_LOGOEditorOnlyData'"
+   StateId=32901BA54911C4EA46D19997AD91498D
+   CombinedInputTypes=4
+   CombinedOutputTypes=256
+   ThumbnailInfo="/Script/UnrealEd.SceneThumbnailInfoWithPrimitive'SceneThumbnailInfoWithPrimitive_0'"
+End Object

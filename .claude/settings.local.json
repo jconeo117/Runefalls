@@ -39,7 +39,16 @@
       "Bash(xargs grep -l \"offset\\\\|anchor\")",
       "Bash(Select-String -Path \"A:\\\\Dev\\\\Repos\\\\Runefalls\\\\Assets\\\\_Project\\\\Scripts\\\\Presentation\\\\Combat\\\\CombatAnimationDriver.cs\" -Pattern \"CombatActionResult|DrainActionGroup\")",
       "Bash(Select-Object LineNumber, Line)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git restore *)",
+      "Bash(git rm *)",
+      "Bash(git commit -m ' *)",
+      "Bash(Get-ChildItem -Path \"A:\\\\Dev\\\\Repos\\\\Runefalls\\\\Assets\\\\_Project\\\\Scripts\" -Recurse -Filter \"*.cs\")",
+      "Bash(Measure-Object)",
+      "Bash(Find . -name \"*.cs\" -type f)",
+      "Bash(Get-ChildItem -Path \"A:\\\\Dev\\\\Repos\\\\Runefalls\\\\Assets\\\\_Project\" -Directory)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(grep -E \"\\\\.\\(controller|anim|animatorcontroller\\)$\")"
     ]
   },
   "hooks": {

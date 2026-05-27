@@ -1,0 +1,159 @@
+Begin Object Class=/Script/Engine.MaterialFunction Name="ML_GlossyBlack_Latex_UE4" ExportPath="/Script/Engine.MaterialFunction'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4'"
+   Begin Object Class=/Script/Engine.MaterialFunctionEditorOnlyData Name="ML_GlossyBlack_Latex_UE4EditorOnlyData" ExportPath="/Script/Engine.MaterialFunctionEditorOnlyData'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:ML_GlossyBlack_Latex_UE4EditorOnlyData'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionComment Name="MaterialExpressionComment_0" ExportPath="/Script/Engine.MaterialExpressionComment'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionComment_0'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionFunctionInput Name="MaterialExpressionFunctionInput_3" ExportPath="/Script/Engine.MaterialExpressionFunctionInput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_3'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionFunctionInput Name="MaterialExpressionFunctionInput_6" ExportPath="/Script/Engine.MaterialExpressionFunctionInput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_6'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionFunctionOutput Name="MaterialExpressionFunctionOutput_0" ExportPath="/Script/Engine.MaterialExpressionFunctionOutput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionOutput_0'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionLinearInterpolate Name="MaterialExpressionLinearInterpolate_1" ExportPath="/Script/Engine.MaterialExpressionLinearInterpolate'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionLinearInterpolate_1'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMakeMaterialAttributes Name="MaterialExpressionMakeMaterialAttributes_1" ExportPath="/Script/Engine.MaterialExpressionMakeMaterialAttributes'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionMakeMaterialAttributes_1'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_2" ExportPath="/Script/Engine.MaterialExpressionMultiply'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_2'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_3" ExportPath="/Script/Engine.MaterialExpressionMultiply'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_3'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureCoordinate Name="MaterialExpressionTextureCoordinate_1" ExportPath="/Script/Engine.MaterialExpressionTextureCoordinate'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureCoordinate_1'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSample Name="MaterialExpressionTextureSample_0" ExportPath="/Script/Engine.MaterialExpressionTextureSample'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_0'"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSample Name="MaterialExpressionTextureSample_1" ExportPath="/Script/Engine.MaterialExpressionTextureSample'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_1'"
+   End Object
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0" ExportPath="/Script/UnrealEd.SceneThumbnailInfoWithPrimitive'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:SceneThumbnailInfoWithPrimitive_0'"
+   End Object
+   Begin Object Class=/Script/Engine.Material Name="Material_0" ExportPath="/Script/Engine.Material'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:Material_0'"
+      Begin Object Class=/Script/Engine.MaterialEditorOnlyData Name="Material_0EditorOnlyData" ExportPath="/Script/Engine.MaterialEditorOnlyData'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:Material_0.Material_0EditorOnlyData'"
+      End Object
+   End Object
+   Begin Object Name="ML_GlossyBlack_Latex_UE4EditorOnlyData" ExportPath="/Script/Engine.MaterialFunctionEditorOnlyData'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:ML_GlossyBlack_Latex_UE4EditorOnlyData'"
+      ExpressionCollection=(Expressions=("/Script/Engine.MaterialExpressionFunctionOutput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionOutput_0'","/Script/Engine.MaterialExpressionMakeMaterialAttributes'ML_GlossyBlack_Latex_UE4:MaterialExpressionMakeMaterialAttributes_1'","/Script/Engine.MaterialExpressionFunctionInput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_3'","/Script/Engine.MaterialExpressionMultiply'ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_2'","/Script/Engine.MaterialExpressionTextureCoordinate'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureCoordinate_1'","/Script/Engine.MaterialExpressionTextureSample'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_0'","/Script/Engine.MaterialExpressionTextureSample'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_1'","/Script/Engine.MaterialExpressionMultiply'ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_3'","/Script/Engine.MaterialExpressionFunctionInput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_6'","/Script/Engine.MaterialExpressionLinearInterpolate'ML_GlossyBlack_Latex_UE4:MaterialExpressionLinearInterpolate_1'"),EditorComments=("/Script/Engine.MaterialExpressionComment'ML_GlossyBlack_Latex_UE4:MaterialExpressionComment_0'"))
+   End Object
+   Begin Object Name="MaterialExpressionComment_0" ExportPath="/Script/Engine.MaterialExpressionComment'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionComment_0'"
+      SizeX=798
+      SizeY=499
+      Text="Color"
+      CommentColor=(R=0.849667,G=1.000000,B=0.990444,A=1.000000)
+      MaterialExpressionEditorX=-928
+      MaterialExpressionEditorY=16
+      MaterialExpressionGuid=CF32126B44A426D5BFA18B934BA2955A
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="MaterialExpressionFunctionInput_3" ExportPath="/Script/Engine.MaterialExpressionFunctionInput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_3'"
+      InputName="Tiling"
+      Id=043CD40542C548815A9DE1A1DD7AA65E
+      InputType=FunctionInput_Scalar
+      PreviewValue=(X=50.000000,Y=0.000000,Z=0.000000,W=1.000000)
+      bUsePreviewValueAsDefault=True
+      MaterialExpressionEditorX=-880
+      MaterialExpressionEditorY=144
+      MaterialExpressionGuid=E13EED684A3FBFBCF273CBAAC28926B0
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+      bCollapsed=True
+   End Object
+   Begin Object Name="MaterialExpressionFunctionInput_6" ExportPath="/Script/Engine.MaterialExpressionFunctionInput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_6'"
+      InputName="Tint"
+      Id=C53D54FC436A60C6AB1BBB890E2C1E1E
+      PreviewValue=(X=0.225000,Y=0.225000,Z=0.225000,W=1.500000)
+      bUsePreviewValueAsDefault=True
+      MaterialExpressionEditorX=-480
+      MaterialExpressionEditorY=304
+      MaterialExpressionGuid=3E0FF0BC423845F68582E7A38019D825
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="MaterialExpressionFunctionOutput_0" ExportPath="/Script/Engine.MaterialExpressionFunctionOutput'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionOutput_0'"
+      SortPriority=1
+      A=(Expression="/Script/Engine.MaterialExpressionMakeMaterialAttributes'ML_GlossyBlack_Latex_UE4:MaterialExpressionMakeMaterialAttributes_1'")
+      bLastPreviewed=True
+      Id=9CE3E8334E850358E85C4D8B983C5493
+      MaterialExpressionEditorX=656
+      MaterialExpressionEditorY=288
+      MaterialExpressionGuid=08A9B9E747EF7E83DF8D3E8DB4A6F778
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="MaterialExpressionLinearInterpolate_1" ExportPath="/Script/Engine.MaterialExpressionLinearInterpolate'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionLinearInterpolate_1'"
+      Alpha=(Expression="/Script/Engine.MaterialExpressionTextureSample'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_0'",OutputIndex=1,Mask=1,MaskR=1)
+      ConstA=0.550000
+      ConstB=0.750000
+      MaterialExpressionEditorX=192
+      MaterialExpressionEditorY=416
+      MaterialExpressionGuid=AFCFB7A7482491FDEA0C4480CA4A3F7F
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="MaterialExpressionMakeMaterialAttributes_1" ExportPath="/Script/Engine.MaterialExpressionMakeMaterialAttributes'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionMakeMaterialAttributes_1'"
+      BaseColor=(Expression="/Script/Engine.MaterialExpressionMultiply'ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_3'")
+      Roughness=(Expression="/Script/Engine.MaterialExpressionLinearInterpolate'ML_GlossyBlack_Latex_UE4:MaterialExpressionLinearInterpolate_1'")
+      Normal=(Expression="/Script/Engine.MaterialExpressionTextureSample'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_1'",Mask=1,MaskR=1,MaskG=1,MaskB=1)
+      AmbientOcclusion=(Mask=1,MaskR=1,MaskG=1,MaskB=1)
+      Refraction=(Mask=1,MaskR=1,MaskG=1)
+      MaterialExpressionEditorX=432
+      MaterialExpressionEditorY=320
+      MaterialExpressionGuid=D0CC308048367DD58CD1DDB1B5BA718D
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_2" ExportPath="/Script/Engine.MaterialExpressionMultiply'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_2'"
+      A=(Expression="/Script/Engine.MaterialExpressionFunctionInput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_3'")
+      B=(Expression="/Script/Engine.MaterialExpressionTextureCoordinate'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureCoordinate_1'")
+      MaterialExpressionEditorX=-672
+      MaterialExpressionEditorY=224
+      MaterialExpressionGuid=DA613691449188F71EDE67A28B6A1EF2
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_3" ExportPath="/Script/Engine.MaterialExpressionMultiply'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_3'"
+      A=(Expression="/Script/Engine.MaterialExpressionTextureSample'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_0'",Mask=1,MaskR=1,MaskG=1,MaskB=1)
+      B=(Expression="/Script/Engine.MaterialExpressionFunctionInput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_6'")
+      MaterialExpressionEditorX=-256
+      MaterialExpressionEditorY=112
+      MaterialExpressionGuid=9D5BE6D74F01F3C1C54C8983E9E4391F
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="MaterialExpressionTextureCoordinate_1" ExportPath="/Script/Engine.MaterialExpressionTextureCoordinate'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureCoordinate_1'"
+      MaterialExpressionEditorX=-832
+      MaterialExpressionEditorY=320
+      MaterialExpressionGuid=48C8CA934936D3BC9D91C8AEE06BB59C
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="MaterialExpressionTextureSample_0" ExportPath="/Script/Engine.MaterialExpressionTextureSample'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_0'"
+      Coordinates=(Expression="/Script/Engine.MaterialExpressionMultiply'ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_2'")
+      SamplerSource=SSM_Wrap_WorldGroupSettings
+      Texture="/Script/Engine.Texture2D'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/T_ML_Rubber_Blue_01_D.T_ML_Rubber_Blue_01_D'"
+      MaterialExpressionEditorX=-464
+      MaterialExpressionEditorY=64
+      MaterialExpressionGuid=4CD960DF4A9D78884E5BABB637745D30
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+      bCollapsed=True
+   End Object
+   Begin Object Name="MaterialExpressionTextureSample_1" ExportPath="/Script/Engine.MaterialExpressionTextureSample'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_1'"
+      Coordinates=(Expression="/Script/Engine.MaterialExpressionMultiply'ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_2'")
+      SamplerSource=SSM_Wrap_WorldGroupSettings
+      Texture="/Script/Engine.Texture2D'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/T_ML_Rubber_Blue_01_N.T_ML_Rubber_Blue_01_N'"
+      SamplerType=SAMPLERTYPE_Normal
+      MaterialExpressionEditorX=-32
+      MaterialExpressionEditorY=704
+      MaterialExpressionGuid=BA9DB69C4F57A200955044B8F177DBD5
+      Function="/Script/Engine.MaterialFunction'ML_GlossyBlack_Latex_UE4'"
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0" ExportPath="/Script/UnrealEd.SceneThumbnailInfoWithPrimitive'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:SceneThumbnailInfoWithPrimitive_0'"
+   End Object
+   Begin Object Name="Material_0" ExportPath="/Script/Engine.Material'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:Material_0'"
+      Begin Object Name="Material_0EditorOnlyData" ExportPath="/Script/Engine.MaterialEditorOnlyData'/Game/Sword_Animations/Demo/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4:Material_0.Material_0EditorOnlyData'"
+         MaterialAttributes=(Expression="/Script/Engine.MaterialExpressionFunctionOutput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionOutput_0'")
+         ExpressionCollection=(Expressions=("/Script/Engine.MaterialExpressionFunctionOutput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionOutput_0'","/Script/Engine.MaterialExpressionMakeMaterialAttributes'ML_GlossyBlack_Latex_UE4:MaterialExpressionMakeMaterialAttributes_1'","/Script/Engine.MaterialExpressionFunctionInput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_3'","/Script/Engine.MaterialExpressionMultiply'ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_2'","/Script/Engine.MaterialExpressionTextureCoordinate'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureCoordinate_1'","/Script/Engine.MaterialExpressionTextureSample'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_0'","/Script/Engine.MaterialExpressionTextureSample'ML_GlossyBlack_Latex_UE4:MaterialExpressionTextureSample_1'","/Script/Engine.MaterialExpressionMultiply'ML_GlossyBlack_Latex_UE4:MaterialExpressionMultiply_3'","/Script/Engine.MaterialExpressionFunctionInput'ML_GlossyBlack_Latex_UE4:MaterialExpressionFunctionInput_6'","/Script/Engine.MaterialExpressionLinearInterpolate'ML_GlossyBlack_Latex_UE4:MaterialExpressionLinearInterpolate_1'"),EditorComments=("/Script/Engine.MaterialExpressionComment'ML_GlossyBlack_Latex_UE4:MaterialExpressionComment_0'"))
+      End Object
+      bUseMaterialAttributes=True
+      StateId=FFEE656D493D108CA58B81A76BE45566
+      ReferencedTextureGuids(0)=AA3CD60E46268DBD52F0F8B7B1FE2271
+      ReferencedTextureGuids(1)=698FAEBC42729AC5B134A0814B28AF2F
+      EditorOnlyData="/Script/Engine.MaterialEditorOnlyData'Material_0EditorOnlyData'"
+      ThumbnailInfo="/Script/UnrealEd.SceneThumbnailInfoWithPrimitive'ML_GlossyBlack_Latex_UE4:SceneThumbnailInfoWithPrimitive_0'"
+      LightingGuid=05A6C5BD492EED9DE83FEC860AA90186
+   End Object
+   EditorOnlyData="/Script/Engine.MaterialFunctionEditorOnlyData'ML_GlossyBlack_Latex_UE4EditorOnlyData'"
+   StateId=1EE84D294020BD42BDBCC49191F5CDA2
+   CombinedInputTypes=15
+   CombinedOutputTypes=256
+   ThumbnailInfo="/Script/UnrealEd.SceneThumbnailInfoWithPrimitive'SceneThumbnailInfoWithPrimitive_0'"
+End Object

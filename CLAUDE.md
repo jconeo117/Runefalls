@@ -32,38 +32,40 @@
 
 ## Arquitectura — LEER ANTES DE ESCRIBIR CÓDIGO
 
-### Tres capas, separación estricta
+### Estructura Orientada a Características (Feature-Oriented Clean Architecture)
 
+El proyecto está organizado por **Sistemas/Características** bajo `Assets/_Project/Systems/`, manteniendo una separación estricta entre Dominio (C# puro sin MonoBehaviour) y Presentación (MonoBehaviours y layouts visuales):
+
+```text
+Assets/_Project/
+├── Core/                      → Kernel del juego y configuraciones comunes
+│   ├── Scripts/               → ServiceLocator, GameEvent<T>, interfaces globales
+│   ├── ScriptableObjects/     → GameEvent<T>.asset (eventos tipados)
+│   └── Fonts/                 → Fuentes tipográficas de presentación (Cinzel, etc.)
+│
+├── Systems/                   → Sistemas autocontenidos por características
+│   ├── Characters/            ➔ Scripts/Domain/ (CharacterModel, Stats), Scripts/Presentation/Player/ (PlayerController, CameraManager), ScriptableObjects/ (CharacterData.asset, WeaponData.asset), Prefabs/, Animations/
+│   ├── Enemies/               ➔ Scripts/Domain/ (EnemyModel, BehaviorTree), Scripts/Presentation/Enemies/ (EnemyController), ScriptableObjects/ (EnemyData.asset), Prefabs/
+│   ├── Combat/                ➔ Scripts/Domain/ (TurnManager, CardHand), Scripts/Presentation/Combat/ (CombatBootstrapper), Scripts/Presentation/UI/, ScriptableObjects/, Prefabs/ (Arena, HUD), Animations/, VFX/
+│   ├── Dungeon/               ➔ Scripts/Domain/ (DungeonGenerator), Scripts/Presentation/Dungeon/ (RoomVolume), Prefabs/ (modular assets)
+│   ├── Gacha/                 ➔ Scripts/Domain/ (GachaSystem, PityTracker)
+│   └── Resonance/             ➔ Scripts/Domain/ (ResonanceDetector), ScriptableObjects/ (ResonanceSetData.asset)
+│
+├── Shared/                    → Recursos globales compartidos por múltiples sistemas
+│   ├── Materials/             → mat_stone_floor, mat_stone_wall, mat_pillar, etc.
+│   ├── Animations/            → Animaciones e Idle/Run clips generales
+│   └── UI/                    → Estilos globales de UI Toolkit
+│
+└── Scenes/                    → Escenas principales (GameMain.unity, CombatBlockout.unity)
 ```
-Assets/_Project/Scripts/
-├── Core/           → ServiceLocator, GameEvent<T>, interfaces globales
-├── Characters/     → CharacterModel, CharacterStats — C# puro, sin MonoBehaviour
-├── Combat/         → TurnManager, CardSystem, CombatResolver — C# puro
-├── Enemies/        → EnemyModel, BehaviorTree, AIDirector — C# puro
-├── Dungeon/        → BSPSplitter, DungeonGenerator, RoomManager — C# puro
-├── Gacha/          → GachaSystem, PityTracker, LocalSaveSystem — C# puro
-├── Resonance/      → ResonanceDetector — C# puro
-└── Presentation/   → MonoBehaviours ÚNICAMENTE. Solo muestran, no deciden.
-    ├── Player/     → PlayerController, CameraManager
-    ├── UI/         → HUDPresenter, CardHandView, etc.
-    └── Enemies/    → EnemyAnimationController, etc.
 
-Assets/_Project/ScriptableObjects/
-├── Characters/     → CharacterData.asset (por personaje)
-├── Weapons/        → WeaponData.asset (por arma)
-├── Cards/          → SkillData.asset, RuneData.asset, UltimateData.asset
-├── Enemies/        → EnemyData.asset (por tipo de enemigo)
-├── Events/         → GameEvent<T>.asset (eventos tipados)
-└── Resonance/      → ResonanceSetData.asset
-```
+### Reglas de arquitectura (se verican automáticamente)
 
-### Reglas de arquitectura (se verifican automáticamente)
-
-1. **Las clases en `Core/`, `Combat/`, `Characters/`, `Enemies/`, `Dungeon/`, `Gacha/`, `Resonance/` NO heredan de MonoBehaviour jamás.**
+1. **Las clases en `Domain/` (dentro de cada sistema) NO heredan de MonoBehaviour jamás.**
 2. **Los sistemas se comunican con `GameEvent<T>` ScriptableObjects, no con referencias directas.**
 3. **`ServiceLocator.cs` es el único registro global. No hay Singletons.**
 4. **`FindObjectOfType`, `FindFirstObjectByType` y `GameObject.Find` están prohibidos en dominio.**
-5. **Los `MonoBehaviours` están en `Presentation/` y solo reciben referencias al dominio, nunca al revés.**
+5. **Los `MonoBehaviours` están en `Presentation/` (dentro de cada sistema) y solo reciben referencias al dominio, nunca al revés.**
 6. **Namespace de Cinemachine en Unity 6: `using Unity.Cinemachine;` — no `using Cinemachine;`**
 
 ### Convenciones de nombre

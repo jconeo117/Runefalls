@@ -1,43 +1,57 @@
-# Audit Report — 2026-05-09
-**Sprint activo:** 5 | **Tareas completadas:** 3/8
+# Audit Report — 2026-05-27
+**Sprint activo:** 6 | **Tareas completadas:** 2/6 (6.2 ~30%)
 
 ## Resumen ejecutivo
-
-🟢 Separación de capas intacta. 23 archivos de dominio sin MonoBehaviour ni referencias a Unity Engine ilegales. 14 de presentación correctamente aislados, 12 SOs de datos puros. Sin TODOs inline. Dos advertencias de acoplamiento conocido. Codebase aprobado para merge.
+🟢 Arquitectura sólida — separación de capas excelente, convenciones perfectas, zero violaciones críticas
+🟡 CombatBootstrapper: 767 líneas, viola SRP (ya identificado en S5, creció)
+🟡 EffectDefinition: campo `Sprite icon` en clase de dominio
 
 ## Violaciones Críticas (bloquean merge)
-
-*Ninguna.*
+_Ninguna._
 
 ## Advertencias (revisar antes del siguiente sprint)
 
-- `Presentation/Combat/CombatBootstrapper.cs` (~630 líneas) — `_tm.EnemyPhaseRunner = () => StartCoroutine(...)` asigna delegate de Presentation al TurnManager (dominio). Dependencia inversa aceptada en Unity por decisión S4, pero el archivo ya superó un tamaño razonable.
-- `Presentation/Player/PlayerController.cs` — `Camera.main` cacheado en Awake. Falla silenciosa si la cámara se instancia dinámicamente.
+### ⚠ CombatBootstrapper — God Object (SRP)
+**Archivo:** `Presentation/Combat/CombatBootstrapper.cs` (~767 líneas)
+- Responsabilidades mezcladas: construir contexto, instanciar UI, cablear eventos, animar HP bars, manejar cámara, restaurar exploración
+- 11 referencias `[SerializeField]` a MonoBehaviours de presentación
+- Funciona pero dificulta testing y mantenimiento
 
-## Acoplamiento detectado
-
-- `TurnManager` expone `EnemyPhaseRunner` (Action) y `OnPlayerActionsExhausted` (event) como hooks para Presentation — patrón aceptado por decisión técnica S4. No es error pero es el único punto donde dominio "espera" suscriptores de Presentation.
-- `CombatBootstrapper` conoce directamente `CombatHUDPresenter`, `CombatCameraController`, `CharacterSlot`, `EnemySlot` — correcto para bootstrapper, pero concentra bootstrapping + animación + HP bars + markers + cámara en un solo archivo.
+### ⚠ EffectDefinition.icon — acoplamiento dominio→presentación
+**Archivo:** `Combat/Effects/EffectDefinition.cs:20`
+```csharp
+public Sprite icon;  // campo de presentación en clase de dominio
+```
+- Sprite es un asset de presentación; la clase abstracta de dominio no debería conocerlo
+- No bloquea nada hoy pero crea dependencia cruzada
 
 ## Deuda técnica (TODO/HACK/FIXME)
-
-- `Combat/TurnManager.cs:279` — `CheckUltimateInsertion()` vacío — gauge system pendiente S5/S6
-- `Combat/TurnManager.cs` comentario — bridge `GameEvent<T>` pendiente desde S4
-- `Presentation/Combat/CombatBootstrapper.cs:17` — producción usa ServiceLocator (blockout pendiente de migrar)
+_Ninguna encontrada. Código limpio._
 
 ## Métricas
-
-- Archivos de dominio: 23
-- Archivos de presentación: 14
-- Archivos de ScriptableObjects: 12
+- Archivos de dominio: 52
+- Archivos de presentación: 43
+- Total archivos .cs auditados: 95
 - Archivos con violaciones críticas: 0
-- `FindObjectOfType` / `GameObject.Find` en dominio: 0
-- `MonoBehaviour` en dominio: 0
-- Cobertura de interfaces: 2/2 sistemas (`ICombatActor` ✅, `IEnemyTurnHandler` ✅)
-- TODOs inline en dominio: 2 (ambos documentados en CLAUDE.md)
+- Archivos con advertencias: 2
+- MonoBehaviour en dominio: 0 ✅
+- FindObjectOfType/Find en dominio: 0 ✅
+- GetComponent en dominio: 0 ✅
+- TODO/HACK/FIXME: 0 ✅
+- Cobertura de interfaces naming: 100% ✅
+
+## Positivos destacados
+- ✅ Interfaces: prefijo `I` aplicado en todas (ICombatActor, IEnemyPhaseAnimator, IImpactTrigger…)
+- ✅ Eventos: sufijo correcto en GameEvent<T> SOs
+- ✅ ScriptableObjects: sufijo `Data` en todos (CharacterData, SkillData, EnemyData…)
+- ✅ Sin MonoBehaviour en ninguna clase de dominio
+- ✅ ServiceLocator usado correctamente en 3 puntos
+- ✅ GameEvent<T> para comunicación entre sistemas via SkillEventBridge
+- ✅ [CreateAssetMenu] aplicado en todos los SOs
+- ✅ Cero lógica de negocio en capa Presentation
+- ✅ Dependency injection en TurnManager, CombatAnimationDriver (IEnemyPhaseAnimator)
 
 ## Recomendaciones
-
-1. **Dividir `CombatBootstrapper`** — extraer `CombatAnimationDriver` (lunge/pawn) y `CombatUIBinder` (HP bars, markers) como MonoBehaviours separados. El archivo ya es el más acoplado del proyecto y seguirá creciendo con S5.3.
-2. **Agregar `ICombatPresenter`** — `CombatPresenterBase` es abstracta pero sin interfaz formal. Extraer interfaz para que el Bootstrapper dependa de contrato, no de clase base concreta.
-3. **Implementar bridge `GameEvent<T>` para TurnManager** — deuda pendiente desde S4. Desacopla definitivamente Presentation del dominio y permite tests sin escena.
+1. **[ALTA] Fraccionar CombatBootstrapper** — Extraer `CombatContextBuilder` (dominio puro) y `CombatUIFactory` (presentación) para que el Bootstrapper sea un orchestrator delgado. Esfuerzo: ~3-4h. Candidato para S6.5 (pulidos).
+2. **[MEDIA] Mover `EffectDefinition.icon` a capa de presentación** — Crear `EffectDisplay` SO en Presentation que wrappee `EffectDefinition` + Sprite + displayName, o mover `icon` a un SO hermano de presentación. Esfuerzo: ~1-2h.
+3. **[MEDIA] Tests de integración para pipeline de combate** — `TurnManager`, `CombatResolver`, `CombatFormulas` son dominio puro y testables sin MonoBehaviour. Crear `Tests/CombatResolverTests.cs`, `Tests/TurnManagerTests.cs`. Esfuerzo: ~4-6h.
