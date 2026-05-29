@@ -41,14 +41,18 @@ namespace Runefall.Presentation.Combat
 
         private TurnManager      _tm;
         private CombatContext    _ctx;
-        private CardHandAnimator _animator;
         private CanvasGroup      _rootGroup;
 
-        private readonly List<CardView>                                        _cardViews        = new();
-        private readonly List<(SkillData skill, int rank, Vector3 worldPos)>   _prevCardInfo     = new();
-        private readonly Dictionary<(string, int), int>                        _pendingMergeFlash = new();
-        private readonly List<(int index, ICombatActor target)>                _pending          = new();
-        private readonly List<Transform>                                        _activeSlots      = new();
+        private readonly List<CardView>                 _cardViews        = new();
+        private readonly Dictionary<(string, int), int> _pendingMergeFlash = new();
+        private readonly List<(int index, ICombatActor target)> _pending  = new();
+        private readonly List<Transform>                _activeSlots      = new();
+
+        [Header("Layout Settings")]
+        [SerializeField] private float cardSpacing = 130f;
+        [SerializeField] private float actionSlotSpacing = -10f;
+        [SerializeField] private float cardScale = 0.8f;
+        [SerializeField] private float slideSpeed  = 12f;
 
         private ICombatActor  _selectedTarget;
         private Image[]       _slotImages = Array.Empty<Image>();
@@ -62,6 +66,8 @@ namespace Runefall.Presentation.Combat
         private Vector3   _slotOrigLocalPos;
         private Vector3   _slotOrigScale;
         private Coroutine _slotAnim;
+        private readonly List<(CardView cv, int finalRank, Color elemColor)> _newlyDrawnCards = new();
+        private readonly HashSet<Transform> _drawingCards = new();
 
         // ── CombatPresenterBase ─────────────────────────────────────────────
 
@@ -69,11 +75,23 @@ namespace Runefall.Presentation.Combat
         {
             _tm        = tm;
             _ctx       = ctx;
-            _animator  = new CardHandAnimator(animConfig);
             _rootGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
 
             EnsureContainerLayout();
             BuildOrbRow();
+
+            _newlyDrawnCards.Clear();
+            _drawingCards.Clear();
+
+            if (cardPrefab != null)
+            {
+                cardScale = cardPrefab.transform.localScale.x;
+                
+                // 20% overlap: spacing is 80% of the visual width (base width * scale)
+                var cardRt = cardPrefab.GetComponent<RectTransform>();
+                float baseWidth = cardRt != null ? cardRt.rect.width : 145f;
+                cardSpacing = baseWidth * cardScale * 0.8f;
+            }
 
             if (actionSlotContainer != null)
             {
@@ -170,17 +188,16 @@ namespace Runefall.Presentation.Combat
             if (slotIndex >= _activeSlots.Count) return;
 
             // Stop any in-flight animation before reparenting to the action slot.
-            _animator.CancelCard(cv);
+            cv.StopAllAnimations();
 
             int tmIndex = cv.HandIndex;
 
-            int cvIndex = _cardViews.IndexOf(cv);
             _cardViews.Remove(cv);
-            if (cvIndex >= 0 && cvIndex < _prevCardInfo.Count)
-                _prevCardInfo.RemoveAt(cvIndex);
 
             var rt = cv.GetComponent<RectTransform>();
             cv.transform.SetParent(_activeSlots[slotIndex], false);
+            cv.targetScale = 1.0f;
+            cv.transform.localScale = Vector3.one;
             if (rt != null)
             {
                 rt.anchorMin        = new Vector2(0.5f, 0.5f);
@@ -231,7 +248,13 @@ namespace Runefall.Presentation.Combat
             if (cardHandContainer == null) return;
 
             int fromDomain = cv.HandIndex;
-            int toDomain   = FindDropDomainIndex(cv);
+            
+            // Map the visual X position of drop to visual index
+            int toVisual = GetVirtualVisualIndex(cv.transform.position.x);
+            
+            // Convert visual index back to domain index (indices are reversed)
+            int toDomain = _cardViews.Count - 1 - toVisual;
+            toDomain = Mathf.Clamp(toDomain, 0, _tm.Hand.Slots.Count - 1);
 
             int arBefore = _tm.Hand.ActionsRemaining;
             if (_tm.SubmitMove(fromDomain, toDomain))
@@ -258,6 +281,11 @@ namespace Runefall.Presentation.Combat
                     && _tm.Hand.ActionsRemaining > 0
                     && _pending.Count >= _tm.Hand.ActionsRemaining)
                     ExecuteQueue();
+            }
+            else
+            {
+                // Slide back if the move was invalid
+                RefreshCardHand();
             }
         }
 
@@ -292,104 +320,459 @@ namespace Runefall.Presentation.Combat
             }
         }
 
-        private int FindDropDomainIndex(CardView dragged)
+        // ── Card hand ────────────────────────────────────────────────────────
+
+        private void Update()
         {
-            Vector2 center   = (Vector2)dragged.transform.position;
-            float   bestDist = float.MaxValue;
-            int     bestIdx  = dragged.HandIndex;
-
-            foreach (var cv in _cardViews)
-            {
-                if (cv == dragged || cv == null) continue;
-                float d = Vector2.Distance(center, (Vector2)cv.transform.position);
-                if (d < bestDist) { bestDist = d; bestIdx = cv.HandIndex; }
-            }
-
-            return bestIdx;
+            if (_tm == null || _tm.Hand == null) return;
+            UpdateCardLayout();
         }
 
-        // ── Card hand ────────────────────────────────────────────────────────
+        private void UpdateCardLayout()
+        {
+            int totalCards = _cardViews.Count;
+            if (totalCards == 0) return;
+
+            var containerRt = cardHandContainer as RectTransform;
+            float containerHeight = containerRt != null ? containerRt.rect.height : 180f;
+            float containerPivotY = containerRt != null ? containerRt.pivot.y : 0.5f;
+
+            CardView draggedCard = null;
+            int draggedVisualIdx = -1;
+
+            for (int i = 0; i < totalCards; i++)
+            {
+                if (_cardViews[i] != null && _cardViews[i].IsDragging)
+                {
+                    draggedCard = _cardViews[i];
+                    draggedVisualIdx = i;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < totalCards; i++)
+            {
+                CardView cv = _cardViews[i];
+                if (cv == null) continue;
+
+                if (_drawingCards.Contains(cv.transform)) continue; // Let sequential draw coroutine handle it!
+
+                var cardRt = cv.GetComponent<RectTransform>();
+
+                if (cv == draggedCard) continue; // Drag handles position frame-by-frame
+
+                int visualSlotIdx = i;
+                if (draggedCard != null)
+                {
+                    int virtualVisualIdx = GetVirtualVisualIndex(draggedCard.transform.position.x);
+
+                    if (i >= virtualVisualIdx && i < draggedVisualIdx)
+                        visualSlotIdx = i + 1;
+                    else if (i <= virtualVisualIdx && i > draggedVisualIdx)
+                        visualSlotIdx = i - 1;
+                }
+
+                // Right-aligned layout extending left; container pivot dynamically handled
+                float halfWidth = cardRt != null ? cardRt.rect.width * 0.5f : 65f;
+                Vector3 targetLocalPos = GetCardTargetLocalPos(visualSlotIdx, totalCards, halfWidth * 2f);
+
+                // Smoothly slide card towards its target slot
+                cv.transform.localPosition = Vector3.Lerp(cv.transform.localPosition, targetLocalPos, Time.deltaTime * slideSpeed);
+                cv.transform.localRotation = Quaternion.Lerp(cv.transform.localRotation, Quaternion.identity, Time.deltaTime * slideSpeed);
+                cv.transform.localScale = Vector3.Lerp(cv.transform.localScale, Vector3.one * cardScale, Time.deltaTime * slideSpeed);
+            }
+        }
+
+        private int GetVirtualVisualIndex(float dragWorldX)
+        {
+            float localDragX = cardHandContainer.InverseTransformPoint(new Vector3(dragWorldX, 0f, 0f)).x;
+
+            int total = _cardViews.Count;
+            float bestDist = float.MaxValue;
+            int bestSlot = 0;
+
+            float halfWidth = 65f;
+            if (total > 0 && _cardViews[0] != null)
+            {
+                var cardRt = _cardViews[0].GetComponent<RectTransform>();
+                if (cardRt != null) halfWidth = cardRt.rect.width * 0.5f;
+            }
+            float rightLimit = -(halfWidth + 20f);
+
+            for (int s = 0; s < total; s++)
+            {
+                float slotX = (s - (total - 1)) * cardSpacing + rightLimit;
+                float dist = Mathf.Abs(localDragX - slotX);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    bestSlot = s;
+                }
+            }
+            return bestSlot;
+        }
 
         private void RefreshCardHand(bool animate = false)
         {
             if (cardHandContainer == null || cardPrefab == null || _tm?.Hand == null) return;
 
-            var hlg    = cardHandContainer.GetComponent<HorizontalLayoutGroup>();
-            var csf    = cardHandContainer.GetComponent<ContentSizeFitter>();
-            var handRt = cardHandContainer as RectTransform;
-
-            // Re-enable layout before any position measurements.
-            SetLayout(hlg, csf, true);
-
-            var oldPool = SnapshotPositions();
-            RebuildCardViews();
-
-            if (handRt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(handRt);
-            UpdateWorldPositions();
-
-            // Compute what to animate, then hand off to the animator.
-            // Ghost merges only on non-animate path — on draw path, direct punch fires after draw.
-            IReadOnlyList<CardView>                drawSeq  = animate ? BuildDrawSequence() : Array.Empty<CardView>();
-            IReadOnlyDictionary<CardView, Vector3> slideMap = animate ? new Dictionary<CardView, Vector3>() : BuildSlideMap(oldPool);
-
-            var (directMerges, mergeGhosts) = BuildMergeAnimations(oldPool, enableGhosts: !animate);
-
-            _pendingMergeFlash.Clear();
-            _animator.PlayRefresh(drawSeq, directMerges, mergeGhosts, slideMap, hlg, csf);
-        }
-
-        // ── RefreshCardHand helpers ───────────────────────────────────────────
-
-        // Snapshot (skill, rank) → previous world positions before cards are destroyed.
-        private Dictionary<(SkillData, int), Queue<Vector3>> SnapshotPositions()
-        {
-            var pool = new Dictionary<(SkillData, int), Queue<Vector3>>();
-            for (int k = 0; k < _cardViews.Count && k < _prevCardInfo.Count; k++)
-            {
-                if (_cardViews[k] == null) continue;
-                var (sk, rk, pos) = _prevCardInfo[k];
-                if (!pool.TryGetValue((sk, rk), out var q))
-                    pool[(sk, rk)] = q = new Queue<Vector3>();
-                q.Enqueue(pos);
-            }
-            return pool;
-        }
-
-        // Destroy existing CardViews and instantiate fresh ones from domain state.
-        private void RebuildCardViews()
-        {
-            foreach (var cv in _cardViews)
-            {
-                if (cv == null) continue;
-                cv.transform.SetParent(null);
-                Destroy(cv.gameObject);
-            }
-            _cardViews.Clear();
-            _prevCardInfo.Clear();
-
-            var  slots  = _tm.Hand.Slots;
+            var slots = _tm.Hand.Slots;
             bool canAct = _tm.Phase == CombatPhase.PlayerTurn && _tm.Hand.ActionsRemaining > 0;
-            var  display = _pending.Count > 0 ? BuildVirtualHand() : BuildDirectDisplay(slots);
 
-            // Reverse instantiation so HLG child order matches domain order left-to-right.
-            for (int i = display.Count - 1; i >= 0; i--)
+            var oldViews = new List<CardView>(_cardViews);
+            _cardViews.Clear();
+
+            var newViews = new CardView[slots.Count];
+            var display = _pending.Count > 0 ? BuildVirtualHand() : BuildDirectDisplay(slots);
+
+            var containerRt = cardHandContainer as RectTransform;
+            float rawH = containerRt != null ? containerRt.rect.height : 170f;
+            float containerHeight = Mathf.Clamp(rawH, 50f, 200f);
+
+            for (int i = 0; i < display.Count; i++)
             {
                 var (domIdx, visRank) = display[i];
                 var slot = slots[domIdx];
+                CardView matchedView = null;
+
+                for (int j = 0; j < oldViews.Count; j++)
+                {
+                    if (oldViews[j] != null && oldViews[j].Card.Id == slot.Id)
+                    {
+                        matchedView = oldViews[j];
+                        oldViews.RemoveAt(j);
+                        break;
+                    }
+                }
+
                 var elem = slot.IsUltimate
                     ? (slot.Ultimate?.element ?? ElementType.Neutral)
                     : (slot.Skill?.element    ?? ElementType.Neutral);
+                Color elemColor = ElementColor(elem);
 
-                var cv = Instantiate(cardPrefab, cardHandContainer);
-                cv.HandIndex = domIdx;
-                cv.Setup(slot.IsUltimate ? slot : new BattleCard(slot.Skill, visRank), ElementColor(elem));
+                if (matchedView != null)
+                {
+                    // Card persists! Setup visual properties
+                    int oldRank = matchedView.Card.Rank;
+                    matchedView.targetScale = cardScale;
+                    matchedView.Setup(slot.IsUltimate ? slot : slot.WithRank(visRank), elemColor);
+                    matchedView.HandIndex = domIdx;
 
-                var btn = cv.GetComponent<Button>();
-                if (btn != null) { btn.interactable = canAct; btn.onClick.AddListener(() => QueueCard(cv)); }
-                cv.OnReorderRequested = ReorderCard;
+                    var btn = matchedView.GetComponent<Button>();
+                    if (btn != null)
+                    {
+                        btn.interactable = canAct;
+                        btn.onClick.RemoveAllListeners();
+                        btn.onClick.AddListener(() => QueueCard(matchedView));
+                    }
 
-                _cardViews.Add(cv);
-                _prevCardInfo.Add((slot.IsUltimate ? null : slot.Skill, slots[domIdx].Rank, Vector3.zero));
+                    // Rank-Up blink & pop scale animation
+                    if (visRank > oldRank && !slot.IsUltimate)
+                    {
+                        matchedView.PlayRankUpAnimation(elemColor, animConfig);
+                    }
+
+                    newViews[i] = matchedView;
+                }
+                else
+                {
+                    // Newly drawn card!
+                    var cv = Instantiate(cardPrefab, cardHandContainer);
+                    cv.targetScale = cardScale;
+                    
+                    // Hide initially until sequential draw starts
+                    var cg = cv.GetComponent<CanvasGroup>() ?? cv.gameObject.AddComponent<CanvasGroup>();
+                    cg.alpha = 0f;
+                    cv.transform.localScale = Vector3.zero;
+
+                    cv.Setup(slot.IsUltimate ? slot : slot.WithRank(1), elemColor);
+                    cv.HandIndex = domIdx;
+                    cv.OnReorderRequested = ReorderCard;
+
+                    var btn = cv.GetComponent<Button>();
+                    if (btn != null)
+                    {
+                        btn.interactable = canAct;
+                        btn.onClick.RemoveAllListeners();
+                        btn.onClick.AddListener(() => QueueCard(cv));
+                    }
+
+                    _newlyDrawnCards.Add((cv, visRank, elemColor));
+                    newViews[i] = cv;
+                }
+            }
+
+            // 2. Animate and destroy consumed/used old views
+            foreach (var oldCv in oldViews)
+            {
+                if (oldCv == null) continue;
+
+                CardView mergeTarget = null;
+                for (int i = 0; i < newViews.Length; i++)
+                {
+                    if (newViews[i] != null && !newViews[i].Card.IsUltimate && !oldCv.Card.IsUltimate
+                        && newViews[i].Card.Skill == oldCv.Card.Skill)
+                    {
+                        mergeTarget = newViews[i];
+                        break;
+                    }
+                }
+
+                if (mergeTarget != null)
+                {
+                    var elem = mergeTarget.Card.IsUltimate
+                        ? (mergeTarget.Card.Ultimate?.element ?? ElementType.Neutral)
+                        : (mergeTarget.Card.Skill?.element    ?? ElementType.Neutral);
+                    Color elemColor = ElementColor(elem);
+                    StartCoroutine(AnimateMergeSlide(oldCv, mergeTarget, elemColor));
+                }
+                else
+                {
+                    StartCoroutine(AnimatePlaySlide(oldCv));
+                }
+            }
+
+            // 3. Rebuild active _cardViews list in visually left-to-right order
+            for (int i = display.Count - 1; i >= 0; i--)
+            {
+                if (newViews[i] != null)
+                {
+                    _cardViews.Add(newViews[i]);
+                    newViews[i].transform.SetSiblingIndex(display.Count - 1 - i);
+                }
+            }
+
+            if (_newlyDrawnCards.Count > 0)
+            {
+                StartCoroutine(AnimateDrawSequence(new List<(CardView cv, int finalRank, Color elemColor)>(_newlyDrawnCards)));
+                _newlyDrawnCards.Clear();
+            }
+        }
+
+        private IEnumerator AnimateMergeSlide(CardView oldCv, CardView targetCv, Color elemColor)
+        {
+            if (oldCv == null) yield break;
+
+            var cg = oldCv.GetComponent<CanvasGroup>();
+            if (cg != null) cg.blocksRaycasts = false;
+
+            float elapsed = 0f;
+            float duration = animConfig != null ? animConfig.slideDuration : 0.22f;
+
+            Vector3 startPos = oldCv.transform.localPosition;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float norm = Mathf.Clamp01(elapsed / duration);
+
+                if (oldCv == null) yield break;
+                if (targetCv == null)
+                {
+                    Destroy(oldCv.gameObject);
+                    yield break;
+                }
+
+                oldCv.transform.localPosition = Vector3.Lerp(startPos, targetCv.transform.localPosition, norm);
+                if (cg != null) cg.alpha = 1f - norm;
+
+                yield return null;
+            }
+
+            if (oldCv != null) Destroy(oldCv.gameObject);
+
+            if (targetCv != null)
+            {
+                int finalRank = 1;
+                if (_tm != null && _tm.Hand != null && targetCv.HandIndex >= 0 && targetCv.HandIndex < _tm.Hand.Slots.Count)
+                {
+                    finalRank = _tm.Hand.Slots[targetCv.HandIndex].Rank;
+                }
+                else
+                {
+                    finalRank = targetCv.Card.Rank + 1;
+                }
+                
+                targetCv.Setup(targetCv.Card.WithRank(finalRank), elemColor);
+                targetCv.PlayRankUpAnimation(elemColor, animConfig);
+            }
+        }
+
+        private IEnumerator AnimatePlaySlide(CardView oldCv)
+        {
+            if (oldCv == null) yield break;
+
+            var cg = oldCv.GetComponent<CanvasGroup>();
+            if (cg != null) cg.blocksRaycasts = false;
+
+            float elapsed = 0f;
+            float duration = 0.25f;
+
+            Vector3 startPos = oldCv.transform.localPosition;
+            Vector3 targetPos = startPos + new Vector3(0f, 300f, 0f); // Slide up towards action slots
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float norm = Mathf.Clamp01(elapsed / duration);
+
+                if (oldCv == null) yield break;
+
+                oldCv.transform.localPosition = Vector3.Lerp(startPos, targetPos, norm);
+                if (cg != null) cg.alpha = 1f - norm;
+
+                yield return null;
+            }
+
+            if (oldCv != null) Destroy(oldCv.gameObject);
+        }
+
+        private Vector3 GetCardTargetLocalPos(int visualSlotIdx, int totalCards, float cardWidth)
+        {
+            var containerRt = cardHandContainer as RectTransform;
+            float containerHeight = containerRt != null ? containerRt.rect.height : 180f;
+            float containerPivotY = containerRt != null ? containerRt.pivot.y : 0.5f;
+
+            float halfWidth = cardWidth * 0.5f;
+            float rightLimit = -(halfWidth + 20f);
+
+            float targetX = (visualSlotIdx - (totalCards - 1)) * cardSpacing + rightLimit;
+            float targetY = containerHeight * (0.5f - containerPivotY);
+
+            return new Vector3(targetX, targetY, 0f);
+        }
+
+        private IEnumerator AnimateDrawSequence(List<(CardView cv, int finalRank, Color elemColor)> cards)
+        {
+            foreach (var item in cards)
+            {
+                if (item.cv == null) continue;
+                
+                var transform = item.cv.transform;
+                _drawingCards.Add(transform);
+                
+                yield return StartCoroutine(AnimateSingleCardDraw(item.cv, item.finalRank, item.elemColor));
+                
+                _drawingCards.Remove(transform);
+            }
+        }
+
+        private IEnumerator AnimateSingleCardDraw(CardView cv, int finalRank, Color elemColor)
+        {
+            if (cv == null) yield break;
+
+            float elapsed = 0f;
+            float duration = 0.35f; // duration of the slide-in per card
+
+            var cardRt = cv.GetComponent<RectTransform>();
+            float cardWidth = cardRt != null ? cardRt.rect.width : 145f;
+
+            // 1. Draw the main card as Rank 1
+            int visualIdx = _cardViews.IndexOf(cv);
+            if (visualIdx < 0) visualIdx = _cardViews.Count; // fallback
+            
+            Vector3 targetPos = GetCardTargetLocalPos(visualIdx, _cardViews.Count, cardWidth);
+            Vector3 startPos = new Vector3(targetPos.x - 400f, targetPos.y, 0f); // start 400 units to the left
+
+            cv.transform.localPosition = startPos;
+            cv.transform.localScale = Vector3.one * cardScale * 0.5f; // start smaller for a nice pop-in effect
+            var cg = cv.GetComponent<CanvasGroup>() ?? cv.gameObject.AddComponent<CanvasGroup>();
+            cg.alpha = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float norm = Mathf.Clamp01(elapsed / duration);
+                
+                // Ease-out cubic curve
+                float t = 1f - Mathf.Pow(1f - norm, 3f);
+
+                if (cv == null) yield break;
+
+                // Re-calculate targetPos dynamically in case other cards shifting
+                visualIdx = _cardViews.IndexOf(cv);
+                if (visualIdx >= 0)
+                {
+                    targetPos = GetCardTargetLocalPos(visualIdx, _cardViews.Count, cardWidth);
+                    startPos = new Vector3(targetPos.x - 400f, targetPos.y, 0f);
+                }
+
+                cv.transform.localPosition = Vector3.Lerp(startPos, targetPos, t);
+                cv.transform.localScale = Vector3.Lerp(Vector3.one * cardScale * 0.5f, Vector3.one * cardScale, t);
+                cg.alpha = norm;
+
+                yield return null;
+            }
+
+            if (cv != null)
+            {
+                visualIdx = _cardViews.IndexOf(cv);
+                if (visualIdx >= 0)
+                {
+                    cv.transform.localPosition = GetCardTargetLocalPos(visualIdx, _cardViews.Count, cardWidth);
+                }
+                cv.transform.localScale = Vector3.one * cardScale;
+                cg.alpha = 1f;
+            }
+
+            // 2. If the final rank is greater than 1, draw temporary cards and merge them sequentially!
+            for (int r = 2; r <= finalRank; r++)
+            {
+                if (cv == null) yield break;
+
+                // Instantiate a temporary card representing the merging card
+                var tempCv = Instantiate(cardPrefab, cardHandContainer);
+                tempCv.Setup(cv.Card.WithRank(1), elemColor); // Starts as Rank 1!
+                
+                // Hide initially until slide starts
+                var tempCg = tempCv.GetComponent<CanvasGroup>() ?? tempCv.gameObject.AddComponent<CanvasGroup>();
+                tempCg.alpha = 0f;
+                tempCv.transform.localScale = Vector3.zero;
+
+                float tempElapsed = 0f;
+                float tempDuration = 0.35f;
+
+                Vector3 tempTarget = cv.transform.localPosition;
+                Vector3 tempStart = new Vector3(tempTarget.x - 400f, tempTarget.y, 0f);
+
+                tempCv.transform.localPosition = tempStart;
+                tempCv.transform.localScale = Vector3.one * cardScale * 0.5f;
+
+                while (tempElapsed < tempDuration)
+                {
+                    tempElapsed += Time.deltaTime;
+                    float norm = Mathf.Clamp01(tempElapsed / tempDuration);
+                    float t = 1f - Mathf.Pow(1f - norm, 3f);
+
+                    if (tempCv == null) yield break;
+                    if (cv == null)
+                    {
+                        Destroy(tempCv.gameObject);
+                        yield break;
+                    }
+
+                    tempTarget = cv.transform.localPosition;
+                    tempStart = new Vector3(tempTarget.x - 400f, tempTarget.y, 0f);
+
+                    tempCv.transform.localPosition = Vector3.Lerp(tempStart, tempTarget, t);
+                    tempCv.transform.localScale = Vector3.Lerp(Vector3.one * cardScale * 0.5f, Vector3.one * cardScale, t);
+                    tempCg.alpha = norm;
+
+                    yield return null;
+                }
+
+                // Temporary card has landed on the main card!
+                if (tempCv != null) Destroy(tempCv.gameObject);
+
+                if (cv != null)
+                {
+                    // Upgrade cv to the rank reached so far and play rank-up blink!
+                    cv.Setup(cv.Card.WithRank(r), elemColor);
+                    cv.PlayRankUpAnimation(elemColor, animConfig);
+                    
+                    // Small delay to let the rank-up animation breathe before the next draw
+                    yield return new WaitForSeconds(0.12f);
+                }
             }
         }
 
@@ -399,130 +782,6 @@ namespace Runefall.Presentation.Combat
             for (int i = 0; i < slots.Count; i++)
                 display.Add((i, slots[i].Rank));
             return display;
-        }
-
-        // Capture world positions after ForceRebuildLayoutImmediate.
-        private void UpdateWorldPositions()
-        {
-            for (int k = 0; k < _cardViews.Count && k < _prevCardInfo.Count; k++)
-            {
-                var p = _prevCardInfo[k];
-                _prevCardInfo[k] = (p.skill, p.rank, _cardViews[k].transform.position);
-            }
-        }
-
-        // Cards that should slide in from off-screen, ordered by arrival time (index 0 = first).
-        private IReadOnlyList<CardView> BuildDrawSequence()
-        {
-            int newCount = Mathf.Clamp(_tm.Hand.NewCardsThisRefill, 0, _cardViews.Count);
-            if (newCount == 0) return Array.Empty<CardView>();
-
-            // _cardViews is stored in reverse domain order: _cardViews[0] = highest domain index.
-            // New cards are the highest domain indices (appended by Refill).
-            // Stagger order: rightmost new card arrives first → _cardViews[newCount-1] is index 0.
-            var seq = new List<CardView>(newCount);
-            for (int k = 0; k < newCount; k++)
-                seq.Add(_cardViews[newCount - 1 - k]);
-            return seq;
-        }
-
-        // Cards that shifted position but did NOT merge — slide from old world position.
-        // Merge results are excluded: they are handled as ghost animations in BuildMergeAnimations.
-        private Dictionary<CardView, Vector3> BuildSlideMap(
-            Dictionary<(SkillData, int), Queue<Vector3>> oldPool)
-        {
-            float minDist = animConfig != null ? animConfig.slideMinDistance : 2f;
-            var slideMap  = new Dictionary<CardView, Vector3>();
-
-            for (int k = 0; k < _cardViews.Count && k < _prevCardInfo.Count; k++)
-            {
-                var cv = _cardViews[k];
-                var (sk, rk, newPos) = _prevCardInfo[k];
-
-                // Exact identity match — card may have shifted position without merging.
-                if (oldPool.TryGetValue((sk, rk), out var q) && q.Count > 0)
-                {
-                    var old = q.Dequeue();
-                    if (Vector3.Distance(old, newPos) > minDist)
-                        slideMap[cv] = old;
-                }
-                // rk > 1 (merge results) intentionally excluded — ghost handles those.
-            }
-            return slideMap;
-        }
-
-        // Consume pending merge events. Returns direct punches and ghost-driven merges.
-        // enableGhosts=true (non-animate path): ghost slides from consumed card's old position.
-        // enableGhosts=false (animate/draw path): punch fires after draw animation.
-        private (List<(CardView cv, Color color)> direct,
-                 List<(CardView ghost, CardView result, Color color)> ghosts)
-            BuildMergeAnimations(Dictionary<(SkillData, int), Queue<Vector3>> oldPool, bool enableGhosts)
-        {
-            var direct = new List<(CardView, Color)>();
-            var ghosts = new List<(CardView, CardView, Color)>();
-            if (_pendingMergeFlash.Count == 0) return (direct, ghosts);
-
-            float minDist = animConfig != null ? animConfig.slideMinDistance : 2f;
-
-            for (int k = 0; k < _cardViews.Count && k < _prevCardInfo.Count; k++)
-            {
-                var (sk, rk, resultPos) = _prevCardInfo[k];
-                if (sk == null) continue;
-
-                var key = (sk.skillName, rk);
-                if (!_pendingMergeFlash.TryGetValue(key, out int cnt) || cnt <= 0) continue;
-
-                if (cnt == 1) _pendingMergeFlash.Remove(key);
-                else          _pendingMergeFlash[key] = cnt - 1;
-
-                Color    color  = ElementColor(sk.element);
-                CardView result = _cardViews[k];
-
-                bool usedGhost = false;
-                if (enableGhosts && rk > 1
-                    && oldPool.TryGetValue((sk, rk - 1), out var q) && q.Count > 0)
-                {
-                    var srcPos = q.Dequeue();
-                    if (Vector3.Distance(srcPos, resultPos) > minDist)
-                    {
-                        ghosts.Add((CreateGhostCard(sk, rk - 1, color, srcPos), result, color));
-                        usedGhost = true;
-                    }
-                }
-
-                if (!usedGhost) direct.Add((result, color));
-            }
-
-            return (direct, ghosts);
-        }
-
-        // Instantiate a temporary card at worldPosition on the canvas root.
-        // The ghost is owned by the animator (self-destructs on arrival).
-        private CardView CreateGhostCard(SkillData skill, int rank, Color color, Vector3 worldPosition)
-        {
-            var canvas = cardHandContainer.GetComponentInParent<Canvas>();
-            var parent = canvas != null ? canvas.transform : cardHandContainer;
-
-            var ghost = Instantiate(cardPrefab, parent, false);
-            ghost.HandIndex       = -1;
-            ghost.OnReorderRequested = null;
-            ghost.Setup(new BattleCard(skill, rank), color);
-            ghost.transform.position = worldPosition;
-            ghost.transform.SetAsLastSibling();
-
-            var btn = ghost.GetComponent<Button>();
-            if (btn != null) btn.interactable = false;
-
-            var cg = ghost.GetComponent<CanvasGroup>();
-            if (cg != null) cg.blocksRaycasts = false;
-
-            return ghost;
-        }
-
-        private static void SetLayout(HorizontalLayoutGroup hlg, ContentSizeFitter csf, bool on)
-        {
-            if (hlg != null) hlg.enabled = on;
-            if (csf != null) csf.enabled = on;
         }
 
         // ── Virtual hand (pending actions preview) ───────────────────────────
@@ -639,7 +898,7 @@ namespace Runefall.Presentation.Combat
                 var hlg = actionSlotContainer.GetComponent<HorizontalLayoutGroup>()
                        ?? actionSlotContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
                 hlg.childAlignment        = TextAnchor.MiddleCenter;
-                hlg.spacing               = 12f;
+                hlg.spacing               = actionSlotSpacing;
                 hlg.childForceExpandWidth = false;
             }
 
@@ -647,12 +906,21 @@ namespace Runefall.Presentation.Combat
             {
                 var hlg = cardHandContainer.GetComponent<HorizontalLayoutGroup>()
                        ?? cardHandContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
-                hlg.childAlignment        = TextAnchor.MiddleRight;
-                hlg.childForceExpandWidth = false;
+                hlg.enabled = false;
 
                 var csf = cardHandContainer.GetComponent<ContentSizeFitter>()
                        ?? cardHandContainer.gameObject.AddComponent<ContentSizeFitter>();
-                csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                csf.enabled = false;
+
+                // Remove RectMask2D, Mask, and Image components to allow cards to overlap/scale-bounce beyond bounds without clipping.
+                var mask2D = cardHandContainer.GetComponent<RectMask2D>();
+                if (mask2D != null) Destroy(mask2D);
+
+                var mask = cardHandContainer.GetComponent<Mask>();
+                if (mask != null) Destroy(mask);
+
+                var image = cardHandContainer.GetComponent<Image>();
+                if (image != null) Destroy(image);
             }
         }
 

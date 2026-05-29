@@ -7,9 +7,8 @@ using Runefall.Combat;
 namespace Runefall.Presentation.Combat
 {
     /// <summary>
-    /// Displays a single card and executes animations on command.
-    /// No business logic — display and motion only.
-    /// Animation timing/values come from CardAnimationConfig passed by the caller.
+    /// Displays a single card and handles drag input.
+    /// Position and layout are driven frame-by-frame by the presenter.
     /// </summary>
     [RequireComponent(typeof(Button))]
     public class CardView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -25,23 +24,22 @@ namespace Runefall.Presentation.Combat
         public Text  artLabelText;
         public Text  skillNameText;
 
-        public int HandIndex;
+        public BattleCard Card { get; private set; }
+        public bool       IsDragging { get; private set; }
+        public int        HandIndex;
         public System.Action<CardView> OnReorderRequested;
+        [HideInInspector] public float targetScale = 1f;
 
         private RectTransform _rt;
         private Canvas        _canvas;
-        private RectTransform _canvasRT;
         private CanvasGroup   _cg;
-        private Transform     _originParent;
         private int           _originSibling;
-        private bool          _isDragging;
 
         void Awake()
         {
-            _rt       = GetComponent<RectTransform>();
-            _canvas   = GetComponentInParent<Canvas>();
-            _canvasRT = _canvas != null ? _canvas.GetComponent<RectTransform>() : null;
-            _cg       = GetComponent<CanvasGroup>();
+            _rt     = GetComponent<RectTransform>();
+            _canvas = GetComponentInParent<Canvas>();
+            _cg     = GetComponent<CanvasGroup>();
             if (_cg == null) _cg = gameObject.AddComponent<CanvasGroup>();
         }
 
@@ -49,6 +47,7 @@ namespace Runefall.Presentation.Combat
 
         public void Setup(BattleCard card, Color elementColor)
         {
+            Card = card;
             bool isUlt = card.IsUltimate;
 
             if (rankFrame != null)
@@ -59,11 +58,35 @@ namespace Runefall.Presentation.Combat
                     _ => rankSprite3
                 };
 
+            Sprite art = isUlt ? card.Ultimate?.cardArt : card.Skill?.cardArt;
             if (artBackground != null)
-                artBackground.color = isUlt ? new Color(1f, 0.82f, 0f) : elementColor;
-
-            if (artLabelText != null)
-                artLabelText.text = isUlt ? "✶" : ElementInitial(elementColor);
+            {
+                if (art != null)
+                {
+                    artBackground.sprite = art;
+                    artBackground.color = Color.white;
+                    if (artLabelText != null)
+                        artLabelText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    artBackground.sprite = null;
+                    artBackground.color = isUlt ? new Color(1f, 0.82f, 0f) : elementColor;
+                    if (artLabelText != null)
+                    {
+                        artLabelText.gameObject.SetActive(true);
+                        artLabelText.text = isUlt ? "✶" : ElementInitial(elementColor);
+                    }
+                }
+            }
+            else
+            {
+                if (artLabelText != null)
+                {
+                    artLabelText.gameObject.SetActive(true);
+                    artLabelText.text = isUlt ? "✶" : ElementInitial(elementColor);
+                }
+            }
 
             if (skillNameText != null)
                 skillNameText.text = isUlt
@@ -73,185 +96,92 @@ namespace Runefall.Presentation.Combat
 
         // ── Animation API ─────────────────────────────────────────────────────
 
-        /// <summary>Stop all running animation coroutines and reset visual state to idle.</summary>
         public void StopAllAnimations()
         {
             StopAllCoroutines();
-            transform.localScale = Vector3.one;
+            transform.localScale = Vector3.one * targetScale;
             if (_cg != null) _cg.alpha = 1f;
-            // Snap back to layout position so reparenting after cancel is clean.
-            if (transform.parent != null)
-                transform.localPosition = Vector3.zero;
         }
 
-        public void PlayDrawAnimation(float delay, CardAnimationConfig cfg)
-            => StartCoroutine(AnimateIn(delay, cfg));
-
-        public void PlayMergeAnimation(Color elementColor, float delay, CardAnimationConfig cfg)
-            => StartCoroutine(AnimateMerge(elementColor, delay, cfg));
-
-        public void PlaySlideAnimation(Vector3 worldFrom, CardAnimationConfig cfg)
-            => StartCoroutine(AnimateSlide(worldFrom, cfg));
-
-        /// <summary>
-        /// Ghost-merge animation: this card is a temporary copy of the consumed source card.
-        /// Slides from its current world position to <paramref name="mergeTarget"/>'s position,
-        /// triggers the merge punch on the target on arrival, then destroys itself.
-        /// </summary>
-        public void PlayGhostMerge(CardView mergeTarget, Color elementColor, CardAnimationConfig cfg)
-            => StartCoroutine(AnimateGhostMerge(mergeTarget, elementColor, cfg));
-
-        // ── Coroutines ────────────────────────────────────────────────────────
-
-        private IEnumerator AnimateIn(float delay, CardAnimationConfig cfg)
+        public void PlayRankUpAnimation(Color elementColor, CardAnimationConfig cfg)
         {
-            // Hide immediately to avoid one-frame flicker at layout position
-            _cg.alpha = 0f;
-
-            // Wait one frame so Unity's layout system resolves final positions
-            yield return null;
-
-            Vector3 worldTarget = transform.position;
-            float canvasWidth   = _canvasRT != null
-                ? _canvasRT.rect.width * _canvas.scaleFactor
-                : Screen.width;
-            Vector3 worldStart  = new Vector3(worldTarget.x - canvasWidth, worldTarget.y, worldTarget.z);
-
-            transform.position = worldStart;
-
-            if (delay > 0f) yield return new WaitForSeconds(delay);
-
-            float t = 0f;
-            while (t < cfg.drawDuration)
-            {
-                t += Time.deltaTime;
-                float norm         = Mathf.Clamp01(t / cfg.drawDuration);
-                transform.position = Vector3.LerpUnclamped(worldStart, worldTarget, EaseOutBack(norm));
-                _cg.alpha          = Mathf.Clamp01(t / cfg.drawAlphaRise);
-                yield return null;
-            }
-
-            transform.position = worldTarget;
-            _cg.alpha          = 1f;
+            StopAllAnimations();
+            StartCoroutine(AnimateRankUp(elementColor, cfg));
         }
 
-        private IEnumerator AnimateMerge(Color elementColor, float delay, CardAnimationConfig cfg)
+        private IEnumerator AnimateRankUp(Color elementColor, CardAnimationConfig cfg)
         {
-            if (delay > 0f) yield return new WaitForSeconds(delay);
-
-            Color baseColor = artBackground != null ? artBackground.color : elementColor;
+            Sprite art = Card.IsUltimate ? Card.Ultimate?.cardArt : Card.Skill?.cardArt;
+            Color defaultColor = (art != null) ? Color.white : (Card.IsUltimate ? new Color(1f, 0.82f, 0f) : elementColor);
+            Color baseColor = artBackground != null ? artBackground.color : defaultColor;
             float elapsed   = 0f;
 
             while (elapsed < cfg.mergeDuration)
             {
                 elapsed += Time.deltaTime;
+                float norm = Mathf.Clamp01(elapsed / cfg.mergeDuration);
 
-                float scale;
-                if (elapsed < cfg.mergePhase1End)
-                    scale = Mathf.LerpUnclamped(1f, cfg.mergeScalePeak,
-                                EaseOutQuad(elapsed / cfg.mergePhase1End));
-                else if (elapsed < cfg.mergePhase2End)
-                    scale = Mathf.LerpUnclamped(cfg.mergeScalePeak, cfg.mergeScaleDip,
-                                EaseInQuad((elapsed - cfg.mergePhase1End) /
-                                           (cfg.mergePhase2End - cfg.mergePhase1End)));
+                // Punch scale: scale up quickly, dip slightly, then settle at 1.0f
+                float scale = 1f;
+                if (norm < 0.3f)
+                    scale = Mathf.Lerp(1f, cfg.mergeScalePeak, norm / 0.3f);
+                else if (norm < 0.7f)
+                    scale = Mathf.Lerp(cfg.mergeScalePeak, cfg.mergeScaleDip, (norm - 0.3f) / 0.4f);
                 else
-                    scale = Mathf.LerpUnclamped(cfg.mergeScaleDip, 1f,
-                                EaseOutQuad((elapsed - cfg.mergePhase2End) /
-                                            (cfg.mergeDuration  - cfg.mergePhase2End)));
+                    scale = Mathf.Lerp(cfg.mergeScaleDip, 1f, (norm - 0.7f) / 0.3f);
 
-                transform.localScale = Vector3.one * scale;
+                transform.localScale = Vector3.one * targetScale * scale;
 
+                // Flash white (blink)
                 if (artBackground != null)
-                    artBackground.color = elapsed < cfg.mergeFlashDuration
-                        ? Color.Lerp(baseColor, Color.white,
-                              elapsed / cfg.mergeFlashDuration)
-                        : Color.Lerp(Color.white, elementColor,
-                              (elapsed - cfg.mergeFlashDuration) /
-                              (cfg.mergeDuration - cfg.mergeFlashDuration));
+                {
+                    artBackground.color = norm < 0.2f
+                        ? Color.Lerp(baseColor, Color.white, norm / 0.2f)
+                        : Color.Lerp(Color.white, defaultColor, (norm - 0.2f) / 0.8f);
+                }
 
                 yield return null;
             }
 
-            transform.localScale = Vector3.one;
-            if (artBackground != null) artBackground.color = elementColor;
+            transform.localScale = Vector3.one * targetScale;
+            if (artBackground != null) artBackground.color = defaultColor;
         }
-
-        private IEnumerator AnimateGhostMerge(CardView mergeTarget, Color elementColor, CardAnimationConfig cfg)
-        {
-            Vector3 worldFrom   = transform.position;
-            Vector3 worldTarget = mergeTarget != null ? mergeTarget.transform.position : worldFrom;
-
-            float t = 0f;
-            while (t < cfg.slideDuration)
-            {
-                t += Time.deltaTime;
-                float norm         = Mathf.Clamp01(t / cfg.slideDuration);
-                transform.position = Vector3.LerpUnclamped(worldFrom, worldTarget, EaseOutQuad(norm));
-                if (_cg != null) _cg.alpha = 1f - norm * 0.5f; // subtle fade toward target
-                yield return null;
-            }
-
-            if (mergeTarget != null)
-                mergeTarget.PlayMergeAnimation(elementColor, 0f, cfg);
-
-            Destroy(gameObject);
-        }
-
-        private IEnumerator AnimateSlide(Vector3 worldFrom, CardAnimationConfig cfg)
-        {
-            Vector3 worldTarget = transform.position;
-            transform.position  = worldFrom;
-
-            float t = 0f;
-            while (t < cfg.slideDuration)
-            {
-                t += Time.deltaTime;
-                transform.position = Vector3.LerpUnclamped(worldFrom, worldTarget,
-                    EaseOutQuad(Mathf.Clamp01(t / cfg.slideDuration)));
-                yield return null;
-            }
-
-            transform.position = worldTarget;
-        }
-
-        // ── Easing ────────────────────────────────────────────────────────────
-
-        private static float EaseOutBack(float t)
-        {
-            const float c1 = 1.70158f, c3 = c1 + 1f;
-            return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
-        }
-
-        private static float EaseOutQuad(float t) => 1f - (1f - t) * (1f - t);
-        private static float EaseInQuad(float t)  => t * t;
 
         // ── Drag ─────────────────────────────────────────────────────────────
 
         public void OnBeginDrag(PointerEventData eventData)
         {
             if (!GetComponent<Button>().interactable) return;
-            _isDragging    = true;
-            _originParent  = _rt.parent;
+            IsDragging     = true;
             _originSibling = _rt.GetSiblingIndex();
-            if (_canvas != null) _rt.SetParent(_canvas.transform, true);
+            _rt.SetAsLastSibling(); // Make sure it renders on top during dragging
             _cg.blocksRaycasts = false;
             _cg.alpha          = 0.80f;
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (!_isDragging) return;
-            float scale = (_canvas != null && _canvas.scaleFactor > 0f) ? _canvas.scaleFactor : 1f;
-            _rt.anchoredPosition += eventData.delta / scale;
+            if (!IsDragging) return;
+
+            // Project screen coordinate of the drag to the local space of the card hand container
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                _rt.parent as RectTransform,
+                eventData.position,
+                eventData.pressEventCamera,
+                out Vector2 localPoint))
+            {
+                // We keep Y fixed or let it drag slightly in Y for user freedom,
+                // but local Y position should follow the user's drag.
+                _rt.localPosition = new Vector3(localPoint.x, localPoint.y, 0f);
+            }
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (!_isDragging) return;
-            _isDragging        = false;
+            if (!IsDragging) return;
+            IsDragging         = false;
             _cg.blocksRaycasts = true;
             _cg.alpha          = 1f;
-            _rt.SetParent(_originParent, true);
             _rt.SetSiblingIndex(_originSibling);
             OnReorderRequested?.Invoke(this);
         }
