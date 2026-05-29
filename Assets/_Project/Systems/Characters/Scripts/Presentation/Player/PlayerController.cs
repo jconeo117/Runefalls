@@ -101,8 +101,6 @@ namespace Runefall.Presentation.Player
                 _currentSpeed = 0f;
             else
                 _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, acceleration * Time.deltaTime);
-
-            _cc.Move(_moveDirection * _currentSpeed * Time.deltaTime);
         }
 
         private void HandleRotation()
@@ -118,9 +116,16 @@ namespace Runefall.Presentation.Player
                 _verticalVelocity = -2f;
             else
                 _verticalVelocity += Gravity * Time.deltaTime;
+        }
 
-            if (!_isDashing)
-                _cc.Move(Vector3.up * _verticalVelocity * Time.deltaTime);
+        public void ApplyRootMotion(Vector3 deltaPosition)
+        {
+            if (!enabled || _isDashing) return;
+
+            Vector3 movement = deltaPosition;
+            movement.y = _verticalVelocity * Time.deltaTime;
+
+            _cc.Move(movement);
         }
 
         // ── Dash ─────────────────────────────────────────────────────────────

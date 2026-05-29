@@ -39,8 +39,16 @@ namespace Runefall.Presentation.Player
 
         private void Update()
         {
-            // Damping 0.1s para transición suave entre estados
-            animator.SetFloat(SpeedHash, playerController.CurrentSpeed, 0.1f, Time.deltaTime);
+            // Set speed parameter instantly to match player speed for immediate input response
+            animator.SetFloat(SpeedHash, playerController.CurrentSpeed);
+        }
+
+        private void OnAnimatorMove()
+        {
+            if (animator != null && playerController != null)
+            {
+                playerController.ApplyRootMotion(animator.deltaPosition);
+            }
         }
 
         // ── API pública (sistemas de combate, Sprint 3+) ─────────────────────

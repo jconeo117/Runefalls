@@ -7,6 +7,7 @@ using Runefall.Data;
 using Runefall.Presentation.Combat;
 using Runefall.Presentation.Dungeon;
 using Runefall.Presentation.Player;
+using Runefall.Presentation.Enemies;
 
 namespace Runefall.Presentation.UI
 {
@@ -141,6 +142,15 @@ namespace Runefall.Presentation.UI
 
         private void ClosePanel()
         {
+            if (_pending != null && _pending.enemyTransform != null)
+            {
+                var enemyController = _pending.enemyTransform.GetComponent<EnemyController>();
+                if (enemyController != null)
+                {
+                    enemyController.CoolDownAndResume(3f); // 3 seconds cooldown to allow player to move away
+                }
+            }
+
             _canvas.gameObject.SetActive(false);
             SetBlocking(false);
             _pending = null;
