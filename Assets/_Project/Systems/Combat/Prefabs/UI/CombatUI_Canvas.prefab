@@ -463,3 +463,7 @@ MonoBehaviour:
   slotMiniScale: 0.7
   slotMiniMargin: {x: 20, y: 20}
   slotAnimDuration: 0.3
+  cardSpacing: 135
+  actionSlotSpacing: -10
+  cardScale: 0.85
+  slideSpeed: 12
