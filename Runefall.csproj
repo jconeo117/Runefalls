@@ -111,12 +111,12 @@
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\EnemyEncounterTrigger.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CharacterSlot.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ICombatPresenter.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\SkillEffect.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterAcceptedEvent.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ShieldEffectDef.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\SkillEffect.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatIntroSequencer.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\SkillUsedEvent.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IEnemyTurnHandler.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\SkillUsedEvent.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\InfectEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Presentation\Player\CursorController.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\TurnManager.cs" />
