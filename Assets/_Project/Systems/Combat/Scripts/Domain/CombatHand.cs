@@ -46,8 +46,8 @@ namespace Runefall.Combat
         }
 
         /// <summary>
-        /// First deal only. Guarantees skill1+skill2 per field character in order.
-        /// Remaining slots filled randomly from pool. Call once at combat start.
+        /// First deal only. Guarantees skill1+skill2 at the leftmost visual positions (highest indices),
+        /// and fills the remaining slots randomly from the pool.
         /// </summary>
         public void Deal(IReadOnlyList<CharacterData> fieldChars)
         {
@@ -55,14 +55,31 @@ namespace Runefall.Combat
             if (fieldChars == null || fieldChars.Count == 0)
                 throw new ArgumentException("fieldChars required.", nameof(fieldChars));
 
-            foreach (var c in fieldChars)
+            // We need the first 2 visual cards (leftmost, corresponding to highest indices: HandSize-1 and HandSize-2)
+            // to be Skill 1 and Skill 2 in that order.
+            // So we first fill indices 0 to HandSize-3 with random cards from the pool.
+            int randomCount = HandSize - 2;
+            for (int i = 0; i < randomCount; i++)
             {
-                if (c.skill1 != null) _slots.Add(new BattleCard(c.skill1, rank: 1));
-                if (c.skill2 != null) _slots.Add(new BattleCard(c.skill2, rank: 1));
+                _slots.Add(new BattleCard(_pool.Draw(), rank: 1));
             }
 
-            // fill any remaining slots (bench slot + slots from chars with missing skills)
-            Refill();
+            // Then we append Skill 2 and Skill 1.
+            var firstChar = fieldChars[0];
+            if (firstChar.skill2 != null) _slots.Add(new BattleCard(firstChar.skill2, rank: 1));
+            if (firstChar.skill1 != null) _slots.Add(new BattleCard(firstChar.skill1, rank: 1));
+
+            // Run initial check for merges in case the random cards matched
+            CheckMerges();
+
+            // Refill to HandSize by inserting new cards at index 0 to keep Skill 1 & 2 at the leftmost positions
+            int safety = HandSize * 4;
+            while (_slots.Count < HandSize && safety-- > 0)
+            {
+                _slots.Insert(0, new BattleCard(_pool.Draw(), rank: 1));
+                CheckMerges();
+            }
+
             NewCardsThisRefill = _slots.Count; // animate all cards on first deal
             Dealt = true;
         }
