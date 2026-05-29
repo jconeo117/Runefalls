@@ -52,6 +52,7 @@ namespace Runefall.Presentation.Enemies
         private float _waitTimer;
         private bool  _waiting;
         private bool  _confrontFired;
+        private bool  _inCooldown;
 
         // ── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -63,6 +64,9 @@ namespace Runefall.Presentation.Enemies
         }
 
         public bool UseRootMotion => _useRootMotion;
+        public EnemyState CurrentState => _brain != null ? _brain.CurrentState : EnemyState.Patrol;
+        public float PatrolSpeed => _patrolSpeed;
+        public float ChaseSpeed => _chaseSpeed;
 
         private void Start()
         {
@@ -77,6 +81,8 @@ namespace Runefall.Presentation.Enemies
 
         private void Update()
         {
+            if (_inCooldown) return;
+
             if (_playerTransform != null)
             {
                 float dist = Vector3.Distance(transform.position, _playerTransform.position);
@@ -123,6 +129,7 @@ namespace Runefall.Presentation.Enemies
             {
                 _waiting   = true;
                 _waitTimer = _waypointWaitTime;
+                _agent.ResetPath(); // Stop agent immediately to prevent spinning and allow transition to idle
             }
         }
 
@@ -134,7 +141,14 @@ namespace Runefall.Presentation.Enemies
         private void TickConfront()
         {
             _agent.ResetPath();
-            transform.LookAt(_playerTransform.position);
+            
+            // Only rotate on the Y axis (yaw) so the enemy stays perfectly flat on the ground
+            if (_playerTransform != null)
+            {
+                Vector3 targetPos = _playerTransform.position;
+                targetPos.y = transform.position.y;
+                transform.LookAt(targetPos);
+            }
 
             if (!_confrontFired)
             {
@@ -150,10 +164,13 @@ namespace Runefall.Presentation.Enemies
             if (dist > _detectionRange) return false;
 
             Vector3 origin = _eyePoint != null ? _eyePoint.position : transform.position + Vector3.up * 1.5f;
-            Vector3 dir    = (_playerTransform.position - origin).normalized;
+            // Target the center/chest level of the player (e.g. + 1.0f height) to prevent raycasting into the ground
+            Vector3 target = _playerTransform.position + Vector3.up * 1.0f;
+            Vector3 dir    = (target - origin).normalized;
+            float rayDist  = Vector3.Distance(origin, target);
 
-            return Physics.Raycast(origin, dir, dist + 0.1f, _playerMask) == false
-                || HitsPlayer(origin, dir, dist);
+            return Physics.Raycast(origin, dir, rayDist + 0.1f, _playerMask) == false
+                || HitsPlayer(origin, dir, rayDist);
         }
 
         private bool HitsPlayer(Vector3 origin, Vector3 dir, float dist)
@@ -242,6 +259,30 @@ namespace Runefall.Presentation.Enemies
             if (_waypoints == null || _waypoints.Length == 0) return;
             _patrolIndex = (_patrolIndex + 1) % _waypoints.Length;
             _agent.SetDestination(_waypoints[_patrolIndex].position);
+        }
+
+        public void CoolDownAndResume(float delaySeconds)
+        {
+            StartCoroutine(CooldownRoutine(delaySeconds));
+        }
+
+        private System.Collections.IEnumerator CooldownRoutine(float delaySeconds)
+        {
+            _inCooldown = true;
+            _confrontFired = false;
+
+            if (_agent != null && _agent.isActiveAndEnabled)
+            {
+                _agent.ResetPath();
+            }
+
+            _brain?.ForceState(EnemyState.Patrol);
+
+            yield return new WaitForSeconds(delaySeconds);
+
+            _inCooldown = false;
+            ConfigureAgentMovement();
+            AdvanceToNextWaypoint();
         }
 
 #if UNITY_EDITOR
