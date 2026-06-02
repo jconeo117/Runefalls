@@ -5,6 +5,8 @@ using UnityEngine;
 using Runefall.Combat;
 using Runefall.Data;
 using Runefall.Enemies;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 
 namespace Runefall.Presentation.Combat
 {
@@ -195,9 +197,49 @@ namespace Runefall.Presentation.Combat
 
         private IEnumerator PlayActionGroup(PendingAction pending)
         {
+            if (pending.IsUltimate)
+            {
+                yield return StartCoroutine(PlayDefaultAnimationSequenceCoroutine(pending));
+            }
+            else if (pending.Skill != null)
+            {
+                bool finished = false;
+                pending.Skill.PlayPresentation(this, pending.Caster, pending.Target, pending.Rank, () => finished = true);
+                yield return new WaitUntil(() => finished);
+            }
+        }
+
+        public void PlayDefaultAnimationSequence(
+            DefaultSkillData skill, 
+            ICombatActor caster, 
+            ICombatActor target, 
+            int rank, 
+            System.Action onComplete)
+        {
+            var pending = new PendingAction(
+                caster, 
+                target, 
+                skill, 
+                null, 
+                rank, 
+                skill.targetType, 
+                false
+            );
+            StartCoroutine(PlayDefaultAnimationSequenceCoroutine(pending, onComplete));
+        }
+
+        private IEnumerator PlayDefaultAnimationSequenceCoroutine(PendingAction pending, System.Action onComplete = null)
+        {
             if (pending.Caster == null || !_actorPawns.TryGetValue(pending.Caster, out var casterPawn))
+            {
+                onComplete?.Invoke();
                 yield break;
-            if (!casterPawn.gameObject.activeSelf) yield break;
+            }
+            if (!casterPawn.gameObject.activeSelf)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
 
             // Reset per-action multi-hit state.
             _pendingDeaths.Clear();
@@ -214,8 +256,6 @@ namespace Runefall.Presentation.Combat
             Quaternion originalRotation = casterPawn.rotation;
 
             // SlashVFX AE drives onStartVFX timing.
-            // Debounce: AE baked on multiple frames fires many times per clip — only allow
-            // one spawn per 80 ms window. Clips >80 ms apart (always true) each get their VFX.
             var   vfxConfig      = ResolveVFXConfig(pending);
             bool  holdLoop       = vfxConfig != null && vfxConfig.holdAnimLoopUntilVFXDone;
             int   loopClipIdx    = holdLoop ? vfxConfig.animLoopClipIndex : -1;
@@ -261,7 +301,12 @@ namespace Runefall.Presentation.Combat
                                 holdClipIndex: loopClipIdx,
                                 shouldAdvanceFromHold: exitLoopWhen),
                             () => animDone = true));
-                    yield return new WaitUntil(() => animDone && trigger.HasFired);
+                    yield return new WaitUntil(() => animDone);
+                    if (!trigger.HasFired)
+                    {
+                        Debug.LogWarning($"[CombatAnimationDriver] Trigger never fired! Forcing fallback impact.");
+                        RaiseImpactHit(pending, 0, 1);
+                    }
                 }
                 else
                 {
@@ -315,8 +360,13 @@ namespace Runefall.Presentation.Combat
                             casterAnim.PlaySkillSequence(clips,
                                 holdClipIndex: loopClipIdx,
                                 shouldAdvanceFromHold: exitLoopWhen),
-                            () => animDone = true));
-                    yield return new WaitUntil(() => animDone && trigger.HasFired);
+                                () => animDone = true));
+                    yield return new WaitUntil(() => animDone);
+                    if (!trigger.HasFired)
+                    {
+                        Debug.LogWarning($"[CombatAnimationDriver] Trigger never fired! Forcing fallback impact.");
+                        RaiseImpactHit(pending, 0, 1);
+                    }
                 }
                 else
                 {
@@ -363,15 +413,149 @@ namespace Runefall.Presentation.Combat
                         ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
                 }
             }
+
+            onComplete?.Invoke();
+        }
+
+        public void PlayTimelineCinematic(
+            TimelineAsset timeline, 
+            ICombatActor caster, 
+            ICombatActor target, 
+            System.Action onComplete)
+        {
+            StartCoroutine(PlayTimelineCinematicCoroutine(timeline, caster, target, onComplete));
+        }
+
+        private IEnumerator PlayTimelineCinematicCoroutine(
+            TimelineAsset timeline, 
+            ICombatActor caster, 
+            ICombatActor target, 
+            System.Action onComplete)
+        {
+            if (timeline == null)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
+            // 1. Get Caster and Target Animator components from the active pawns
+            Animator casterAnim = null;
+            Transform cp = null;
+            if (caster != null && _actorPawns.TryGetValue(caster, out cp))
+                casterAnim = cp.GetComponentInChildren<Animator>();
+
+            Animator targetAnim = null;
+            if (target != null && _actorPawns.TryGetValue(target, out var tp))
+                targetAnim = tp.GetComponentInChildren<Animator>();
+
+            var brain = Camera.main != null ? Camera.main.GetComponent<Unity.Cinemachine.CinemachineBrain>() : null;
+            var cameraController = Camera.main != null ? Camera.main.GetComponent<CombatCameraController>() : null;
+
+            // Enable CinemachineBrain so the skill timeline can drive the camera
+            if (brain != null)
+            {
+                brain.enabled = true;
+            }
+
+            // Disable manual camera controller so it does not fight/lock the camera during the timeline
+            if (cameraController != null)
+            {
+                cameraController.enabled = false;
+            }
+
+            // 2. Set up a PlayableDirector on the caster's pawn or a temporary object
+            PlayableDirector director = null;
+            if (cp != null)
+            {
+                director = cp.GetComponent<PlayableDirector>();
+                if (director == null)
+                    director = cp.gameObject.AddComponent<PlayableDirector>();
+            }
+            else
+            {
+                director = GetComponent<PlayableDirector>();
+                if (director == null)
+                    director = gameObject.AddComponent<PlayableDirector>();
+            }
+
+            director.playableAsset = timeline;
+
+            // 3. Dynamic runtime bindings (no scene dependencies!)
+            foreach (var output in timeline.outputs)
+            {
+                if (output.outputTargetType == typeof(Unity.Cinemachine.CinemachineBrain) && brain != null)
+                {
+                    director.SetGenericBinding(output.sourceObject, brain);
+                }
+                else if (output.outputTargetType == typeof(Animator))
+                {
+                    string name = output.streamName.ToLower();
+                    if (name.Contains("caster") && casterAnim != null)
+                    {
+                        director.SetGenericBinding(output.sourceObject, casterAnim);
+                    }
+                    else if (name.Contains("target") && targetAnim != null)
+                    {
+                        director.SetGenericBinding(output.sourceObject, targetAnim);
+                    }
+                }
+            }
+
+            // 4. Play and wait for stopped callback
+            bool timelineDone = false;
+            System.Action<PlayableDirector> onStopped = null;
+            onStopped = (dir) => {
+                timelineDone = true;
+                dir.stopped -= onStopped;
+            };
+            director.stopped += onStopped;
+
+            director.time = 0;
+            director.Evaluate();
+            director.Play();
+
+            yield return new WaitUntil(() => timelineDone);
+
+            // 5. Restore components and hand control back to CombatCameraController
+            if (brain != null)
+            {
+                brain.enabled = false;
+            }
+
+            if (cameraController != null)
+            {
+                cameraController.enabled = true;
+                
+                // Snap back instantly to the current turn's camera target (Player or Enemy side)
+                if (_tm != null)
+                {
+                    bool isEnemyTurn = _tm.Phase == CombatPhase.EnemyTurn;
+                    cameraController.SnapToAnchor(isEnemyTurn);
+                }
+            }
+
+            onComplete?.Invoke();
         }
 
         // ── trigger helpers ───────────────────────────────────────────────────────
 
-        private SkillVFXConfig ResolveVFXConfig(PendingAction pending) => pending.Skill?.vfxConfig;
+        private SkillVFXConfig ResolveVFXConfig(PendingAction pending)
+        {
+            if (pending.Skill is DefaultSkillData defaultSkill)
+                return defaultSkill.vfxConfig;
+            return null;
+        }
 
         private IImpactTrigger ResolveTrigger(PendingAction pending, Transform casterPawn, Transform targetPawn, AnimationClip[] allClips = null)
         {
-            int hitCount = pending.Skill != null && pending.Skill.hitCount > 1 ? pending.Skill.hitCount : 0;
+            int hitCount = 0;
+            ImpactTriggerData triggerData = null;
+
+            if (pending.Skill is DefaultSkillData defaultSkill)
+            {
+                hitCount = defaultSkill.hitCount > 1 ? defaultSkill.hitCount : 0;
+                triggerData = defaultSkill.impactTrigger;
+            }
 
             // Build per-enemy target list for AoE ranged skills so ProjectileTrigger
             // spawns one projectile per alive enemy per shoot AE.
@@ -391,7 +575,7 @@ namespace Runefall.Presentation.Combat
                 if (aoeTargets.Count == 0) aoeTargets = null;
             }
 
-            return pending.Skill?.impactTrigger?.Create(casterPawn, targetPawn, this, allClips, hitCount, aoeTargets);
+            return triggerData?.Create(casterPawn, targetPawn, this, allClips, hitCount, aoeTargets);
         }
 
         private Transform GetTargetTransform(PendingAction pending)
@@ -689,8 +873,8 @@ namespace Runefall.Presentation.Combat
 
         private AnimationClip[] GetSkillClips(PendingAction pending)
         {
-            if (pending.Skill != null)
-                return pending.Skill.animSequence;
+            if (pending.Skill is DefaultSkillData defaultSkill)
+                return defaultSkill.animSequence;
 
             // Ultimate: Skill is null — look up via CharacterData or EnemyData
             if (pending.IsUltimate)
@@ -704,11 +888,18 @@ namespace Runefall.Presentation.Combat
             return null;
         }
 
-        private int GetImpactClipIndex(PendingAction pending) => pending.Skill?.impactAfterClipIndex ?? 0;
+        private int GetImpactClipIndex(PendingAction pending)
+        {
+            if (pending.Skill is DefaultSkillData defaultSkill)
+                return defaultSkill.impactAfterClipIndex;
+            return 0;
+        }
 
         private int ResolveReturnClipIndex(PendingAction pending, AnimationClip[] clips)
         {
-            int raw = pending.Skill?.returnAtClipIndex ?? -1;
+            int raw = -1;
+            if (pending.Skill is DefaultSkillData defaultSkill)
+                raw = defaultSkill.returnAtClipIndex;
             // -1 → "after all clips": use clips.Length as sentinel so rawReturn sums ALL clips
             if (raw < 0 && clips != null && clips.Length > 0)
                 return clips.Length;
