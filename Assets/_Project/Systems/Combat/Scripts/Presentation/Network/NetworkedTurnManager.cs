@@ -477,29 +477,29 @@ namespace Runefall.Presentation.Network
         // ── Client Interception ServerRpcs ───────────────────────────────────────
 
         [ServerRpc(RequireOwnership = false)]
-        public void SubmitSkillFromClientServerRpc(int skillType, int rank, ulong targetNetId, ServerRpcParams rpcParams = default)
+        public void SubmitSkillFromClientServerRpc(int skillType, int rank, ulong targetNetId, ulong casterNetId, ServerRpcParams rpcParams = default)
         {
             if (!IsServer || CurrentPhase.Value != CombatPhase.PlayerTurn) return;
-            QueuePlayerActionOnServer(1, skillType, rank, targetNetId);
+            QueuePlayerActionOnServer(1, casterNetId, skillType, rank, targetNetId);
         }
 
-        public void SubmitSkillFromHostServer(int skillType, int rank, ulong targetNetId)
+        public void SubmitSkillFromHostServer(int skillType, int rank, ulong targetNetId, ulong casterNetId)
         {
             if (!IsServer || CurrentPhase.Value != CombatPhase.PlayerTurn) return;
-            QueuePlayerActionOnServer(0, skillType, rank, targetNetId);
+            QueuePlayerActionOnServer(0, casterNetId, skillType, rank, targetNetId);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void SubmitMoveFromClientServerRpc(int cardId, int toIndex, ServerRpcParams rpcParams = default)
+        public void SubmitMoveFromClientServerRpc(int cardId, int toIndex, ulong casterNetId, ServerRpcParams rpcParams = default)
         {
             if (!IsServer || CurrentPhase.Value != CombatPhase.PlayerTurn) return;
-            QueuePlayerMoveOnServer(1);
+            QueuePlayerMoveOnServer(1, casterNetId);
         }
 
-        public void SubmitMoveFromHostServer(int fromIndex, int toIndex)
+        public void SubmitMoveFromHostServer(int fromIndex, int toIndex, ulong casterNetId)
         {
             if (!IsServer || CurrentPhase.Value != CombatPhase.PlayerTurn) return;
-            QueuePlayerMoveOnServer(0);
+            QueuePlayerMoveOnServer(0, casterNetId);
         }
 
         public void EndPlayerTurnFromHostServer()
@@ -954,19 +954,22 @@ namespace Runefall.Presentation.Network
         private void EndPlayerPhase()
         {
             if (CurrentPhase.Value != CombatPhase.PlayerTurn) return;
-            CurrentPhase.Value = CombatPhase.PlayerResolution;
+            CurrentPhase.Value = CombatPhase.Idle;
             _isTimerActive = false;
             StartCoroutine(AuthoritativeTurnResolutionCo());
         }
 
-        private void QueuePlayerActionOnServer(ulong clientId, int skillType, int rank, ulong targetNetId)
+        private void QueuePlayerActionOnServer(ulong clientId, ulong casterNetId, int skillType, int rank, ulong targetNetId)
         {
-            if (clientId == 1 && _playerActors.Count <= 1) return;
-            
-            var caster = clientId == 0 ? _playerActors[0] : _playerActors[1];
+            var caster = GetActorFromNetworkId(casterNetId);
+            if (caster == null)
+            {
+                if (clientId == 1 && _playerActors.Count <= 1) return;
+                caster = clientId == 0 ? _playerActors[0] : _playerActors[1];
+            }
             var target = GetActorFromNetworkId(targetNetId);
 
-            var cd = clientId == 0 ? playerCharacterData : clientCharacterData;
+            var cd = (caster is PlayerActor pa) ? _fieldChars[_playerActors.IndexOf(pa)] : null;
             if (cd == null) cd = playerCharacterData;
 
             SkillData skill = null;
@@ -995,11 +998,14 @@ namespace Runefall.Presentation.Network
             UpdateReplicatedActionsOnServer(clientId, skillType, rank);
         }
 
-        private void QueuePlayerMoveOnServer(ulong clientId)
+        private void QueuePlayerMoveOnServer(ulong clientId, ulong casterNetId)
         {
-            if (clientId == 1 && _playerActors.Count <= 1) return;
-            
-            var caster = clientId == 0 ? _playerActors[0] : _playerActors[1];
+            var caster = GetActorFromNetworkId(casterNetId);
+            if (caster == null)
+            {
+                if (clientId == 1 && _playerActors.Count <= 1) return;
+                caster = clientId == 0 ? _playerActors[0] : _playerActors[1];
+            }
 
             var action = new PendingServerAction
             {
