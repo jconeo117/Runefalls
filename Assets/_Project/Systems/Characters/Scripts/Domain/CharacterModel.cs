@@ -100,6 +100,12 @@ namespace Runefall.Characters
             OnHPChanged?.Invoke(CurrentHP);
         }
 
+        public void SyncHP(float hp)
+        {
+            CurrentHP = Clamp(hp, 0f, MaxHP);
+            OnHPChanged?.Invoke(CurrentHP);
+        }
+
         // Llamar por TurnManager cada N turnos — recupera % de PS perdidos
         public void ApplyRegen()
         {

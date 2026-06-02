@@ -165,6 +165,9 @@ namespace Runefall.Combat
                     {
                         netTM.SubmitSkillFromHostServer(skillType, slot.Rank, netTM.GetNetworkIdForActor(explicitTarget), casterNetId);
                     }
+                    
+                    if (!Hand.TryUse(cardIndex, out slot, out _)) return false;
+                    return true;
                 }
             }
 

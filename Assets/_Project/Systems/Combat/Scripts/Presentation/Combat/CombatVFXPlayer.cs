@@ -97,7 +97,7 @@ namespace Runefall.Presentation.Combat
 
         private SkillVFXConfig ResolveConfig(ImpactContext ctx)
         {
-            if (ctx.Skill != null) return ctx.Skill.vfxConfig;
+            if (ctx.Skill is DefaultSkillData defaultSkill) return defaultSkill.vfxConfig;
             // Skill covers both player skills and enemy skill1/skill2 (EnemyAgent passes skill in result).
             return null;
         }

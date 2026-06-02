@@ -53,11 +53,7 @@ namespace Runefall.Combat
             if (caster == null) throw new ArgumentNullException(nameof(caster));
             if (target == null) throw new ArgumentNullException(nameof(target));
 
-            if (skill.effectsByRank == null || skill.effectsByRank.Length == 0)
-                throw new InvalidOperationException($"SkillData '{skill.skillName}' has no effectsByRank.");
-
-            int idx    = Math.Max(0, Math.Min(rank - 1, skill.effectsByRank.Length - 1));
-            var (dmg, crit, lifeSteal, heal) = ApplyEffect(skill.effectsByRank[idx], caster, target, rank, hitFraction);
+            var (dmg, crit, lifeSteal, heal) = skill.ExecuteGameplayEffect(caster, target, rank, hitFraction);
             return new CombatActionResult(caster, target, skill, rank, dmg, crit, lifeSteal, heal);
         }
 
@@ -74,18 +70,13 @@ namespace Runefall.Combat
             if (caster   == null) throw new ArgumentNullException(nameof(caster));
             if (targets  == null) throw new ArgumentNullException(nameof(targets));
 
-            if (skill.effectsByRank == null || skill.effectsByRank.Length == 0)
-                throw new InvalidOperationException($"SkillData '{skill.skillName}' has no effectsByRank.");
-
-            int idx     = Math.Max(0, Math.Min(rank - 1, skill.effectsByRank.Length - 1));
-            var effect  = skill.effectsByRank[idx];
             var results = new List<CombatActionResult>();
 
             for (int i = 0; i < targets.Count; i++)
             {
                 var t = targets[i];
                 if (!t.IsAlive) continue;
-                var (dmg, crit, lifeSteal, heal) = ApplyEffect(effect, caster, t, rank, hitFraction);
+                var (dmg, crit, lifeSteal, heal) = skill.ExecuteGameplayEffect(caster, t, rank, hitFraction);
                 results.Add(new CombatActionResult(caster, t, skill, rank, dmg, crit, lifeSteal, heal, isAoe: true));
             }
 
@@ -138,7 +129,7 @@ namespace Runefall.Combat
 
         // Shared effect application — runs the new pipeline if effects[] is populated,
         // otherwise falls back to the legacy damageMultiplier/healPercent fields.
-        private static (float dmg, bool crit, float lifeSteal, float heal) ApplyEffect(
+        public static (float dmg, bool crit, float lifeSteal, float heal) ApplyEffect(
             SkillEffect effect, ICombatActor caster, ICombatActor target, int rank = 1, float hitFraction = 1f)
         {
             if (effect.effects is { Length: > 0 })

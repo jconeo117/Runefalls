@@ -314,12 +314,59 @@ namespace Runefall.Presentation.Network
 
         private void EnsurePresentationComponents()
         {
+            var go = gameObject; // NetworkedTurnManager GameObject
+
+            // Swap to MultiplayerCombatAnimationDriver for clean physical lunges in multiplayer
+            var animDriver = go.GetComponent<MultiplayerCombatAnimationDriver>();
+            if (animDriver == null)
+            {
+                var existingBase = go.GetComponent<CombatAnimationDriver>();
+                if (existingBase != null)
+                {
+                    DestroyImmediate(existingBase);
+                }
+                animDriver = go.AddComponent<MultiplayerCombatAnimationDriver>();
+            }
+            _animationDriver = animDriver;
+
+            var camDirector = go.GetComponent<CombatCameraDirector>() ?? go.AddComponent<CombatCameraDirector>();
+            var vfxPlayer = go.GetComponent<CombatVFXPlayer>() ?? go.AddComponent<CombatVFXPlayer>();
+
+            // Ensure the animDriver has its critical references assigned programmatically if they are null (editor fallback/boss fight setup)
+            #if UNITY_EDITOR
+            if (animDriver.combatBaseController == null)
+            {
+                animDriver.combatBaseController = UnityEditor.AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
+                    "Assets/_Project/Systems/Combat/Animations/CombatBase.controller");
+            }
+            
+            var vfxPlayerField = typeof(CombatAnimationDriver).GetField("vfxPlayer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (vfxPlayerField != null && vfxPlayerField.GetValue(animDriver) == null)
+            {
+                vfxPlayerField.SetValue(animDriver, vfxPlayer);
+            }
+
+            var impactEventField = typeof(CombatAnimationDriver).GetField("impactEvent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (impactEventField != null && impactEventField.GetValue(animDriver) == null)
+            {
+                var impactAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<ImpactEvent>(
+                    "Assets/_Project/Systems/Combat/ScriptableObjects/Combat/ImpactEvent.asset");
+                impactEventField.SetValue(animDriver, impactAsset);
+            }
+
+            var dmgPrefabField = typeof(CombatAnimationDriver).GetField("_damageNumberPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (dmgPrefabField != null && dmgPrefabField.GetValue(animDriver) == null)
+            {
+                var dmgPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_Project/Systems/Combat/Prefabs/UI/FloatingDamage.prefab");
+                dmgPrefabField.SetValue(animDriver, dmgPrefab);
+            }
+            #endif
+
             var bootstrapper = FindFirstObjectByType<CombatBootstrapper>();
             if (bootstrapper == null)
             {
                 Debug.Log("[NetworkedTurnManager] Programmatic Presentation Components setup initiated...");
-                
-                var go = gameObject; // NetworkedTurnManager GameObject
                 
                 // 1. Add CombatCameraController to Main Camera if missing
                 var mainCam = Camera.main;
@@ -328,11 +375,6 @@ namespace Runefall.Presentation.Network
                 {
                     camCtrl = mainCam.GetComponent<CombatCameraController>() ?? mainCam.gameObject.AddComponent<CombatCameraController>();
                 }
-                
-                // 2. Add presentation components to NetworkedTurnManager
-                var animDriver = go.GetComponent<CombatAnimationDriver>() ?? go.AddComponent<CombatAnimationDriver>();
-                var camDirector = go.GetComponent<CombatCameraDirector>() ?? go.AddComponent<CombatCameraDirector>();
-                var vfxPlayer = go.GetComponent<CombatVFXPlayer>() ?? go.AddComponent<CombatVFXPlayer>();
                 
                 // Add CombatBootstrapper
                 bootstrapper = go.AddComponent<CombatBootstrapper>();
@@ -349,6 +391,11 @@ namespace Runefall.Presentation.Network
                 var uiPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(uiPrefabPath);
                 typeof(CombatBootstrapper).GetField("_combatUIPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(bootstrapper, uiPrefab);
                 #endif
+            }
+            else
+            {
+                // Update pre-existing bootstrapper's reference to point to our multiplayer animation driver
+                bootstrapper.animationDriver = animDriver;
             }
             
             // Now boot it!
@@ -813,6 +860,10 @@ namespace Runefall.Presentation.Network
             _domainTurnManager.RaisePlayerTurnBeginNetworked(round);
             _domainTurnManager.RaisePlayerTurnStartedNetworked(round);
 
+            // Reactivate/Show HUD UI when the Player Turn starts locally
+            var presenter = FindFirstObjectByType<CombatHUDPresenter>();
+            presenter?.ShowAllUI();
+
             Debug.Log($"[NetworkedTurnManager] Local visual Player Turn started for round {round}. Hand size = {_domainTurnManager.Hand.Slots.Count}");
         }
 
@@ -855,9 +906,7 @@ namespace Runefall.Presentation.Network
             presenter?.HideAllUI();
 
             // Clear visual queue
-            var animQueueField = typeof(CombatAnimationDriver).GetField("_animQueue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var animQueue = animQueueField?.GetValue(animationDriver) as Queue<PendingAction>;
-            animQueue?.Clear();
+            animationDriver.ClearQueue();
 
             // Reconstruct actions
             int activeCount = 0;
@@ -1214,6 +1263,8 @@ namespace Runefall.Presentation.Network
                         BroadcastActionPendingClientRpc(casterNetId, targetNetId, skillName, pending.Rank, pending.IsUltimate);
                         _domainTurnManager.RaiseActionPendingNetworked(pending);
 
+                        animationDriver?.PlayQueuedAnimations(null, false);
+
                         var results = _authoritativeTurnManager.ResolveAction(pending);
                         UpdateAuthoritativeHPs();
 
@@ -1254,7 +1305,18 @@ namespace Runefall.Presentation.Network
             return null;
         }
 
-        private CombatAnimationDriver animationDriver => FindFirstObjectByType<CombatAnimationDriver>();
+        private CombatAnimationDriver _animationDriver;
+        private CombatAnimationDriver animationDriver
+        {
+            get
+            {
+                if (_animationDriver == null)
+                {
+                    _animationDriver = GetComponent<CombatAnimationDriver>();
+                }
+                return _animationDriver;
+            }
+        }
     }
 
     // ── Network Serializable Structs for Shared Card Hand ─────────────────────────────

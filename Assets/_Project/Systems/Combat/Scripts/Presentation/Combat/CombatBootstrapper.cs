@@ -47,7 +47,7 @@ namespace Runefall.Presentation.Combat
         [SerializeField] private float _playerTurnCameraDelay = 0.6f;
 
         [Header("Post-Combat")]
-        [SerializeField] private VictorySequencer       _victorySequencer;
+        [SerializeField] private CombatOutroSequencer _outroSequencer;
         [SerializeField] private CombatTransitionScreen _exitTransition;
 
         [Header("Arena")]
@@ -86,6 +86,7 @@ namespace Runefall.Presentation.Combat
         private readonly Dictionary<ICombatActor, Transform>       _actorPawns     = new();
         private readonly Dictionary<ICombatActor, CharacterData>   _actorCharData  = new();
         private readonly Dictionary<ICombatActor, EnemyData>       _actorEnemyData = new();
+        private readonly Dictionary<ICombatActor, PassiveDefinition> _activePassiveInstances = new();
 
         // ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -99,10 +100,213 @@ namespace Runefall.Presentation.Combat
             if (ci != null) _cameraInput      = ci;
         }
 
+        public void InitializeFromNetwork(Runefall.Presentation.Network.NetworkedTurnManager netTM)
+        {
+            if (netTM == null) return;
+            Debug.Log("[CombatBootstrapper] Initialising presentation from NetworkedTurnManager...");
+
+            // Dynamically clean up duplicate or legacy EventSystems to prevent input freezes.
+            // When transitioning between scenes via Netcode, FindObjectsByType can return EventSystems
+            // belonging to the previous unloading scene (e.g. Lobby) which are about to be destroyed.
+            // We must filter and preserve only the EventSystem belonging to the currently active scene.
+            var allEventSystems = FindObjectsByType<EventSystem>(FindObjectsSortMode.None);
+            EventSystem activeEventSystem = null;
+
+            // Find an EventSystem that already has a properly configured InputSystem module
+            foreach (var es in allEventSystems)
+            {
+                if (es == null || es.gameObject == null) continue;
+                var inputModule = es.GetComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+                if (inputModule != null && inputModule.actionsAsset != null)
+                {
+                    activeEventSystem = es;
+                    break;
+                }
+            }
+
+            // Fallback to first available if none perfectly configured
+            if (activeEventSystem == null && allEventSystems.Length > 0)
+            {
+                activeEventSystem = allEventSystems[0];
+            }
+
+            // Destroy all others
+            foreach (var es in allEventSystems)
+            {
+                if (es != null && es.gameObject != null && es != activeEventSystem)
+                {
+                    DestroyImmediate(es.gameObject);
+                }
+            }
+
+            if (activeEventSystem == null)
+            {
+                GameObject eventSystemObj = new GameObject("EventSystem");
+                activeEventSystem = eventSystemObj.AddComponent<EventSystem>();
+                Debug.Log("[CombatBootstrapper] Successfully constructed new EventSystem with InputSystemUIInputModule at runtime.");
+            }
+
+            if (activeEventSystem != null)
+            {
+                var legacyModule = activeEventSystem.GetComponent<StandaloneInputModule>();
+                if (legacyModule != null)
+                {
+                    DestroyImmediate(legacyModule);
+                }
+
+                var newModule = activeEventSystem.GetComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+                if (newModule == null)
+                {
+                    activeEventSystem.gameObject.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+                    Debug.Log("[CombatBootstrapper] Configured EventSystem with InputSystemUIInputModule.");
+                }
+            }
+
+            // Programmatic fallbacks for missing inspector references in networked scenes
+            if (arenaAssembler == null)
+            {
+                arenaAssembler = FindFirstObjectByType<CombatArenaAssembler>();
+            }
+
+            #if UNITY_EDITOR
+            if (_combatUIPrefab == null)
+            {
+                string uiPrefabPath = "Assets/_Project/Systems/Combat/Prefabs/UI/CombatUI_Canvas.prefab";
+                _combatUIPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(uiPrefabPath);
+            }
+            #endif
+
+            LogMissingRefs();
+
+            // Instantiate/activate combat UI
+            if (presenter == null && _combatUIPrefab != null)
+            {
+                _combatUIInstance = Instantiate(_combatUIPrefab);
+                presenter = _combatUIInstance.GetComponent<CombatPresenterBase>();
+            }
+            else if (presenter != null && !presenter.gameObject.activeSelf)
+                presenter.gameObject.SetActive(true);
+
+            var targetUIObj = _combatUIInstance != null ? _combatUIInstance : (presenter != null ? presenter.gameObject : null);
+            if (targetUIObj != null && targetUIObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+            {
+                targetUIObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            }
+
+            var finisher = GetComponent<FinisherManager>();
+            if (finisher != null)
+            {
+                if (_combatUIInstance != null)
+                {
+                    var hudGroup = _combatUIInstance.GetComponent<CanvasGroup>();
+                    if (hudGroup == null)
+                    {
+                        hudGroup = _combatUIInstance.AddComponent<CanvasGroup>();
+                    }
+                    finisher.InjectHUDGroup(hudGroup);
+                }
+                if (presenter != null)
+                    finisher.InjectPresenter(presenter);
+            }
+
+            _presenter  = presenter;
+            _mainCamera = Camera.main;
+
+            // Retrieve TurnManager and CombatContext from NetworkedTurnManager
+            _tm = netTM.GetLocalTurnManager();
+            if (_tm != null)
+            {
+                _tm.SetPhaseAnimator(animationDriver);
+            }
+            else
+            {
+                _tm = new TurnManager(animationDriver);
+            }
+
+            _ctx = netTM.GetCombatContext();
+
+            // Map sessional networked actor pawns dynamically!
+            _actorPawns.Clear();
+            _actorCharData.Clear();
+            _actorEnemyData.Clear();
+            var enemySlotList = new List<Transform>();
+            var actorPawnsSync = netTM.GetActorPawns();
+            foreach (var kvp in actorPawnsSync)
+            {
+                _actorPawns[kvp.Key] = kvp.Value;
+                if (kvp.Key is PlayerActor)
+                {
+                    var isHost = kvp.Key == netTM.GetHostActor();
+                    _actorCharData[kvp.Key] = isHost ? netTM.PlayerCharacterData : (netTM.ClientCharacterData != null ? netTM.ClientCharacterData : netTM.PlayerCharacterData);
+                }
+                else if (kvp.Key is EnemyAgent)
+                {
+                    _actorEnemyData[kvp.Key] = netTM.BossEnemyData;
+                    enemySlotList.Add(kvp.Value);
+                }
+            }
+            _enemySlots = enemySlotList.ToArray();
+
+            AutoInitCamera();
+
+            skillEventBridge?.Init(_tm);
+            WireTurnManagerEvents();
+
+            _presenter?.Initialize(_tm, _ctx);
+
+            _markers = CreateEnemyMarkers(_ctx.Enemies.Count);
+            if (_markers.Length > 0)
+                _presenter?.RegisterEnemyMarkers(_markers);
+
+            BindHPBars();
+
+            animationDriver?.Init(
+                _ctx, _tm, _actorPawns, _actorCharData, _actorEnemyData, _actorHPBars, _presenter);
+
+            vfxPlayer?.Init(_actorPawns, _actorEnemyData);
+
+            if (cameraDirector != null && cameraController != null)
+            {
+                Vector3 fieldCenter = arenaAssembler != null && arenaAssembler.IsReady
+                    ? arenaAssembler.FieldCenter
+                    : playerTeam != null && enemyTeam != null
+                        ? (playerTeam.position + enemyTeam.position) * 0.5f
+                        : Vector3.zero;
+                cameraDirector.Init(cameraController, fieldCenter, _tm);
+            }
+
+            if (arenaAssembler != null && arenaAssembler.IsReady && introSequencer != null)
+            {
+                if (arenaAssembler.IntroEnemyAnchor  != null) introSequencer.introEnemyAnchor  = arenaAssembler.IntroEnemyAnchor;
+                if (arenaAssembler.IntroPlayerAnchor != null) introSequencer.introPlayerAnchor = arenaAssembler.IntroPlayerAnchor;
+            }
+
+            EnterCombatMode();
+
+            var fieldChars = new List<CharacterData>();
+            if (netTM.PlayerCharacterData != null) fieldChars.Add(netTM.PlayerCharacterData);
+            bool hasClient = netTM.ClientMaxHP.Value > 0f || (!netTM.IsServer && netTM.IsClient);
+            if (hasClient && netTM.ClientCharacterData != null) fieldChars.Add(netTM.ClientCharacterData);
+            _pendingFieldChars = fieldChars;
+
+            // Settle UI immediately if the simulation was already running when presentation finished loading (resolves startup race conditions)
+            if (netTM.CurrentPhase.Value == CombatPhase.PlayerTurn)
+            {
+                _presenter?.OnPlayerTurnStarted(netTM.RoundNumber.Value);
+                _presenter?.ShowAllUI();
+            }
+        }
+
         // OnEnable fires every time the GO is activated — required for re-use across encounters.
         // Start() fires only once per lifetime and would miss any encounter after the first.
         private void OnEnable()
         {
+            if (Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening)
+            {
+                Debug.Log("[CombatBootstrapper] Deferring initialization to NetworkedTurnManager in multiplayer mode...");
+                return;
+            }
+
             try { OnEnableImpl(); }
             catch (Exception e) { Debug.LogError($"[CombatBootstrapper] OnEnable FAILED: {e}", this); }
         }
@@ -119,6 +323,12 @@ namespace Runefall.Presentation.Combat
             }
             else if (presenter != null && !presenter.gameObject.activeSelf)
                 presenter.gameObject.SetActive(true);
+
+            var targetUIObj = _combatUIInstance != null ? _combatUIInstance : (presenter != null ? presenter.gameObject : null);
+            if (targetUIObj != null && targetUIObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+            {
+                targetUIObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            }
 
             // Inject HUD CanvasGroup and presenter into FinisherManager.
             var finisher = GetComponent<FinisherManager>();
@@ -214,15 +424,10 @@ namespace Runefall.Presentation.Combat
                 Time.timeScale      = 1f;
                 Time.fixedDeltaTime = 0.02f;
 
-                Debug.Log($"[CombatBootstrapper] OnCombatEnded — won={won} timeScale={Time.timeScale} sequencer={_victorySequencer != null}");
+                Debug.Log($"[CombatBootstrapper] OnCombatEnded — won={won} timeScale={Time.timeScale} sequencer={_outroSequencer != null}");
 
-                // RunCombatEndDrama (finisher / fallback slow-mo) has already completed
-                // before DrainQueue calls EndPlayerTurn → FinishCombat → here.
-                // No need to subscribe to OnSequenceComplete — the finisher is done.
-                if (!won) { EndCombat(); return; }
-
-                if (_victorySequencer != null)
-                    _victorySequencer.Play(EndCombat);
+                if (_outroSequencer != null)
+                    _outroSequencer.PlayOutro(won, EndCombat);
                 else
                     EndCombat();
             };
@@ -274,23 +479,31 @@ namespace Runefall.Presentation.Combat
 
         private void ActivatePassives(System.Collections.Generic.List<CharacterData> fieldChars)
         {
+            _activePassiveInstances.Clear();
             for (int i = 0; i < fieldChars.Count && i < _ctx.Players.Count; i++)
             {
                 var cd = fieldChars[i];
                 if (cd.passive == null) continue;
-                cd.passive.Activate(_ctx.Players[i], _tm, _ctx);
+
+                // Instantiate runtime clone to ensure state sandbox
+                var runtimeClone = UnityEngine.Object.Instantiate(cd.passive);
+                _activePassiveInstances[_ctx.Players[i]] = runtimeClone;
+                runtimeClone.Activate(_ctx.Players[i], _tm, _ctx);
             }
         }
 
         private void DeactivatePassives()
         {
             if (_tm == null || _ctx == null) return;
-            foreach (var kvp in _actorCharData)
+            foreach (var kvp in _activePassiveInstances)
             {
-                var cd = kvp.Value;
-                if (cd.passive == null) continue;
-                cd.passive.Deactivate(kvp.Key, _tm);
+                if (kvp.Value != null)
+                {
+                    kvp.Value.Deactivate(kvp.Key, _tm);
+                    UnityEngine.Object.Destroy(kvp.Value); // Clean up memory
+                }
             }
+            _activePassiveInstances.Clear();
         }
 
         private void OnDisable()
@@ -783,7 +996,7 @@ namespace Runefall.Presentation.Combat
 
         private void LogMissingRefs()
         {
-            if (arenaAssembler == null)
+            if (arenaAssembler == null && (Unity.Netcode.NetworkManager.Singleton == null || !Unity.Netcode.NetworkManager.Singleton.IsListening))
                 Debug.LogError("[CombatBootstrapper] arenaAssembler not assigned — pawns won't spawn from EncounterState.", this);
             if (presenter == null && _combatUIPrefab == null)
                 Debug.LogWarning("[CombatBootstrapper] No combat UI: assign _combatUIPrefab (runtime) or presenter (blockout).", this);

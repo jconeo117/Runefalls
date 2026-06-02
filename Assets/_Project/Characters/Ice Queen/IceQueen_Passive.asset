@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ec3770103f7b71469bccd694617f428, type: 3}
+  m_Name: IceQueen_Passive
+  m_EditorClassIdentifier: 
+  passiveName: Dominio Glacial
+  description: "Inicio de turno aplica Hipotermia. Golpes cr\xEDticos contra Hipotermia
+    curan al h\xE9roe. Al recibir gran da\xF1o, congela a todos y obtiene Dominio
+    del Hielo."
+  resonanceCompatible: 0
+  hipotermia: {fileID: 0}
+  congelado: {fileID: 0}
+  dominioDelHielo: {fileID: 0}
+  critHealPercent: 0.5
+  triggerThreshold: 0.6

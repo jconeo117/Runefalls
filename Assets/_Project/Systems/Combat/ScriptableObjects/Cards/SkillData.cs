@@ -1,5 +1,7 @@
 using UnityEngine;
 using Runefall.Characters;
+using Runefall.Combat;
+using Runefall.Presentation.Combat;
 
 namespace Runefall.Data
 {
@@ -19,8 +21,7 @@ namespace Runefall.Data
         AllAllies   = 4,   // all player actors
     }
 
-    [CreateAssetMenu(menuName = "Runefall/Cards/Skill")]
-    public class SkillData : ScriptableObject
+    public abstract class SkillData : ScriptableObject
     {
         [Header("Identity")]
         public string skillName;
@@ -32,35 +33,39 @@ namespace Runefall.Data
         public TargetType targetType = TargetType.SingleEnemy;
         [Tooltip("Ranged skills skip the approach movement.")]
         public bool isRanged;
-        [Tooltip("Index of the clip after which impact (damage visuals) is applied.\n" +
-                 "-1 = before any clip | 0 = after clip 0 | 1 = after clip 1, etc.")]
-        public int impactAfterClipIndex = 0;
-        [Tooltip("Index of the clip during which the return movement runs.\n" +
-                 "-1 = use last clip in sequence (default).")]
-        public int returnAtClipIndex = -1;
-
-        [Header("Multi-Hit")]
-        [Tooltip("Total hits this skill delivers. Each hit = totalDamage / hitCount.\n" +
-                 "Must match the number of impact AEs (ImpactFrame or shoot) across all clips.\n" +
-                 "1 = single hit (default). 2+ = multi-hit with overkill floating numbers.")]
-        public int hitCount = 1;
-
-        [Header("Impact Trigger")]
-        [Tooltip("Precise moment damage resolves. Null = legacy clip-index fallback.\n" +
-                 "AnimEvent = contact frame | Projectile = arrow arrival | Timer = fixed delay.")]
-        public ImpactTriggerData impactTrigger;
-
-        [Header("VFX")]
-        [Tooltip("VFX prefabs for this skill. Null = no visual effects.")]
-        public SkillVFXConfig vfxConfig;
 
         [Header("Ultimate")]
         public float ultimateChargeAmount;
 
-        [Header("Animations")]
-        public AnimationClip[] animSequence;
-
         [Header("Effects by Rank")]
         public SkillEffect[] effectsByRank; // [0]=rank1, [1]=rank2, [2]=rank3
+
+        /// <summary>
+        /// Executes the numerical gameplay effects (damage, healing, buffs, status effects).
+        /// Standard calculations reside in the base class, but subclasses can fully override to
+        /// implement custom formulas, multi-target damage calculations, or unique status effects.
+        /// </summary>
+        public virtual (float dmg, bool crit, float lifeSteal, float heal) ExecuteGameplayEffect(
+            ICombatActor caster, ICombatActor target, int rank, float hitFraction = 1f)
+        {
+            if (effectsByRank == null || effectsByRank.Length == 0)
+            {
+                UnityEngine.Debug.LogWarning($"SkillData '{skillName}' has no effectsByRank. Executing default empty effect.");
+                return (0f, false, 0f, 0f);
+            }
+
+            int idx = System.Math.Max(0, System.Math.Min(rank - 1, effectsByRank.Length - 1));
+            return CombatResolver.ApplyEffect(effectsByRank[idx], caster, target, rank, hitFraction);
+        }
+
+        /// <summary>
+        /// Orchestrates the visual sequence (animations, VFX, screen shakes, Cinemachine camera tracks).
+        /// </summary>
+        public abstract void PlayPresentation(
+            CombatAnimationDriver driver, 
+            ICombatActor caster, 
+            ICombatActor target, 
+            int rank, 
+            System.Action onComplete);
     }
 }

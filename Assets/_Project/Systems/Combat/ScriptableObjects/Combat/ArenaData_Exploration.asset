@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ArenaData_Exploration
   m_EditorClassIdentifier: 
   environmentPrefab: {fileID: 0}
-  layoutPrefab: {fileID: 9176779916755136232, guid: ca5126a68c42c874b813868076abc1bb, type: 3}
+  layoutPrefab: {fileID: 20792501846234762, guid: 5c6e19e7e7a882f4592f8df761763466, type: 3}
   slotSpacing: 3
   maxPlayerSlots: 4
   maxEnemySlots: 4

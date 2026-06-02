@@ -27,7 +27,12 @@ namespace Runefall.Combat
                 AddCharacter(c);
 
             if (_skills.Count == 0)
-                throw new InvalidOperationException("No skills found in field characters.");
+            {
+                UnityEngine.Debug.LogWarning("[CardPool] No skills found in field characters. Creating and adding a dummy fallback skill to prevent runtime crash!");
+                var dummySkill = UnityEngine.ScriptableObject.CreateInstance<DefaultSkillData>();
+                dummySkill.skillName = "Fallback Strike";
+                _skills.Add(dummySkill);
+            }
         }
 
         /// <summary>Returns random skill. Never removes it from pool.</summary>

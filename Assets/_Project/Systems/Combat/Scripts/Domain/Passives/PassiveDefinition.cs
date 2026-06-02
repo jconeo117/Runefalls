@@ -21,6 +21,10 @@ namespace Runefall.Combat
         public string passiveName;
         [TextArea] public string description;
 
+        [Header("Compatibility")]
+        [Tooltip("Indica si esta pasiva es compatible con el sistema de Resonancia.")]
+        public bool resonanceCompatible;
+
         /// <summary>
         /// Called once at combat start. Subscribe to TurnManager events here.
         /// owner   — the ICombatActor this passive belongs to.

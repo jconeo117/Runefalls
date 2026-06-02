@@ -40,5 +40,11 @@ namespace Runefall.Combat
         }
 
         public BattleCard WithRank(int newRank) => new BattleCard(Id, Skill, Ultimate, newRank, IsUltimate);
+
+        /// <summary>For networked client replication: creates a BattleCard with a specified unique ID.</summary>
+        public static BattleCard CreateNetworked(int id, SkillData skill, UltimateData ultimate, int rank, bool isUltimate)
+        {
+            return new BattleCard(id, skill, ultimate, rank, isUltimate);
+        }
     }
 }

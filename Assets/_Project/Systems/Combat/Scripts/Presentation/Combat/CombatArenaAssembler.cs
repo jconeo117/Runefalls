@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
 using Runefall.Core;
 using Runefall.Data;
 using Runefall.Presentation.Dungeon;
@@ -148,17 +149,32 @@ namespace Runefall.Presentation.Combat
 
         public void Teardown()
         {
-            if (PlayerRoot           != null) Destroy(PlayerRoot.gameObject);
-            if (EnemyRoot            != null) Destroy(EnemyRoot.gameObject);
-            if (_environmentInstance != null) Destroy(_environmentInstance);
-            if (_layoutInstance      != null) Destroy(_layoutInstance);
+            if (_layoutInstance != null)
+            {
+                Destroy(_layoutInstance);
+                _layoutInstance = null;
+            }
+            else
+            {
+                if (PlayerRoot != null) Destroy(PlayerRoot.gameObject);
+                if (EnemyRoot  != null) Destroy(EnemyRoot.gameObject);
+            }
 
+            if (_environmentInstance != null) Destroy(_environmentInstance);
+
+            PlayerRoot           = null;
+            EnemyRoot            = null;
             PlayerSlots          = null;
             EnemySlots           = null;
             CameraGameplayAnchor = null;
             IntroEnemyAnchor     = null;
             IntroPlayerAnchor    = null;
             IsReady              = false;
+        }
+
+        public PlayableDirector GetLayoutDirector()
+        {
+            return _layoutInstance != null ? _layoutInstance.GetComponentInChildren<PlayableDirector>() : null;
         }
 
         // ── private ───────────────────────────────────────────────────────────────
@@ -216,8 +232,33 @@ namespace Runefall.Presentation.Combat
             Vector3 enemyFacing  = -playerFacing;
             FieldCenter = (playerWorldPos + enemyWorldPos) * 0.5f;
 
-            PlayerRoot  = CreateRoot("ArenaPlayerRoot", playerWorldPos, playerFacing);
-            EnemyRoot   = CreateRoot("ArenaEnemyRoot",  enemyWorldPos,  enemyFacing);
+            Transform playerLine = _layoutInstance != null ? _layoutInstance.transform.Find("PlayerLine") : null;
+            Transform enemyLine  = _layoutInstance != null ? _layoutInstance.transform.Find("EnemyLine") : null;
+
+            if (playerLine != null)
+            {
+                PlayerRoot = playerLine;
+                PlayerRoot.position = playerWorldPos;
+                if (playerFacing.sqrMagnitude > 0.001f)
+                    PlayerRoot.rotation = Quaternion.LookRotation(playerFacing);
+            }
+            else
+            {
+                PlayerRoot = CreateRoot("ArenaPlayerRoot", playerWorldPos, playerFacing);
+            }
+
+            if (enemyLine != null)
+            {
+                EnemyRoot = enemyLine;
+                EnemyRoot.position = enemyWorldPos;
+                if (enemyFacing.sqrMagnitude > 0.001f)
+                    EnemyRoot.rotation = Quaternion.LookRotation(enemyFacing);
+            }
+            else
+            {
+                EnemyRoot = CreateRoot("ArenaEnemyRoot", enemyWorldPos, enemyFacing);
+            }
+
             PlayerSlots = BuildSlots(PlayerRoot, pc);
             EnemySlots  = BuildSlots(EnemyRoot,  ec);
 

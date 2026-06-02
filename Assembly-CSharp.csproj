@@ -63,134 +63,151 @@
   <ItemGroup>
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterMovementController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\UnarmedAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\CollisionSphere.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\DelayActive.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Move.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterInputSystemController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\HandlerTypes.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\HitType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\CollectionExtensions.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\CrosshairSystem.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\ColorExtensions.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Weapon.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\KnockbackType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DualPistolAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\InstantActionHandler.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\Gravity.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Null.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperGround.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ObjectMoveDestroy.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\CastType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperStateMachine.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerMachineDebug.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Knockdown.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Weapon\Relax.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\IInteractable.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Attack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Fall.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\LookAtTarget.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\Side.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DodgeType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedBowAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\EmoteType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Dodge.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\ControllerExtensions.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ScaleFactorApplyToMaterial.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Emote.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\BlockedHitType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerMachine.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\AnimationVariations.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousMouseOrbit.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Math3d.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackCastContext.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\WorldTooltipSystem.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\PistolAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedSpearAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterNavigationController.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\RollType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\IgnoredCollider.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\CrawlType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Turn.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\SwordAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\MovementActionHandler.cs" />
+    <Compile Include="Assets\Santiago\Scripts\MainMenuScripts\MainMenu.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\CastContext.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousEffectsScene.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollision.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollisionType.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ObjectMove.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\SimpleStateMachine.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\AnimatorExtensions.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\CollisionSphere.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterInputSystemController.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousTranslateMove.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousRotateObject.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\CollectionExtensions.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\CharacterState.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackCast.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Weapon.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapPlayerController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Talk.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\DoubleJump.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\GetHit.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\KnockbackType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedAxeAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperMath.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Reload.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerInputController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\SpearAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\KickType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DualPistolAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\InstantActionHandler.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\Gravity.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Null.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TurnType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperGround.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\WeaponExtensions.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerCamera.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollider.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\CastType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperStateMachine.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\IKHands.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Cast.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DiveRollType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerMachineDebug.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Weapon\SwitchWeapon.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapCameraController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\KnockdownType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Knockback.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\EmptyContext.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Knockdown.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Roll.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Weapon\Relax.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\AnimationParameters.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\SimpleActionHandler.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\MultipleObjectsMake.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\BSPTree.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\ShieldAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\ItemAttack.cs" />
-    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\IInteractable.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Attack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\EmoteCombat.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Fall.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\ClimbType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\Side.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DodgeType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\SlowTime.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\DebugDraw.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedBowAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\HitContext.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\PlayerInteractionRaycaster.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\NewMaterialChange.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TalkType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Swim.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\EmoteType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Dodge.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DaggerAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedCrossbowAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\ControllerExtensions.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCharacterController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedStaffAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Emote.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Jump.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Navigation.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\BlockedHitType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerMachine.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonUIPanel.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Crawl.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedSwordAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\AnimatorTrigger.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Shoot.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\AnimationVariations.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\AnimationData.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Math3d.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ShieldActivate.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\BaseActionHandler.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackCastContext.cs" />
-    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\WorldTooltipSystem.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\ActionHandler.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\DiveRoll.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\PistolAttack.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\_ObjectsMakeBase.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Idle.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedSpearAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\MaceAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterWeaponController.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonInteractable.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterNavigationController.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\RollType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DualAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\IgnoredCollider.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterInputController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\CoroutineQueue.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\CrawlType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Turn.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\SwordAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\MovementActionHandler.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ChangeSizeColor.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\WeaponGroupings.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\ShootingAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackContext.cs" />
-    <Compile Include="Assets\Santiago\Scripts\MainMenuScripts\MainMenu.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\AnimatorWeapon.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\ClimbLadder.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\CastContext.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollision.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollisionType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\SimpleStateMachine.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\AnimatorExtensions.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\DestroyObject.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\AttackCastType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
+    <None Include="Assets\SpecialSkillsEffectsPack\Shader_ForEffects\Shader_Decal.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+    <None Include="Assets\SpecialSkillsEffectsPack\Shader_ForEffects\Shader_DistortionEffect.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
@@ -202,6 +219,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
+    <None Include="Assets\SpecialSkillsEffectsPack\Shader_ForEffects\Shader_IntegratedEffect.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
@@ -691,6 +709,10 @@
       <HintPath>A:\Unity_Engines\6000.0.73f1\Editor\Data\Managed\UnityEngine\UnityEditor.XRModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="websocket-sharp">
+      <HintPath>Library\PackageCache\com.unity.services.wire@aba8a6fb1fe2\Plugins\websocket-sharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Collections.LowLevel.ILSupport">
       <HintPath>Library\PackageCache\com.unity.collections@12999e356c23\Unity.Collections.LowLevel.ILSupport\Unity.Collections.LowLevel.ILSupport.dll</HintPath>
       <Private>False</Private>
@@ -708,7 +730,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@74deb55db2a0\Runtime\Newtonsoft.Json.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64\Runtime\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Mono.Cecil">
@@ -1215,8 +1237,224 @@
       <HintPath>A:\Unity_Engines\6000.0.73f1\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.Xml.Serialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Services.Relay">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Relay.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEditor.UI.Analytics">
       <HintPath>Library\ScriptAssemblies\UnityEditor.UI.Analytics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Vivox.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Vivox.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AI.Navigation">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Networking.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Networking.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetStatsMonitor.Implementation">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetStatsMonitor.Implementation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Cinemachine.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Cinemachine.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.ShaderGraph.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Timeline">
+      <HintPath>Library\ScriptAssemblies\Unity.Timeline.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.ShaderLibrary">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.PlasticSCM.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.PlasticSCM.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Center.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetStats">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetStats.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.GPUDriven.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.GPUDriven.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Widgets.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Widgets.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Authentication.PlayerAccounts">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Authentication.PlayerAccounts.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PPv2URPConverters">
+      <HintPath>Library\ScriptAssemblies\PPv2URPConverters.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Playmode">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Playmode.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.Core">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Authentication.Editor.Shared">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Authentication.Editor.Shared.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Config.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Config.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Splines.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Splines.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.PlayMode.Configurations.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.PlayMode.Configurations.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.DependencyInjection">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.DependencyInjection.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Collections.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Collections.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Profiling.Core">
+      <HintPath>Library\ScriptAssemblies\Unity.Profiling.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.Shared.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Shared.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.Core.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AI.Navigation.Updater">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Updater.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.PlayMode.Editor.Bridge">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.PlayMode.Editor.Bridge.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetworkSimulator.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetworkSimulator.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Vivox">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Vivox.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Core.Analytics">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Core.Analytics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Netcode.PackageChecker.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Netcode.PackageChecker.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.SettingsProvider.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.SettingsProvider.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Widgets.Core">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Widgets.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="com.unity.multiplayer.tools.window">
+      <HintPath>Library\ScriptAssemblies\com.unity.multiplayer.tools.window.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Settings.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Settings.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetVis.Editor.Visualization">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetVis.Editor.Visualization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.State">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Multiplayer.Editor.Shared">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Multiplayer.Editor.Shared.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AI.Navigation.Editor.ConversionSystem">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.ConversionSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.MetricEvents">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.MetricEvents.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Widgets.Session">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Widgets.Session.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetworkSolutionInterface">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetworkSolutionInterface.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.Flow">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Flow.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.QoS">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.QoS.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.2D.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.2D.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetStatsMonitor.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetStatsMonitor.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.InputSystem.ForUI">
@@ -1235,8 +1473,24 @@
       <HintPath>Library\ScriptAssemblies\Unity.Rider.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.AI.Navigation">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Tools.DependencyInjection.UIElements">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.DependencyInjection.UIElements.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.MetricTestData">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.MetricTestData.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.Common">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Netcode.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Netcode.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Multiplayer">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Multiplayer.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
@@ -1247,8 +1501,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Shaders.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Cinemachine.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Cinemachine.Editor.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Tools.NetStatsMonitor.Component">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetStatsMonitor.Component.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.PlayMode.Scenarios.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.PlayMode.Scenarios.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime.Shared">
@@ -1259,14 +1517,6 @@
       <HintPath>Library\ScriptAssemblies\Unity.Timeline.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.ShaderGraph.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Timeline">
-      <HintPath>Library\ScriptAssemblies\Unity.Timeline.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Editor.Shared">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.Shared.dll</HintPath>
       <Private>False</Private>
@@ -1275,16 +1525,12 @@
       <HintPath>Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.ShaderLibrary">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Center.Integrations">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Integrations.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.PlasticSCM.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.PlasticSCM.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Multiplayer.Center.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Editor.dll</HintPath>
+    <Reference Include="Unity.Services.Core.Components">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Core.Components.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Splines">
@@ -1295,20 +1541,28 @@
       <HintPath>Library\ScriptAssemblies\Unity.Mathematics.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.GPUDriven.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.GPUDriven.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Cinemachine">
       <HintPath>Library\ScriptAssemblies\Unity.Cinemachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Netcode.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.Netcode.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetworkProfiler.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetworkProfiler.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Collections">
       <HintPath>Library\ScriptAssemblies\Unity.Collections.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="PPv2URPConverters">
-      <HintPath>Library\ScriptAssemblies\PPv2URPConverters.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Tools.NetVis.Editor.UI">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetVis.Editor.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetworkSimulator.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetworkSimulator.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Rendering.LightTransport.Editor">
@@ -1319,48 +1573,20 @@
       <HintPath>Library\ScriptAssemblies\MCPForUnity.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.VisualScripting.Core">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Config.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Config.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Splines.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Splines.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Tools.NetworkProfiler.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetworkProfiler.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Antigravity.Ide.Editor">
       <HintPath>Library\ScriptAssemblies\Antigravity.Ide.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Collections.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Collections.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Shared.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Shared.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Core.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.Editor.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Tools.NetStatsMonitor.Configuration">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetStatsMonitor.Configuration.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Multiplayer.Center.Common">
       <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AI.Navigation.Updater">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Updater.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MCPForUnity.Editor">
@@ -1371,44 +1597,64 @@
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Flow.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Center.NetcodeForGameObjectsExample">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.NetcodeForGameObjectsExample.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.VisualScripting.SettingsProvider.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.SettingsProvider.Editor.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Widgets.Vivox">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Widgets.Vivox.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Lobbies">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Lobbies.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.State.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.Adapters">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.Adapters.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.AI.Navigation.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Authentication">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Authentication.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Mathematics">
       <HintPath>Library\ScriptAssemblies\Unity.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Networking.Transport">
+      <HintPath>Library\ScriptAssemblies\Unity.Networking.Transport.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Settings.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Settings.Editor.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Tools.NetVis.Configuration">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetVis.Configuration.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+    <Reference Include="Unity.Services.Core.Environments">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Core.Environments.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.VisualScripting.State">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.dll</HintPath>
+    <Reference Include="Unity.Services.Multiplayer.Editor.Matchmaker.Authoring">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Multiplayer.Editor.Matchmaker.Authoring.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.AI.Navigation.Editor.ConversionSystem">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.ConversionSystem.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.PlayMode.Analytics.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.PlayMode.Analytics.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Multiplayer.Tools.NetStatsReporting">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.NetStatsReporting.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
@@ -1419,6 +1665,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.Burst.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Services.Core">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Burst">
       <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
       <Private>False</Private>
@@ -1427,12 +1677,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Tools.Initialization">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.Initialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.VisualScripting.Flow">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Flow.dll</HintPath>
+    <Reference Include="Unity.Multiplayer.Tools.MetricTypes">
+      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Tools.MetricTypes.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Rendering.LightTransport.Runtime">
@@ -1441,10 +1691,6 @@
     </Reference>
     <Reference Include="Unity.InputSystem">
       <HintPath>Library\ScriptAssemblies\Unity.InputSystem.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.2D.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.2D.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

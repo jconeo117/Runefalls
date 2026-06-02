@@ -18,11 +18,11 @@ namespace Runefall.Tests.EditMode
         [SetUp]
         public void SetUp()
         {
-            _skill1 = ScriptableObject.CreateInstance<SkillData>();
+            _skill1 = ScriptableObject.CreateInstance<DefaultSkillData>();
             _skill1.skillName = "Ataque Igneo";
             _skill1.element   = ElementType.Fire;
 
-            _skill2 = ScriptableObject.CreateInstance<SkillData>();
+            _skill2 = ScriptableObject.CreateInstance<DefaultSkillData>();
             _skill2.skillName = "Barrera Ignia";
             _skill2.element   = ElementType.Fire;
 
@@ -66,11 +66,11 @@ namespace Runefall.Tests.EditMode
         [Test]
         public void CombatHand_Deal_GuaranteesSkill1AndSkill2Leftmost()
         {
-            var skill3 = ScriptableObject.CreateInstance<SkillData>();
+            var skill3 = ScriptableObject.CreateInstance<DefaultSkillData>();
             skill3.skillName = "Ataque Sombrío";
             skill3.element   = ElementType.Shadow;
 
-            var skill4 = ScriptableObject.CreateInstance<SkillData>();
+            var skill4 = ScriptableObject.CreateInstance<DefaultSkillData>();
             skill4.skillName = "Barrera Sombría";
             skill4.element   = ElementType.Shadow;
 
@@ -109,11 +109,11 @@ namespace Runefall.Tests.EditMode
         [Test]
         public void CombatHand_Deal_RefillsHandOnMerge_AndKeepsSkill1AndSkill2Leftmost()
         {
-            var skill3 = ScriptableObject.CreateInstance<SkillData>();
+            var skill3 = ScriptableObject.CreateInstance<DefaultSkillData>();
             skill3.skillName = "Ataque Sombrío";
             skill3.element   = ElementType.Shadow;
 
-            var skill4 = ScriptableObject.CreateInstance<SkillData>();
+            var skill4 = ScriptableObject.CreateInstance<DefaultSkillData>();
             skill4.skillName = "Barrera Sombría";
             skill4.element   = ElementType.Shadow;
 

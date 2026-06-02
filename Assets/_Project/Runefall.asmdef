@@ -6,7 +6,12 @@
         "Unity.TextMeshPro",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Universal.Runtime",
-        "Unity.Timeline"
+        "Unity.Timeline",
+        "Unity.Netcode.Runtime",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication",
+        "Unity.Services.Lobbies",
+        "Unity.Services.Relay"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

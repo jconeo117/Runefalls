@@ -61,16 +61,16 @@ namespace Runefall.Presentation.Combat
         [SerializeField] private float _lastHitPauseDuration  = 0.30f;
 
         // Injected by CombatBootstrapper via Init()
-        private CombatContext                                     _ctx;
-        private TurnManager                                       _tm;
-        private IReadOnlyDictionary<ICombatActor, Transform>      _actorPawns;
-        private IReadOnlyDictionary<ICombatActor, CharacterData>  _actorCharData;
-        private IReadOnlyDictionary<ICombatActor, EnemyData>      _actorEnemyData;
-        private IReadOnlyDictionary<ICombatActor, HPBarPresenter> _actorHPBars;
-        private ICombatPresenter                                   _presenter;
+        protected CombatContext                                     _ctx;
+        protected TurnManager                                       _tm;
+        protected IReadOnlyDictionary<ICombatActor, Transform>      _actorPawns;
+        protected IReadOnlyDictionary<ICombatActor, CharacterData>  _actorCharData;
+        protected IReadOnlyDictionary<ICombatActor, EnemyData>      _actorEnemyData;
+        protected IReadOnlyDictionary<ICombatActor, HPBarPresenter> _actorHPBars;
+        protected ICombatPresenter                                   _presenter;
 
-        private readonly Queue<PendingAction> _animQueue = new();
-        private Camera _camera;
+        protected readonly Queue<PendingAction> _animQueue = new();
+        protected Camera _camera;
 
         // World-space positions of the attacker and target on the killing blow.
         // Captured in RaiseImpactHit when _ctx.IsOver && _ctx.PlayerWon, passed to FinisherManager.
@@ -144,14 +144,20 @@ namespace Runefall.Presentation.Combat
         /// <summary>Queues a pending action for deferred resolution at animation impact frame.</summary>
         public void Enqueue(PendingAction pending) => _animQueue.Enqueue(pending);
 
+        /// <summary>Clears the visual queue of pending actions.</summary>
+        public void ClearQueue() => _animQueue.Clear();
+
         /// <summary>
         /// Drains the animation queue with full visual feedback.
         /// Called by Bootstrapper when the player exhausts all actions (pass _tm.EndPlayerTurn
         /// as onComplete) or after enemy phase actions.
         /// fadeSlots: when true, notifies presenter after each animation so it can fade action slots.
         /// </summary>
-        public void PlayQueuedAnimations(Action onComplete, bool fadeSlots = false)
+        private bool _isDraining = false;
+
+        public virtual void PlayQueuedAnimations(Action onComplete, bool fadeSlots = false)
         {
+            if (_isDraining) return;
             StartCoroutine(DrainQueue(onComplete, fadeSlots));
         }
 
@@ -159,22 +165,30 @@ namespace Runefall.Presentation.Combat
 
         private IEnumerator DrainQueue(Action onComplete, bool fadeSlots = false)
         {
-            int slotIndex = 0;
-            while (_animQueue.Count > 0)
+            _isDraining = true;
+            try
             {
-                // Combat may have ended during a previous group — skip remaining actions.
-                if (_ctx != null && _ctx.IsOver) break;
-                var pending = _animQueue.Dequeue();
-                yield return StartCoroutine(PlayActionGroup(pending));
-                if (fadeSlots)
-                    _presenter?.NotifyActionAnimationComplete(slotIndex++);
-                if (_ctx != null && _ctx.IsOver) break;
+                int slotIndex = 0;
+                while (_animQueue.Count > 0)
+                {
+                    // Combat may have ended during a previous group — skip remaining actions.
+                    if (_ctx != null && _ctx.IsOver) break;
+                    var pending = _animQueue.Dequeue();
+                    yield return StartCoroutine(PlayActionGroup(pending));
+                    if (fadeSlots)
+                        _presenter?.NotifyActionAnimationComplete(slotIndex++);
+                    if (_ctx != null && _ctx.IsOver) break;
+                }
+                if (_ctx != null && _ctx.IsOver)
+                    yield return StartCoroutine(RunCombatEndDrama());
+                if (onComplete != null && fadeSlots && _postPlayerTurnDelay > 0f)
+                    yield return new WaitForSecondsRealtime(_postPlayerTurnDelay);
+                onComplete?.Invoke();
             }
-            if (_ctx != null && _ctx.IsOver)
-                yield return StartCoroutine(RunCombatEndDrama());
-            if (onComplete != null && fadeSlots && _postPlayerTurnDelay > 0f)
-                yield return new WaitForSecondsRealtime(_postPlayerTurnDelay);
-            onComplete?.Invoke();
+            finally
+            {
+                _isDraining = false;
+            }
         }
 
         // ── pawn animators ────────────────────────────────────────────────────────
@@ -615,7 +629,7 @@ namespace Runefall.Presentation.Combat
         /// play through. Subsequent hits on deferred-dead targets show overkill floating numbers.
         /// AoE per-actor mode: each actor's death is flushed individually on its own last hit.
         /// </summary>
-        private void RaiseImpactHit(PendingAction pending, int hitIdx, int totalHits,
+        protected void RaiseImpactHit(PendingAction pending, int hitIdx, int totalHits,
                                     ICombatActor specificTarget = null)
         {
             if (_tm == null) return;
@@ -749,7 +763,7 @@ namespace Runefall.Presentation.Combat
 
         // ── lunge helpers ─────────────────────────────────────────────────────────
 
-        private IEnumerator RunCombatEndDrama()
+        protected IEnumerator RunCombatEndDrama()
         {
             if (_ctx != null && _ctx.PlayerWon && _finisherManager != null)
                 yield return _finisherManager.Play(_killingBlowAttackerPos, _killingBlowTargetPos);

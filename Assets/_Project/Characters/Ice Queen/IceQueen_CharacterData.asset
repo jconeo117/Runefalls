@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7034d796ce063424e98a259d5a7b1449, type: 3}
+  m_Name: IceQueen_CharacterData
+  m_EditorClassIdentifier: 
+  characterName: Ice Queen
+  portrait: {fileID: 0}
+  prefab: {fileID: 0}
+  rarity: 2
+  element: 2
+  baseStats:
+    ofensivas:
+      ataque: 250
+      perforacion: 0
+      critChance: 0.05
+      "critDa\xF1o": 1.5
+    defensivas:
+      defensa: 120
+      resistencia: 0.1
+      defensaCrit: 0.1
+      resistenciaCrit: 0.05
+    vitales:
+      ps: 2000
+      roboDeVida: 0.05
+      tasaRegen: 0.04
+      tasaRecuperacion: 0.05
+  skill1: {fileID: 11400000, guid: 928287304f42271478f06bbe12015c50, type: 2}
+  skill2: {fileID: 11400000, guid: b03cdc6cef32f50408cec7d5f9f474bc, type: 2}
+  ultimate: {fileID: 11400000, guid: ee692069d3ec8694a8e1d2c7171e69f6, type: 2}
+  passive: {fileID: 11400000, guid: d7c5ff5ba87d98d448bb309ff5366b99, type: 2}
+  animatorController: {fileID: 0}
+  animApproach: {fileID: 0}
+  animGetHit: {fileID: 0}
+  animDeath: {fileID: 0}
+  baseDropRate: 0

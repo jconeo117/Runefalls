@@ -21,7 +21,7 @@ namespace Runefall.Combat
 
         public int  HandSize           { get; private set; }
         public int  ActionsPerTurn     { get; private set; }
-        public int  ActionsRemaining   { get; private set; }
+        public int  ActionsRemaining   { get; set; }
         public bool Dealt              { get; private set; }
         /// <summary>Net new slots added by the last Refill() call (after merges). All slots on first Deal.</summary>
         public int  NewCardsThisRefill { get; private set; }
