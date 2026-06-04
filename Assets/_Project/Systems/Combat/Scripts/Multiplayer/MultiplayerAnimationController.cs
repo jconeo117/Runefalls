@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Runefall.Combat;
 using Runefall.Data;
 using Runefall.Presentation.Combat;
 
@@ -98,14 +99,14 @@ namespace Runefall.Multiplayer
             EnsureInit(attackerPawn);
             EnsureInit(targetPawn);
 
-            ResolveClips(attackerPawn, card, out var clips, out bool isRanged, out int impactIdx);
+            ResolveClips(attackerPawn, card, out var clips, out bool isRanged, out int impactIdx, out var trigger);
             float approachReturnLen = GetApproachClipLength(attackerPawn) ?? FallbackApproachLen;
 
             if (attackerPawn != null && targetPawn != null)
                 yield return StartCoroutine(PlayAttackChoreography(
                     attackerPawn.transform, attackerAnim,
                     targetPawn.transform,   targetAnim,
-                    clips, isRanged, impactIdx, approachReturnLen));
+                    clips, isRanged, impactIdx, approachReturnLen, trigger));
             else
                 yield return new WaitForSeconds(0.4f); // pawns missing — keep turn flow alive
 
@@ -137,14 +138,14 @@ namespace Runefall.Multiplayer
             EnsureInit(targetPawn);
 
             // Enemy attack uses its EnemyData.skill1 clips (orchestrator broadcasts no skill id).
-            ResolveEnemyClips(enemyPawn, out var clips, out bool isRanged, out int impactIdx);
+            ResolveEnemyClips(enemyPawn, out var clips, out bool isRanged, out int impactIdx, out var trigger);
             float approachReturnLen = GetApproachClipLength(enemyPawn) ?? EnemyLungeDuration;
 
             if (enemyPawn != null && targetPawn != null)
                 yield return StartCoroutine(PlayAttackChoreography(
                     enemyPawn.transform, enemyAnim,
                     targetPawn.transform, targetAnim,
-                    clips, isRanged, impactIdx, approachReturnLen));
+                    clips, isRanged, impactIdx, approachReturnLen, trigger));
             else
                 yield return new WaitForSeconds(0.4f);
 
@@ -158,25 +159,38 @@ namespace Runefall.Multiplayer
         private IEnumerator PlayAttackChoreography(
             Transform attacker, CombatPawnAnimator attackerAnim,
             Transform target,   CombatPawnAnimator targetAnim,
-            AnimationClip[] clips, bool isRanged, int impactIdx, float approachReturnLen)
+            AnimationClip[] clips, bool isRanged, int impactIdx, float approachReturnLen,
+            ImpactTriggerData triggerData)
         {
             if (attacker == null) yield break;
 
             Vector3    targetPos   = target != null ? target.position : attacker.position;
             Quaternion originalRot = attacker.rotation;
 
-            // Target hit reaction is driven by the attacker's Animation Events on the clip:
-            //   melee  → "ImpactFrame" (CombatPawnAnimator.OnImpactFrame) = contact frame
-            //   ranged → "Shoot"       (CombatPawnAnimator.OnShoot)       = release frame
-            // This syncs the reaction to the exact authored frame, not clip end / clip index.
-            int aeHits = 0;
-            void OnAttackAE() { aeHits++; targetAnim?.PlayHit(); }
-
             bool hasClips = attackerAnim != null && clips != null && clips.Length > 0;
-            if (hasClips)
+
+            // Impact is resolved by the skill's ImpactTriggerData — exactly like singleplayer:
+            //   Projectile → spawns the prefab on the "shoot" AE, travels to target, fires on arrival
+            //   AnimEvent  → fires on the "ImpactFrame" AE (melee contact frame)
+            //   Timer      → fires after a fixed delay
+            // The callback plays the target hit reaction. Falls back to a direct AE subscription
+            // (or a single delayed PlayHit) when the skill defines no trigger.
+            int impactCount = 0;
+            void DoHit() { impactCount++; targetAnim?.PlayHit(); }
+
+            IImpactTrigger trigger  = null;
+            System.Action  manualAE = null;
+
+            if (hasClips && triggerData != null)
             {
-                if (isRanged) attackerAnim.OnShoot       += OnAttackAE;
-                else          attackerAnim.OnImpactFrame += OnAttackAE;
+                trigger = triggerData.Create(attacker, target, this, clips);
+                trigger.Arm((wave, total, actor) => DoHit());
+            }
+            else if (hasClips)
+            {
+                manualAE = DoHit;
+                if (isRanged) attackerAnim.OnShoot       += manualAE;
+                else          attackerAnim.OnImpactFrame += manualAE;
             }
 
             try
@@ -185,11 +199,9 @@ namespace Runefall.Multiplayer
                 if (isRanged)
                 {
                     RotateToward(attacker, targetPos);
-                    if (hasClips)
-                        yield return StartCoroutine(attackerAnim.PlaySkillSequence(clips));
-                    else
-                        targetAnim?.PlayHit();
-                    if (hasClips && aeHits == 0) targetAnim?.PlayHit(); // fallback: clip had no AE
+                    if (hasClips) yield return StartCoroutine(attackerAnim.PlaySkillSequence(clips));
+                    yield return WaitTriggerLanded(trigger);
+                    if (hasClips && impactCount == 0) DoHit(); // fallback: no AE/prefab → react once
                     attacker.rotation = originalRot;
                     yield break;
                 }
@@ -200,8 +212,8 @@ namespace Runefall.Multiplayer
 
                 if (hasClips)
                 {
-                    // Lunge movement is timed off the impact clip; the hit reaction itself
-                    // fires from the "ImpactFrame" AE so contact and reaction stay in sync.
+                    // Lunge movement timed off the impact clip; the hit reaction fires from the
+                    // trigger (ImpactFrame AE) so contact and reaction stay in sync.
                     float approachDelay = SumClipDurations(clips, 0, impactIdx - 1);
                     float approachDur   = (impactIdx >= 0 && impactIdx < clips.Length && clips[impactIdx] != null)
                                           ? clips[impactIdx].length : 0f;
@@ -223,7 +235,8 @@ namespace Runefall.Multiplayer
                     yield return new WaitForSeconds(NoClipImpactPause);
                 }
 
-                if (hasClips && aeHits == 0) targetAnim?.PlayHit(); // fallback: clip had no AE
+                yield return WaitTriggerLanded(trigger);
+                if (hasClips && impactCount == 0) DoHit(); // fallback: no AE/prefab → react once
 
                 // Sequential return: rotate home, run back, settle to idle.
                 yield return StartCoroutine(SmoothRotateTo(attacker, origin, 0f, ReturnRotateDuration));
@@ -234,12 +247,20 @@ namespace Runefall.Multiplayer
             }
             finally
             {
-                if (hasClips)
+                if (manualAE != null)
                 {
-                    if (isRanged) attackerAnim.OnShoot       -= OnAttackAE;
-                    else          attackerAnim.OnImpactFrame -= OnAttackAE;
+                    if (isRanged) attackerAnim.OnShoot       -= manualAE;
+                    else          attackerAnim.OnImpactFrame -= manualAE;
                 }
             }
+        }
+
+        // Bounded wait for the trigger (e.g. projectile travel) to land before continuing.
+        private IEnumerator WaitTriggerLanded(IImpactTrigger trigger)
+        {
+            if (trigger == null) yield break;
+            float t = 0f;
+            while (!trigger.HasFired && t < 2f) { t += Time.deltaTime; yield return null; }
         }
 
         // ── Skill resolution ───────────────────────────────────────────────────
@@ -248,11 +269,12 @@ namespace Runefall.Multiplayer
         // not the registry — registry.skills is often empty, and the character always carries
         // its own skill assets. Registry is a last-resort fallback.
         private void ResolveClips(NetworkedCombatPawn attackerPawn, NetworkBattleCard card,
-            out AnimationClip[] clips, out bool isRanged, out int impactIdx)
+            out AnimationClip[] clips, out bool isRanged, out int impactIdx, out ImpactTriggerData trigger)
         {
             clips     = null;
             isRanged  = false;
             impactIdx = 0;
+            trigger   = null;
 
             var cd = attackerPawn != null ? attackerPawn.GetComponent<CharacterSlot>()?.data : null;
             var ed = attackerPawn != null ? attackerPawn.GetComponent<EnemySlot>()?.data     : null;
@@ -269,6 +291,7 @@ namespace Runefall.Multiplayer
                     clips     = dsd.animSequence;
                     isRanged  = dsd.isRanged;
                     impactIdx = dsd.impactAfterClipIndex;
+                    trigger   = dsd.impactTrigger;
                 }
             }
             else
@@ -287,11 +310,12 @@ namespace Runefall.Multiplayer
 
         // Enemy attack: use EnemyData.skill1 (preferred) or skill2 as a DefaultSkillData.
         private void ResolveEnemyClips(NetworkedCombatPawn enemyPawn,
-            out AnimationClip[] clips, out bool isRanged, out int impactIdx)
+            out AnimationClip[] clips, out bool isRanged, out int impactIdx, out ImpactTriggerData trigger)
         {
             clips     = null;
             isRanged  = false;
             impactIdx = 0;
+            trigger   = null;
 
             var ed = enemyPawn != null ? enemyPawn.GetComponent<EnemySlot>()?.data : null;
             if (ed == null) return;
@@ -302,6 +326,7 @@ namespace Runefall.Multiplayer
                 clips     = dsd.animSequence;
                 isRanged  = dsd.isRanged;
                 impactIdx = dsd.impactAfterClipIndex;
+                trigger   = dsd.impactTrigger;
             }
         }
 
