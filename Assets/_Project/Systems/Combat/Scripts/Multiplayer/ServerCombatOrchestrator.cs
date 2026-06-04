@@ -98,6 +98,64 @@ namespace Runefall.Multiplayer
             Debug.Log($"[Orchestrator] Inicializado: {ctx.Players.Count} players, {ctx.Enemies.Count} enemies.");
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // Host-only debug hotkeys to exercise end-of-combat without playing it out:
+        //   F9  → Victory (kill boss)   F10 → kill one player (spectator)   F11 → Defeat (kill all players)
+        private void Update()
+        {
+            if (!IsServer || _combatOver || _ctx == null) return;
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb == null) return;
+            if (kb.f9Key.wasPressedThisFrame)  DebugForceVictory();
+            if (kb.f10Key.wasPressedThisFrame) DebugKillOnePlayer();
+            if (kb.f11Key.wasPressedThisFrame) DebugForceDefeat();
+        }
+
+        private void DebugForceVictory()
+        {
+            for (int i = 0; i < _ctx.Enemies.Count; i++)
+            {
+                var e = _ctx.Enemies[i];
+                if (e == null) continue;
+                e.Model.SetHPDirectly(0);
+                EnemyHpChangedClientRpc(i, 0, (int)e.Model.MaxHP, 0, false);
+            }
+            EndCombat(true);
+        }
+
+        private void DebugKillOnePlayer()
+        {
+            // Kill the highest-id alive player so the host can stay and spectate.
+            ulong target = ulong.MaxValue;
+            foreach (var kvp in _ctx.Players)
+                if (kvp.Value.IsAlive && (target == ulong.MaxValue || kvp.Key > target))
+                    target = kvp.Key;
+            if (target == ulong.MaxValue) return;
+            DebugKill(target);
+            if (_ctx.AllPlayersDead()) EndCombat(false);
+        }
+
+        private void DebugForceDefeat()
+        {
+            foreach (var kvp in _ctx.Players)
+                if (kvp.Value.IsAlive) DebugKill(kvp.Key);
+            EndCombat(false);
+        }
+
+        private void DebugKill(ulong cid)
+        {
+            var p = _ctx.GetPlayer(cid);
+            if (p == null) return;
+            p.Model.SetHPDirectly(0);
+            PlayerHpChangedClientRpc(cid, 0, (int)p.Model.MaxHP, 0, false);
+            if (_deadBroadcast.Add(cid))
+            {
+                MultiplayerActionSlotsSync.Instance?.MarkPlayerDead(cid);
+                PlayerDiedClientRpc(cid);
+            }
+        }
+#endif
+
         // ── Subscription ───────────────────────────────────────────────────────
 
         private IEnumerator SubscribeWhenSyncReady()
