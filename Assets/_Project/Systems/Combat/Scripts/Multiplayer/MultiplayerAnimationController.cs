@@ -177,8 +177,7 @@ namespace Runefall.Multiplayer
         {
             if (attacker == null) yield break;
 
-            Vector3    targetPos   = target != null ? target.position : attacker.position;
-            Quaternion originalRot = attacker.rotation;
+            Vector3 targetPos = target != null ? target.position : attacker.position;
 
             bool hasClips = attackerAnim != null && clips != null && clips.Length > 0;
 
@@ -250,7 +249,7 @@ namespace Runefall.Multiplayer
                     while (inFlight > 0 && wt < 3f) { wt += Time.deltaTime; yield return null; }
 
                     if (hasClips && impactCount == 0) DoHit(); // fallback: no AE → react once
-                    attacker.rotation = originalRot;
+                    RotateToward(attacker, targetPos); // deterministic: always face the target
                     yield break;
                 }
 
@@ -289,7 +288,7 @@ namespace Runefall.Multiplayer
                 attackerAnim?.PlayApproach();
                 yield return StartCoroutine(LungeTo(attacker, origin, approachReturnLen));
                 attackerAnim?.PlayReturn();
-                attacker.rotation = originalRot;
+                RotateToward(attacker, targetPos); // deterministic: always face the target (boss)
             }
             finally
             {
