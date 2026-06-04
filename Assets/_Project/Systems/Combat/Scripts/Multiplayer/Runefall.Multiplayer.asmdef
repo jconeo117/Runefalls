@@ -6,7 +6,10 @@
         "Unity.Collections",
         "Unity.Cinemachine",
         "Unity.Networking.Transport",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication",
+        "Unity.Services.Relay"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

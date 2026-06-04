@@ -3,6 +3,7 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -49,6 +50,12 @@ namespace Runefall.Multiplayer.Lobby
     {
         [SerializeField] private string combatSceneName = "Multiplayer_BossFight";
         [SerializeField] private ushort port            = 7777;
+
+        [Header("Connection")]
+        [Tooltip("On = Unity Relay (NAT traversal, internet). Off = direct IP / LAN fallback.")]
+        [SerializeField] private bool   useRelay   = true;
+        [Tooltip("Total players including the host. Used to size the Relay allocation.")]
+        [SerializeField] private int    maxPlayers = 2;
 
         [Header("Character")]
         [Tooltip("Registry con characters ordenados: índice 0 = host (clientId 0), 1 = cliente 1, etc.")]
@@ -144,6 +151,33 @@ namespace Runefall.Multiplayer.Lobby
                 return;
             }
 
+            if (useRelay) _ = CreateRoomRelayAsync();
+            else          CreateRoomDirectIp();
+        }
+
+        // Relay: the join code clients use IS the Relay code (no IP shared, NAT traversed).
+        private async Task CreateRoomRelayAsync()
+        {
+            try
+            {
+                CurrentCode = await RelayConnectionService.CreateAllocationAsync(maxPlayers);
+                Debug.Log($"[Lobby] StartHost() vía Relay | JoinCode: {CurrentCode}");
+                NetworkManager.Singleton.StartHost();
+
+                SpawnNetworkedLobbyManager();
+                StartCoroutine(RegisterCharacterDelayed());
+
+                OnHostStarted?.Invoke();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Lobby] Relay host falló: {e}");
+                OnConnectionFailed?.Invoke("No se pudo crear la sala (Relay). Verifica tu conexión.");
+            }
+        }
+
+        private void CreateRoomDirectIp()
+        {
             string ip = GetLocalIP();
             CurrentCode = GenerateCode();
 
@@ -183,7 +217,36 @@ namespace Runefall.Multiplayer.Lobby
                 OnConnectionFailed?.Invoke("Ingresa un código de sala o una IP.");
                 return;
             }
+            if (NetworkManager.Singleton == null)
+            {
+                Debug.LogError("[Lobby] NetworkManager.Singleton es null en JoinRoom.");
+                OnConnectionFailed?.Invoke("Error interno: NetworkManager no inicializado.");
+                return;
+            }
 
+            if (useRelay) _ = JoinRoomRelayAsync(input.ToUpper());
+            else          JoinRoomDirectIp(input);
+        }
+
+        // Relay: input is the Relay join code (uppercase). No IP involved.
+        private async Task JoinRoomRelayAsync(string joinCode)
+        {
+            try
+            {
+                await RelayConnectionService.JoinAllocationAsync(joinCode);
+                Debug.Log($"[Lobby] ⏳ StartClient() vía Relay | JoinCode: {joinCode}");
+                NetworkManager.Singleton.StartClient();
+                _connectTimeout = StartCoroutine(ConnectionTimeout());
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Lobby] Relay join falló: {e}");
+                OnConnectionFailed?.Invoke("No se pudo unir a la sala. Verifica el código e intenta de nuevo.");
+            }
+        }
+
+        private void JoinRoomDirectIp(string input)
+        {
             string address;
 
             if (LobbyCodeRegistry.TryResolve(input.ToUpper(), out var resolved))
@@ -200,13 +263,6 @@ namespace Runefall.Multiplayer.Lobby
             {
                 Debug.LogWarning($"[Lobby] ❌ Código '{input}' no encontrado en registry y no es una IP válida.");
                 OnConnectionFailed?.Invoke($"Código '{input}' no encontrado. Verifica e intenta de nuevo.");
-                return;
-            }
-
-            if (NetworkManager.Singleton == null)
-            {
-                Debug.LogError("[Lobby] NetworkManager.Singleton es null en JoinRoom.");
-                OnConnectionFailed?.Invoke("Error interno: NetworkManager no inicializado.");
                 return;
             }
 
