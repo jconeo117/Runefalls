@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Unity.Netcode;
+using Runefall.Presentation.Combat;
 
 namespace Runefall.Multiplayer
 {
@@ -10,21 +10,30 @@ namespace Runefall.Multiplayer
     /// Manages all HP bar visuals in multiplayer combat.
     ///
     /// Player characters: world-space billboard bars, one per NetworkedCombatPawn.
-    /// Boss: screen-space bar anchored to top-left of the HUD canvas.
+    /// Boss: large styled screen-space bar anchored to the top-center of the HUD canvas.
+    /// Floating damage numbers rise above the struck pawn whenever HP drops.
     ///
     /// HP values come from ServerCombatOrchestrator RPCs — no local actor needed.
     /// Created and initialized by MultiplayerLocalCombatSetup.
     /// </summary>
     public class MultiplayerHPController : MonoBehaviour
     {
-        // World-space bars per player (clientId → fill Image)
-        private readonly Dictionary<ulong, Image> _playerFills = new();
+        // World-space bars + smooth fillers per player (clientId → …)
+        private readonly Dictionary<ulong, SmoothFill> _playerFills = new();
+        private readonly Dictionary<ulong, Transform>  _playerPawns = new();
+        private readonly Dictionary<ulong, int>        _playerLastHp = new();
 
-        // Boss screen-space bar
-        private Image _bossFill;
+        // Boss
+        private SmoothFill _bossFill;
+        private Transform  _bossPawn;
+        private Text       _bossHpText;
+        private int        _bossLastHp = -1;
 
         // Canvas used for screen-space boss bar (found from the HUD instance)
         private Canvas _hudCanvas;
+
+        private static readonly Color DamageColor = new Color(1f, 0.85f, 0.25f);
+        private static readonly Color HealColor   = new Color(0.4f, 1f, 0.45f);
 
         // ── Initialization ─────────────────────────────────────────────────────
 
@@ -67,7 +76,7 @@ namespace Runefall.Multiplayer
                     CreateWorldSpaceBar(pawn);
                 else if (!bossBarCreated)
                 {
-                    CreateBossScreenBar();
+                    CreateBossScreenBar(pawn);
                     bossBarCreated = true;
                 }
             }
@@ -79,7 +88,6 @@ namespace Runefall.Multiplayer
         {
             ulong cid = pawn.NetworkObject.OwnerClientId;
 
-            // Canvas
             var canvasGO = new GameObject($"HPBar_P{cid}");
             canvasGO.transform.SetParent(pawn.transform, false);
             canvasGO.transform.localPosition = new Vector3(0f, 2.4f, 0f);
@@ -91,94 +99,138 @@ namespace Runefall.Multiplayer
             scaler.dynamicPixelsPerUnit = 10f;
 
             var rt = (RectTransform)canvasGO.transform;
-            rt.sizeDelta   = new Vector2(200f, 20f);
-            rt.localScale  = Vector3.one * 0.008f;
+            rt.sizeDelta  = new Vector2(200f, 20f);
+            rt.localScale = Vector3.one * 0.008f;
 
-            // Background
             var bgFill = CreateBarLayer(canvasGO.transform, "BG", new Color(0.08f, 0.08f, 0.08f, 0.85f));
-            bgFill.anchorMin = Vector2.zero;
-            bgFill.anchorMax = Vector2.one;
+            bgFill.anchorMin = Vector2.zero; bgFill.anchorMax = Vector2.one;
             bgFill.offsetMin = bgFill.offsetMax = Vector2.zero;
 
-            // Green fill
             var fillRT = CreateBarLayer(canvasGO.transform, "Fill", new Color(0.18f, 0.78f, 0.30f));
-            fillRT.anchorMin = Vector2.zero;
-            fillRT.anchorMax = Vector2.one;
+            fillRT.anchorMin = Vector2.zero; fillRT.anchorMax = Vector2.one;
             fillRT.offsetMin = fillRT.offsetMax = Vector2.zero;
 
-            _playerFills[cid] = fillRT.GetComponent<Image>();
+            _playerFills[cid] = fillRT.gameObject.AddComponent<SmoothFill>();
+            _playerPawns[cid] = pawn.transform;
 
-            // Billboard component so bar always faces camera
             canvasGO.AddComponent<BillboardBar>();
-
-            Debug.Log($"[MPHPCtrl] World HP bar creado para player {cid}.");
         }
 
-        private void CreateBossScreenBar()
+        // Large, styled boss bar anchored top-center: dark track, red fill, gold frame, name + HP text.
+        private void CreateBossScreenBar(NetworkedCombatPawn pawn)
         {
+            _bossPawn = pawn.transform;
             if (_hudCanvas == null)
             {
                 Debug.LogWarning("[MPHPCtrl] HUD canvas no asignado — boss bar omitida.");
                 return;
             }
 
-            // Container anchored top-left
+            string bossName = pawn.GetComponent<EnemySlot>()?.data?.enemyName ?? "BOSS";
+
+            // Container: top-center, wide.
             var containerGO = new GameObject("BossHPBar");
             containerGO.transform.SetParent(_hudCanvas.transform, false);
-
             var container = containerGO.AddComponent<RectTransform>();
-            container.anchorMin        = new Vector2(0f, 1f);
-            container.anchorMax        = new Vector2(0f, 1f);
-            container.pivot            = new Vector2(0f, 1f);
-            container.anchoredPosition = new Vector2(20f, -20f);
-            container.sizeDelta        = new Vector2(280f, 28f);
+            container.anchorMin        = new Vector2(0.5f, 1f);
+            container.anchorMax        = new Vector2(0.5f, 1f);
+            container.pivot            = new Vector2(0.5f, 1f);
+            container.anchoredPosition = new Vector2(0f, -24f);
+            container.sizeDelta        = new Vector2(620f, 46f);
 
-            // Label
-            var labelGO = new GameObject("Label");
-            labelGO.transform.SetParent(containerGO.transform, false);
-            var labelRT            = labelGO.AddComponent<RectTransform>();
-            labelRT.anchorMin      = new Vector2(0f, 1f);
-            labelRT.anchorMax      = new Vector2(1f, 1f);
-            labelRT.pivot          = new Vector2(0f, 0f);
-            labelRT.anchoredPosition = new Vector2(0f, 4f);
-            labelRT.sizeDelta      = new Vector2(0f, 18f);
-            var labelTxt           = labelGO.AddComponent<Text>();
-            labelTxt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            labelTxt.text          = "BOSS";
-            labelTxt.fontSize      = 13;
-            labelTxt.fontStyle     = FontStyle.Bold;
-            labelTxt.color         = new Color(1f, 0.85f, 0.3f);
-            labelTxt.alignment     = TextAnchor.MiddleLeft;
+            // Gold frame (slightly larger backing).
+            var frame = CreateBarLayer(containerGO.transform, "Frame", new Color(0.78f, 0.62f, 0.22f, 1f));
+            frame.anchorMin = Vector2.zero; frame.anchorMax = Vector2.one;
+            frame.offsetMin = new Vector2(-3f, -3f); frame.offsetMax = new Vector2(3f, 3f);
 
-            // Background
-            var bgRT = CreateBarLayer(containerGO.transform, "BG", new Color(0.08f, 0.08f, 0.08f, 0.9f));
-            bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
-            bgRT.offsetMin = bgRT.offsetMax = Vector2.zero;
+            // Dark track.
+            var track = CreateBarLayer(containerGO.transform, "Track", new Color(0.06f, 0.05f, 0.07f, 0.96f));
+            track.anchorMin = Vector2.zero; track.anchorMax = Vector2.one;
+            track.offsetMin = track.offsetMax = Vector2.zero;
 
-            // Red fill
-            var fillRT = CreateBarLayer(containerGO.transform, "Fill", new Color(0.85f, 0.15f, 0.15f));
+            // Red fill (left-anchored, width via anchorMax.x).
+            var fillRT = CreateBarLayer(containerGO.transform, "Fill", new Color(0.80f, 0.12f, 0.14f));
             fillRT.anchorMin = Vector2.zero; fillRT.anchorMax = Vector2.one;
-            fillRT.offsetMin = fillRT.offsetMax = Vector2.zero;
+            fillRT.offsetMin = new Vector2(2f, 2f); fillRT.offsetMax = new Vector2(-2f, -2f);
+            fillRT.pivot     = new Vector2(0f, 0.5f);
+            _bossFill = fillRT.gameObject.AddComponent<SmoothFill>();
 
-            _bossFill = fillRT.GetComponent<Image>();
+            // Top sheen on the fill for a bit of depth.
+            var sheen = CreateBarLayer(fillRT, "Sheen", new Color(1f, 1f, 1f, 0.12f));
+            sheen.anchorMin = new Vector2(0f, 0.55f); sheen.anchorMax = Vector2.one;
+            sheen.offsetMin = sheen.offsetMax = Vector2.zero;
 
-            Debug.Log("[MPHPCtrl] Boss HP bar creada en top-left.");
+            // Boss name (centered).
+            var nameTxt = CreateText(containerGO.transform, bossName.ToUpperInvariant(), 18, FontStyle.Bold,
+                new Color(1f, 0.93f, 0.7f), TextAnchor.MiddleCenter);
+            nameTxt.rectTransform.anchorMin = Vector2.zero; nameTxt.rectTransform.anchorMax = Vector2.one;
+            nameTxt.rectTransform.offsetMin = nameTxt.rectTransform.offsetMax = Vector2.zero;
+            var nameShadow = nameTxt.gameObject.AddComponent<Shadow>();
+            nameShadow.effectColor    = new Color(0f, 0f, 0f, 0.8f);
+            nameShadow.effectDistance = new Vector2(1.5f, -1.5f);
+
+            // HP number (right side).
+            _bossHpText = CreateText(containerGO.transform, "", 13, FontStyle.Bold,
+                new Color(1f, 0.95f, 0.95f), TextAnchor.MiddleRight);
+            _bossHpText.rectTransform.anchorMin = Vector2.zero; _bossHpText.rectTransform.anchorMax = Vector2.one;
+            _bossHpText.rectTransform.offsetMin = new Vector2(0f, 0f);
+            _bossHpText.rectTransform.offsetMax = new Vector2(-12f, 0f);
+
+            Debug.Log("[MPHPCtrl] Boss HP bar (styled) creada en top-center.");
         }
 
         // ── HP event handlers ──────────────────────────────────────────────────
 
         private void OnPlayerHpChanged(ulong clientId, int newHp, int maxHp)
         {
-            if (!_playerFills.TryGetValue(clientId, out var fill) || fill == null) return;
-            float pct = maxHp > 0 ? (float)newHp / maxHp : 0f;
-            SetFill(fill, pct);
+            int last = _playerLastHp.TryGetValue(clientId, out var v) ? v : maxHp;
+            int delta = newHp - last;
+            _playerLastHp[clientId] = newHp;
+
+            if (_playerFills.TryGetValue(clientId, out var fill) && fill != null)
+                fill.SetTarget(maxHp > 0 ? (float)newHp / maxHp : 0f);
+
+            if (delta != 0 && _playerPawns.TryGetValue(clientId, out var pawn) && pawn != null)
+                SpawnDamageNumber(pawn, Mathf.Abs(delta), delta < 0, 2.3f);
         }
 
         private void OnEnemyHpChanged(int enemyIndex, int newHp, int maxHp)
         {
-            if (_bossFill == null) return;
-            float pct = maxHp > 0 ? (float)newHp / maxHp : 0f;
-            SetFill(_bossFill, pct);
+            int last  = _bossLastHp >= 0 ? _bossLastHp : maxHp;
+            int delta = newHp - last;
+            _bossLastHp = newHp;
+
+            if (_bossFill != null)
+                _bossFill.SetTarget(maxHp > 0 ? (float)newHp / maxHp : 0f);
+            if (_bossHpText != null)
+                _bossHpText.text = $"{Mathf.Max(0, newHp)} / {maxHp}";
+
+            if (delta != 0 && _bossPawn != null)
+                SpawnDamageNumber(_bossPawn, Mathf.Abs(delta), delta < 0, 3.0f);
+        }
+
+        // ── Floating damage numbers ──────────────────────────────────────────────
+
+        private void SpawnDamageNumber(Transform pawn, int amount, bool isDamage, float heightOffset)
+        {
+            var go = new GameObject("FloatingDamage");
+            go.transform.position = pawn.position + Vector3.up * heightOffset
+                                  + new Vector3(Random.Range(-0.3f, 0.3f), 0f, 0f);
+
+            var canvas = go.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            ((RectTransform)go.transform).sizeDelta = new Vector2(2f, 1f);
+            go.transform.localScale = Vector3.one * 0.01f;
+
+            var txt = CreateText(go.transform, (isDamage ? "-" : "+") + amount, 60, FontStyle.Bold,
+                isDamage ? DamageColor : HealColor, TextAnchor.MiddleCenter);
+            txt.rectTransform.anchorMin = Vector2.zero; txt.rectTransform.anchorMax = Vector2.one;
+            txt.rectTransform.offsetMin = txt.rectTransform.offsetMax = Vector2.zero;
+            var shadow = txt.gameObject.AddComponent<Shadow>();
+            shadow.effectColor    = new Color(0f, 0f, 0f, 0.9f);
+            shadow.effectDistance = new Vector2(2f, -2f);
+
+            go.AddComponent<FloatingNumber>().Begin(txt);
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
@@ -193,10 +245,68 @@ namespace Runefall.Multiplayer
             return rt;
         }
 
-        private static void SetFill(Image fill, float pct)
+        private static Text CreateText(Transform parent, string content, int size, FontStyle style,
+            Color color, TextAnchor anchor)
         {
-            var rt        = fill.GetComponent<RectTransform>();
-            rt.anchorMax  = new Vector2(Mathf.Clamp01(pct), 1f);
+            var go  = new GameObject("Text");
+            go.transform.SetParent(parent, false);
+            go.AddComponent<RectTransform>();
+            var txt        = go.AddComponent<Text>();
+            txt.font       = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            txt.text       = content;
+            txt.fontSize   = size;
+            txt.fontStyle  = style;
+            txt.color      = color;
+            txt.alignment  = anchor;
+            txt.horizontalOverflow = HorizontalWrapMode.Overflow;
+            txt.verticalOverflow   = VerticalWrapMode.Overflow;
+            return txt;
+        }
+
+        // ── Smooth fill: lerps anchorMax.x toward a target percentage ─────────────
+
+        private class SmoothFill : MonoBehaviour
+        {
+            private RectTransform _rt;
+            private float _target = 1f;
+
+            private void Awake() { _rt = (RectTransform)transform; }
+
+            public void SetTarget(float pct) => _target = Mathf.Clamp01(pct);
+
+            private void Update()
+            {
+                var max = _rt.anchorMax;
+                float next = Mathf.MoveTowards(max.x, _target, Time.deltaTime * 1.6f);
+                if (!Mathf.Approximately(next, max.x))
+                {
+                    max.x = next;
+                    _rt.anchorMax = max;
+                }
+            }
+        }
+
+        // ── Floating number animation: rise + fade ────────────────────────────────
+
+        private class FloatingNumber : MonoBehaviour
+        {
+            private Text  _txt;
+            private float _t;
+            private const float Life = 1.1f;
+
+            public void Begin(Text txt) { _txt = txt; }
+
+            private void Update()
+            {
+                if (_txt == null) { Destroy(gameObject); return; }
+                _t += Time.deltaTime;
+                float k = _t / Life;
+                transform.position += Vector3.up * (Time.deltaTime * 1.6f);
+                var c = _txt.color; c.a = Mathf.Clamp01(1f - k); _txt.color = c;
+                var cam = Camera.main;
+                if (cam != null) transform.rotation = cam.transform.rotation;
+                if (_t >= Life) Destroy(gameObject);
+            }
         }
 
         // ── Billboard helper ───────────────────────────────────────────────────
@@ -206,8 +316,7 @@ namespace Runefall.Multiplayer
             private void LateUpdate()
             {
                 var cam = Camera.main;
-                if (cam != null)
-                    transform.rotation = cam.transform.rotation;
+                if (cam != null) transform.rotation = cam.transform.rotation;
             }
         }
     }
