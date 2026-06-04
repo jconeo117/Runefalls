@@ -10,6 +10,7 @@ namespace Runefall.Combat
 
         public string         Name        => _data.characterName;
         public bool           IsAlive     => Model.IsAlive;
+        public CharacterData  Data        => _data;
         public CharacterModel Model       { get; }
         public ElementType    Element     => _data.element;
         public ActorEffects   Effects     { get; }

@@ -68,51 +68,66 @@ namespace Runefall.Multiplayer
         /// Resolves a networked card against a random alive enemy.
         /// Returns (damage, enemyIndex) or (-1, -1) on failure.
         /// </summary>
-        public (int damage, int enemyIndex) ResolvePlayerCard(
+        public (int damage, int enemyIndex, bool isCrit) ResolvePlayerCard(
             NetworkBattleCard         netCard,
             ulong                     ownerClientId,
             MultiplayerCombatRegistry registry)
         {
             var caster = GetPlayer(ownerClientId);
-            if (caster == null || !caster.IsAlive) return (-1, -1);
+            if (caster == null || !caster.IsAlive) return (-1, -1, false);
 
             var target = GetRandomAliveEnemy();
-            if (target == null) return (-1, -1);
+            if (target == null) return (-1, -1, false);
 
             CombatActionResult result;
             if (netCard.IsUltimate)
             {
-                var ult = registry.GetUltimate(netCard.UltimateName.ToString());
-                if (ult == null) return (-1, -1);
+                // Prefer the caster's own ultimate; registry.ultimates is often empty.
+                var ult = caster.Data != null && caster.Data.ultimate != null
+                          && caster.Data.ultimate.ultimateName == netCard.UltimateName.ToString()
+                          ? caster.Data.ultimate
+                          : registry.GetUltimate(netCard.UltimateName.ToString());
+                if (ult == null) return (-1, -1, false);
                 result = CombatResolver.ExecuteUltimate(ult, caster, target);
             }
             else
             {
-                var skill = registry.GetSkill(netCard.SkillName.ToString());
-                if (skill == null) return (-1, -1);
+                // Resolve the skill from the caster's own CharacterData — registry.skills is
+                // typically empty and the character always carries its skill assets.
+                string n     = netCard.SkillName.ToString();
+                var    skill = MatchSkill(caster.Data, n) ?? registry.GetSkill(n);
+                if (skill == null) return (-1, -1, false);
                 result = CombatResolver.Execute(skill, netCard.Rank, caster, target);
             }
 
             int idx = Enemies.IndexOf(target as EnemyAgent);
-            return ((int)result.DamageDealt, idx);
+            return ((int)result.DamageDealt, idx, result.IsCrit);
+        }
+
+        private static SkillData MatchSkill(CharacterData cd, string name)
+        {
+            if (cd == null) return null;
+            if (cd.skill1 != null && cd.skill1.skillName == name) return cd.skill1;
+            if (cd.skill2 != null && cd.skill2.skillName == name) return cd.skill2;
+            return null;
         }
 
         /// <summary>
         /// Enemy at enemyIndex attacks a random alive player.
         /// Returns (damage, targetClientId) or (-1, ulong.MaxValue) on failure.
         /// </summary>
-        public (int damage, ulong targetClientId) ResolveEnemyAttack(int enemyIndex)
+        public (int damage, ulong targetClientId, bool isCrit) ResolveEnemyAttack(int enemyIndex)
         {
             var enemy = GetEnemy(enemyIndex);
-            if (enemy == null || !enemy.IsAlive) return (-1, ulong.MaxValue);
+            if (enemy == null || !enemy.IsAlive) return (-1, ulong.MaxValue, false);
 
-            if (enemy is not IEnemyTurnHandler handler) return (-1, ulong.MaxValue);
+            if (enemy is not IEnemyTurnHandler handler) return (-1, ulong.MaxValue, false);
 
             var target = GetRandomAlivePlayer();
-            if (target == null) return (-1, ulong.MaxValue);
+            if (target == null) return (-1, ulong.MaxValue, false);
 
             var pending = handler.TakeTurn(CombatCtx, target);
-            if (pending.Skill == null && pending.Ultimate == null) return (-1, ulong.MaxValue);
+            if (pending.Skill == null && pending.Ultimate == null) return (-1, ulong.MaxValue, false);
 
             CombatActionResult result = pending.IsUltimate
                 ? CombatResolver.ExecuteUltimate(pending.Ultimate, enemy, target)
@@ -122,7 +137,7 @@ namespace Runefall.Multiplayer
             foreach (var kvp in Players)
                 if (kvp.Value == target) { targetCid = kvp.Key; break; }
 
-            return ((int)result.DamageDealt, targetCid);
+            return ((int)result.DamageDealt, targetCid, result.IsCrit);
         }
 
         // ── Private helpers ────────────────────────────────────────────────────

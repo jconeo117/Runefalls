@@ -102,11 +102,18 @@ namespace Runefall.Multiplayer
             ResolveClips(attackerPawn, card, out var clips, out bool isRanged, out int impactIdx, out var trigger);
             float approachReturnLen = GetApproachClipLength(attackerPawn) ?? FallbackApproachLen;
 
+            // On the impact frame, the OWNER signals the server to resolve + broadcast damage.
+            void OnImpact()
+            {
+                if (_localClientId == ownerClientId)
+                    ServerCombatOrchestrator.Instance?.CardImpactServerRpc(slotIndex);
+            }
+
             if (attackerPawn != null && targetPawn != null)
                 yield return StartCoroutine(PlayAttackChoreography(
                     attackerPawn.transform, attackerAnim,
                     targetPawn.transform,   targetAnim,
-                    clips, isRanged, impactIdx, approachReturnLen, trigger));
+                    clips, isRanged, impactIdx, approachReturnLen, trigger, OnImpact));
             else
                 yield return new WaitForSeconds(0.4f); // pawns missing — keep turn flow alive
 
@@ -141,11 +148,14 @@ namespace Runefall.Multiplayer
             ResolveEnemyClips(enemyPawn, out var clips, out bool isRanged, out int impactIdx, out var trigger);
             float approachReturnLen = GetApproachClipLength(enemyPawn) ?? EnemyLungeDuration;
 
+            // On the impact frame, any client signals the server to broadcast the player damage.
+            void OnImpact() => ServerCombatOrchestrator.Instance?.EnemyImpactServerRpc();
+
             if (enemyPawn != null && targetPawn != null)
                 yield return StartCoroutine(PlayAttackChoreography(
                     enemyPawn.transform, enemyAnim,
                     targetPawn.transform, targetAnim,
-                    clips, isRanged, impactIdx, approachReturnLen, trigger));
+                    clips, isRanged, impactIdx, approachReturnLen, trigger, OnImpact));
             else
                 yield return new WaitForSeconds(0.4f);
 
@@ -160,7 +170,7 @@ namespace Runefall.Multiplayer
             Transform attacker, CombatPawnAnimator attackerAnim,
             Transform target,   CombatPawnAnimator targetAnim,
             AnimationClip[] clips, bool isRanged, int impactIdx, float approachReturnLen,
-            ImpactTriggerData triggerData)
+            ImpactTriggerData triggerData, System.Action onFirstImpact = null)
         {
             if (attacker == null) yield break;
 
@@ -176,7 +186,12 @@ namespace Runefall.Multiplayer
             // The callback plays the target hit reaction. Falls back to a direct AE subscription
             // (or a single delayed PlayHit) when the skill defines no trigger.
             int impactCount = 0;
-            void DoHit() { impactCount++; targetAnim?.PlayHit(); }
+            void DoHit()
+            {
+                impactCount++;
+                targetAnim?.PlayHit();
+                if (impactCount == 1) onFirstImpact?.Invoke(); // signal server to resolve damage now
+            }
 
             IImpactTrigger trigger  = null;
             System.Action  manualAE = null;
