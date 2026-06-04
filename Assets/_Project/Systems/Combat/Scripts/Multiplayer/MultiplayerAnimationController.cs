@@ -100,6 +100,8 @@ namespace Runefall.Multiplayer
 
         private void OnCombatOver(bool won)
         {
+            _enemyAttackQueue.Clear(); // drop any pending swings so none play after the end
+
             if (!won) return; // defeat → players already played death individually
             ScanPawnsIfNeeded();
             foreach (var enemy in _enemyPawns)
@@ -216,9 +218,14 @@ namespace Runefall.Multiplayer
             else
                 yield return new WaitForSeconds(0.4f);
 
-            // Any client can unblock the server — first one wins.
-            Debug.Log($"[MPAnimCtrl] EnemyAttackComplete enemy={enemyIndex}");
-            ServerCombatOrchestrator.Instance?.EnemyAttackCompleteServerRpc();
+            // Only the host paces the server (its animation is authoritative). If any client
+            // could signal, an early/laggy/stale completion would race the server ahead of the
+            // host's queue → backlog → extra late swings.
+            if (isHost)
+            {
+                Debug.Log($"[MPAnimCtrl] EnemyAttackComplete enemy={enemyIndex}");
+                ServerCombatOrchestrator.Instance?.EnemyAttackCompleteServerRpc();
+            }
         }
 
         // ── Choreography ───────────────────────────────────────────────────────
