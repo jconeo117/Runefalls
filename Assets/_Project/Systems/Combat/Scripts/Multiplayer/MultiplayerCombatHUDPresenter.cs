@@ -29,6 +29,8 @@ namespace Runefall.Multiplayer
             _slotsPresenter = sp;
         }
 
+        private ServerCombatOrchestrator _orch;
+
         private IEnumerator Start()
         {
             yield return new WaitUntil(() => MultiplayerActionSlotsSync.Instance != null);
@@ -38,12 +40,65 @@ namespace Runefall.Multiplayer
             // Wait until server has initialized slot count, then rebuild to correct total
             yield return new WaitUntil(() => _sync.SlotCount > 0);
             RebuildActionSlots();
+
+            // Roll each card out of its slot as the server consumes it during resolution.
+            yield return new WaitUntil(() => ServerCombatOrchestrator.Instance != null);
+            _orch = ServerCombatOrchestrator.Instance;
+            _orch.OnExecuteCard += OnCardExecuted;
         }
 
         private void OnDestroy()
         {
             if (_sync != null)
                 _sync.OnSlotUpdated -= OnNetworkSlotUpdated;
+            if (_orch != null)
+                _orch.OnExecuteCard -= OnCardExecuted;
+        }
+
+        // ── Per-card consumption animation (Phase 2) ─────────────────────────────
+
+        // Server resolves slots one at a time → fade + roll that card off to the left,
+        // matching the singleplayer used-card animation instead of a single bulk shrink.
+        private void OnCardExecuted(int slotIndex, ulong ownerClientId, NetworkBattleCard card)
+        {
+            if (slotIndex < 0 || slotIndex >= _activeSlots.Count) return;
+            var slot = _activeSlots[slotIndex];
+            if (slot != null) StartCoroutine(RollOutSlotCard(slotIndex, slot));
+        }
+
+        // Animate the card visuals INSIDE the slot (not the slot itself), so the container's
+        // HorizontalLayoutGroup isn't fought. Cards fade + roll up-left, then are destroyed.
+        private IEnumerator RollOutSlotCard(int slotIndex, Transform slot)
+        {
+            var items = new List<(RectTransform rt, CanvasGroup cg, Vector3 from)>();
+            for (int c = 0; c < slot.childCount; c++)
+            {
+                var child = slot.GetChild(c);
+                if (child.GetComponent<CardView>() == null) continue;
+                var rt = child as RectTransform;
+                if (rt == null) continue;
+                var cg = child.GetComponent<CanvasGroup>() ?? child.gameObject.AddComponent<CanvasGroup>();
+                items.Add((rt, cg, rt.localPosition));
+            }
+            // Drop the optimistic-clone bookkeeping so turn reset doesn't try to reuse it.
+            _pendingSlotViews.Remove(slotIndex);
+
+            if (items.Count == 0) yield break;
+
+            const float dur = 0.3f;
+            for (float t = 0f; t < 1f; t += Time.deltaTime / dur)
+            {
+                float s = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
+                foreach (var it in items)
+                {
+                    if (it.rt == null) continue;
+                    it.cg.alpha        = 1f - s;
+                    it.rt.localPosition = it.from + new Vector3(-140f * s, 10f * s, 0f);
+                }
+                yield return null;
+            }
+            foreach (var it in items)
+                if (it.rt != null) Destroy(it.rt.gameObject);
         }
 
         // ── Overrides ──────────────────────────────────────────────────────────
