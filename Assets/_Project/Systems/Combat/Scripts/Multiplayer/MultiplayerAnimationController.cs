@@ -164,9 +164,27 @@ namespace Runefall.Multiplayer
 
         // ── Enemy attack (Phase 3) ─────────────────────────────────────────────
 
+        // Enemy swings are serialized on the client: a second swing can arrive before the
+        // previous one finishes its return, and running them concurrently would corrupt the
+        // shared PlayableGraph (attack cut short) and overlap the lunges. Queue them instead.
+        private readonly Queue<(int enemyIndex, ulong targetCid, int damage)> _enemyAttackQueue = new();
+        private bool _enemyAttackDraining;
+
         private void OnEnemyAttacking(int enemyIndex, ulong targetClientId, int damage)
         {
-            StartCoroutine(PlayEnemyAttackAnimation(enemyIndex, targetClientId, damage));
+            _enemyAttackQueue.Enqueue((enemyIndex, targetClientId, damage));
+            if (!_enemyAttackDraining) StartCoroutine(DrainEnemyAttacks());
+        }
+
+        private IEnumerator DrainEnemyAttacks()
+        {
+            _enemyAttackDraining = true;
+            while (_enemyAttackQueue.Count > 0)
+            {
+                var (e, t, d) = _enemyAttackQueue.Dequeue();
+                yield return StartCoroutine(PlayEnemyAttackAnimation(e, t, d));
+            }
+            _enemyAttackDraining = false;
         }
 
         private IEnumerator PlayEnemyAttackAnimation(int enemyIndex, ulong targetClientId, int damage)

@@ -25,7 +25,9 @@ namespace Runefall.Multiplayer
         // ── Tuning ─────────────────────────────────────────────────────────────
         // Attacks each enemy performs per enemy turn (boss is meant to hit 3 times).
         private const int   EnemyAttacksPerTurn  = 3;
-        private const float BetweenAttacksDelay  = 0.25f;
+        // Delay between consecutive skills/swings. Starts after the previous animation fully
+        // completes (for melee, after the caster has returned to its origin).
+        private const float BetweenSkillsDelay   = 0.5f;
 
         // ── Singleton ──────────────────────────────────────────────────────────
         public static ServerCombatOrchestrator Instance { get; private set; }
@@ -196,6 +198,9 @@ namespace Runefall.Multiplayer
 
                 // Victory checked after the full card animation (boss dies after the last AE).
                 if (_ctx.AllEnemiesDead()) { EndCombat(true); break; }
+
+                // Delay before the next card — animation (incl. melee return) has finished.
+                yield return new WaitForSeconds(BetweenSkillsDelay);
             }
             _currentImpactSlot = -1;
 
@@ -240,8 +245,9 @@ namespace Runefall.Multiplayer
                     // Defeat checked once the swing finished (death already played on the last AE).
                     if (!_combatOver && _ctx.AllPlayersDead()) { EndCombat(false); yield break; }
 
+                    // Delay starts now — the swing animation (incl. melee return) has finished.
                     if (a < EnemyAttacksPerTurn - 1)
-                        yield return new WaitForSeconds(BetweenAttacksDelay);
+                        yield return new WaitForSeconds(BetweenSkillsDelay);
                 }
             }
 
