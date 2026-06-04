@@ -35,11 +35,13 @@ namespace Runefall.Multiplayer
         private bool                      _enemyAnimDone;
         private ulong                     _expectedCardOwner;
 
-        // Impact gating: damage resolves on the impact frame the client reports, not anim end.
-        private bool _cardImpactDone;
+        // Impact gating: each reported impact frame (AE / projectile arrival) applies one hit.
+        // A 3-AE skill deals 3 hits (1/3 damage each) → 3 damage numbers.
         private int  _currentImpactSlot = -1;
-        private bool _enemyImpactDone;
-        private (ulong cid, int dmg, bool crit) _enemyPending;
+        private int  _cardTotalHits;
+        private int  _cardHitsApplied;
+        private int  _enemyTotalHits;
+        private int  _enemyHitsApplied;
 
         // ── Client-side events (fired via ClientRpcs on ALL clients) ───────────
 
@@ -111,19 +113,22 @@ namespace Runefall.Multiplayer
                 var slot = sync.GetSlot(i);
                 if (!slot.IsOccupied) continue;
 
+                // Select caster/target/skill once; each impact frame applies one hit.
+                if (!_ctx.BeginPlayerCard(slot.Card, slot.OwnerClientId, _registry, out _, out _cardTotalHits))
+                    continue;
+
                 _cardAnimDone      = false;
-                _cardImpactDone    = false;
+                _cardHitsApplied   = 0;
                 _currentImpactSlot = i;
                 _expectedCardOwner = slot.OwnerClientId;
 
                 ExecuteCardClientRpc(i, slot.OwnerClientId, slot.Card);
 
-                // Damage applies on the owner's reported impact frame (CardImpactServerRpc).
-                yield return StartCoroutine(WaitForFlag(() => _cardImpactDone, 3f));
-                if (!_cardImpactDone) ResolveCardImpact(i); // fallback: client never signaled
-
-                // Then wait for the full animation to finish before the next card.
+                // Hits apply via CardImpactServerRpc as AEs fire during the animation.
                 yield return StartCoroutine(WaitForCardAnim(8f, i));
+
+                // Fallback: apply any hits the client never reported (missing AEs / disconnect).
+                while (_cardHitsApplied < _cardTotalHits) ApplyAndBroadcastCardHit();
             }
             _currentImpactSlot = -1;
 
@@ -147,21 +152,20 @@ namespace Runefall.Multiplayer
                 {
                     if (!enemy.IsAlive) break;
 
-                    // Resolve (applies damage) + pick target up front; broadcast on impact frame.
-                    var (damage, targetCid, crit) = _ctx.ResolveEnemyAttack(i);
-                    if (damage < 0) continue;
+                    // Pick target + skill up front; each impact frame applies one hit.
+                    if (!_ctx.BeginEnemyAttack(i, out ulong targetCid, out _enemyTotalHits))
+                        continue;
 
-                    _enemyAnimDone   = false;
-                    _enemyImpactDone = false;
-                    _enemyPending    = (targetCid, damage, crit);
+                    _enemyAnimDone    = false;
+                    _enemyHitsApplied = 0;
 
-                    EnemyAttackingClientRpc(i, targetCid, damage);
+                    EnemyAttackingClientRpc(i, targetCid, 0);
 
-                    // Player HP/damage number applies on the reported impact frame.
-                    yield return StartCoroutine(WaitForFlag(() => _enemyImpactDone, 3f));
-                    if (!_enemyImpactDone) ResolveEnemyImpact(); // fallback
-
+                    // Hits apply via EnemyImpactServerRpc as AEs fire during the animation.
                     yield return StartCoroutine(WaitForEnemyAnim(8f, i));
+
+                    // Fallback: apply any unreported hits.
+                    while (_enemyHitsApplied < _enemyTotalHits) ApplyAndBroadcastEnemyHit();
 
                     if (a < EnemyAttacksPerTurn - 1)
                         yield return new WaitForSeconds(BetweenAttacksDelay);
@@ -182,51 +186,35 @@ namespace Runefall.Multiplayer
             BeginNewPlayerTurnClientRpc(_ctx.Round);
         }
 
-        // ── Impact resolution (damage applies on the reported impact frame) ─────
+        // ── Impact resolution (one hit per reported impact frame / AE) ─────────
 
-        private void ResolveCardImpact(int slotIndex)
+        private void ApplyAndBroadcastCardHit()
         {
-            if (_cardImpactDone) return;
-            var sync = MultiplayerActionSlotsSync.Instance;
-            if (sync == null || slotIndex < 0 || slotIndex >= sync.SlotCount) { _cardImpactDone = true; return; }
-
-            var slot = sync.GetSlot(slotIndex);
-            if (!slot.IsOccupied) { _cardImpactDone = true; return; }
-
-            var (damage, enemyIdx, crit) = _ctx.ResolvePlayerCard(slot.Card, slot.OwnerClientId, _registry);
+            if (_cardHitsApplied >= _cardTotalHits) return;
+            var (damage, enemyIdx, crit) = _ctx.ApplyPlayerCardHit();
+            _cardHitsApplied++;
             if (damage >= 0 && enemyIdx >= 0)
             {
                 var enemy = _ctx.GetEnemy(enemyIdx);
                 if (enemy != null)
                     EnemyHpChangedClientRpc(enemyIdx, (int)enemy.Model.CurrentHP, (int)enemy.Model.MaxHP, damage, crit);
             }
-            _cardImpactDone = true;
         }
 
-        private void ResolveEnemyImpact()
+        private void ApplyAndBroadcastEnemyHit()
         {
-            if (_enemyImpactDone) return;
-            var (cid, dmg, crit) = _enemyPending;
+            if (_enemyHitsApplied >= _enemyTotalHits) return;
+            var (damage, cid, crit) = _ctx.ApplyEnemyAttackHit();
+            _enemyHitsApplied++;
             if (cid != ulong.MaxValue)
             {
                 var player = _ctx.GetPlayer(cid);
                 if (player != null)
-                    PlayerHpChangedClientRpc(cid, (int)player.Model.CurrentHP, (int)player.Model.MaxHP, dmg, crit);
+                    PlayerHpChangedClientRpc(cid, (int)player.Model.CurrentHP, (int)player.Model.MaxHP, damage, crit);
             }
-            _enemyImpactDone = true;
         }
 
         // ── Wait helpers (no ref params — C# iterators don't support ref) ──────
-
-        private IEnumerator WaitForFlag(System.Func<bool> done, float timeout)
-        {
-            float elapsed = 0f;
-            while (!done() && elapsed < timeout)
-            {
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-        }
 
         private IEnumerator WaitForCardAnim(float timeout, int slotIndex)
         {
@@ -289,20 +277,23 @@ namespace Runefall.Multiplayer
 
         // ── RPCs: Clients → Server ─────────────────────────────────────────────
 
-        /// <summary>Owner client calls this on the card's impact frame → resolve + broadcast damage.</summary>
+        /// <summary>Owner client calls this on each card impact frame → apply one hit.</summary>
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public void CardImpactServerRpc(int slotIndex, RpcParams rp = default)
         {
             if (slotIndex != _currentImpactSlot) return;            // stale / wrong card
             if (rp.Receive.SenderClientId != _expectedCardOwner) return;
-            ResolveCardImpact(slotIndex);
+            ApplyAndBroadcastCardHit();
         }
 
-        /// <summary>Any client calls this on the enemy attack's impact frame → broadcast damage.</summary>
+        /// <summary>
+        /// Server-side client (host) calls this on each enemy attack impact frame → apply one hit.
+        /// Only the host signals (deterministic timing) so hits aren't double-counted across clients.
+        /// </summary>
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public void EnemyImpactServerRpc(RpcParams rp = default)
         {
-            ResolveEnemyImpact();
+            ApplyAndBroadcastEnemyHit();
         }
 
         /// <summary>Owner client calls this when its card animation finishes.</summary>

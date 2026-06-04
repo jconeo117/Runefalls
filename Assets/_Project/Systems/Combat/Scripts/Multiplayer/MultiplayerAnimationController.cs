@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 using Runefall.Combat;
 using Runefall.Data;
 using Runefall.Presentation.Combat;
@@ -148,8 +149,10 @@ namespace Runefall.Multiplayer
             ResolveEnemyClips(enemyPawn, out var clips, out bool isRanged, out int impactIdx, out var trigger);
             float approachReturnLen = GetApproachClipLength(enemyPawn) ?? EnemyLungeDuration;
 
-            // On the impact frame, any client signals the server to broadcast the player damage.
-            void OnImpact() => ServerCombatOrchestrator.Instance?.EnemyImpactServerRpc();
+            // Only the host signals enemy impacts — its AE timing is authoritative and avoids
+            // double-counting hits across clients (every client plays the same anim).
+            bool isHost = NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
+            void OnImpact() { if (isHost) ServerCombatOrchestrator.Instance?.EnemyImpactServerRpc(); }
 
             if (enemyPawn != null && targetPawn != null)
                 yield return StartCoroutine(PlayAttackChoreography(
@@ -170,7 +173,7 @@ namespace Runefall.Multiplayer
             Transform attacker, CombatPawnAnimator attackerAnim,
             Transform target,   CombatPawnAnimator targetAnim,
             AnimationClip[] clips, bool isRanged, int impactIdx, float approachReturnLen,
-            ImpactTriggerData triggerData, System.Action onFirstImpact = null)
+            ImpactTriggerData triggerData, System.Action onImpact = null)
         {
             if (attacker == null) yield break;
 
@@ -190,7 +193,7 @@ namespace Runefall.Multiplayer
             {
                 impactCount++;
                 targetAnim?.PlayHit();
-                if (impactCount == 1) onFirstImpact?.Invoke(); // signal server to resolve damage now
+                onImpact?.Invoke(); // every AE / projectile arrival = one hit (signal server)
             }
 
             IImpactTrigger trigger  = null;
