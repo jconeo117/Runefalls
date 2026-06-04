@@ -24,6 +24,8 @@ namespace Runefall.Multiplayer
                  "Same asset assigned to CombatAnimationDriver.combatBaseController in SP. " +
                  "Drives PlayApproach/PlayHit/PlayReturn cross-fades on MP pawns.")]
         [SerializeField] private RuntimeAnimatorController combatBaseController;
+        [Tooltip("FloatingDamage.prefab (Prefabs/UI) — world-space DamageNumber spawned on hits.")]
+        [SerializeField] private GameObject floatingDamagePrefab;
 
         private TurnManager                  _tm;
         private CombatContext                _ctx;
@@ -135,7 +137,7 @@ namespace Runefall.Multiplayer
             var hpCtrlGo = new GameObject("MultiplayerHPController");
             var hpCtrl   = hpCtrlGo.AddComponent<MultiplayerHPController>();
             var hudCanvas = _uiInstance != null ? _uiInstance.GetComponentInChildren<Canvas>() : null;
-            hpCtrl.Initialize(hudCanvas);
+            hpCtrl.Initialize(hudCanvas, floatingDamagePrefab);
 
             Debug.Log($"[LocalCombatSetup] ✅ HUD listo para '{charData.characterName}'. Cartas en mano: {_tm.Hand?.Slots?.Count}");
 

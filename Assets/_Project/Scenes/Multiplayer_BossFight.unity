@@ -3964,6 +3964,7 @@ MonoBehaviour:
   combatUIPrefab: {fileID: 7073142559132807637, guid: 4d63338c0dfc11c4898d01a4774fb9b0, type: 3}
   registry: {fileID: 11400000, guid: a5377ddd0bfcbe445aa11c2dcada00a6, type: 2}
   combatBaseController: {fileID: 9100000, guid: 1c939d5c041b0c84d912aeb95bbb30f7, type: 2}
+  floatingDamagePrefab: {fileID: 6785173245420640681, guid: e2ce764f0f11ed446b015c9dfac0d77b, type: 3}
 --- !u!1 &1848294529
 GameObject:
   m_ObjectHideFlags: 0

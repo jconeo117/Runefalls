@@ -30,16 +30,15 @@ namespace Runefall.Multiplayer
         private int        _bossLastHp = -1;
 
         // Canvas used for screen-space boss bar (found from the HUD instance)
-        private Canvas _hudCanvas;
-
-        private static readonly Color DamageColor = new Color(1f, 0.85f, 0.25f);
-        private static readonly Color HealColor   = new Color(0.4f, 1f, 0.45f);
+        private Canvas     _hudCanvas;
+        private GameObject _floatingDamagePrefab;
 
         // ── Initialization ─────────────────────────────────────────────────────
 
-        public void Initialize(Canvas hudCanvas)
+        public void Initialize(Canvas hudCanvas, GameObject floatingDamagePrefab = null)
         {
-            _hudCanvas = hudCanvas;
+            _hudCanvas            = hudCanvas;
+            _floatingDamagePrefab = floatingDamagePrefab;
             StartCoroutine(SetupWhenReady());
         }
 
@@ -181,56 +180,41 @@ namespace Runefall.Multiplayer
 
         // ── HP event handlers ──────────────────────────────────────────────────
 
-        private void OnPlayerHpChanged(ulong clientId, int newHp, int maxHp)
+        private void OnPlayerHpChanged(ulong clientId, int newHp, int maxHp, int damage, bool isCrit)
         {
-            int last = _playerLastHp.TryGetValue(clientId, out var v) ? v : maxHp;
-            int delta = newHp - last;
             _playerLastHp[clientId] = newHp;
-
             if (_playerFills.TryGetValue(clientId, out var fill) && fill != null)
                 fill.SetTarget(maxHp > 0 ? (float)newHp / maxHp : 0f);
 
-            if (delta != 0 && _playerPawns.TryGetValue(clientId, out var pawn) && pawn != null)
-                SpawnDamageNumber(pawn, Mathf.Abs(delta), delta < 0, 2.3f);
+            if (damage > 0 && _playerPawns.TryGetValue(clientId, out var pawn) && pawn != null)
+                SpawnDamageNumber(pawn, damage, isCrit, 2.3f);
         }
 
-        private void OnEnemyHpChanged(int enemyIndex, int newHp, int maxHp)
+        private void OnEnemyHpChanged(int enemyIndex, int newHp, int maxHp, int damage, bool isCrit)
         {
-            int last  = _bossLastHp >= 0 ? _bossLastHp : maxHp;
-            int delta = newHp - last;
             _bossLastHp = newHp;
-
             if (_bossFill != null)
                 _bossFill.SetTarget(maxHp > 0 ? (float)newHp / maxHp : 0f);
             if (_bossHpText != null)
                 _bossHpText.text = $"{Mathf.Max(0, newHp)} / {maxHp}";
 
-            if (delta != 0 && _bossPawn != null)
-                SpawnDamageNumber(_bossPawn, Mathf.Abs(delta), delta < 0, 3.0f);
+            if (damage > 0 && _bossPawn != null)
+                SpawnDamageNumber(_bossPawn, damage, isCrit, 3.0f);
         }
 
-        // ── Floating damage numbers ──────────────────────────────────────────────
+        // ── Floating damage numbers (FloatingDamage.prefab + DamageNumber) ────────
 
-        private void SpawnDamageNumber(Transform pawn, int amount, bool isDamage, float heightOffset)
+        private void SpawnDamageNumber(Transform pawn, int amount, bool isCrit, float heightOffset)
         {
-            var go = new GameObject("FloatingDamage");
-            go.transform.position = pawn.position + Vector3.up * heightOffset
-                                  + new Vector3(Random.Range(-0.3f, 0.3f), 0f, 0f);
+            if (_floatingDamagePrefab == null) return;
 
-            var canvas = go.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            ((RectTransform)go.transform).sizeDelta = new Vector2(2f, 1f);
-            go.transform.localScale = Vector3.one * 0.01f;
+            Vector3 pos = pawn.position + Vector3.up * heightOffset
+                        + new Vector3(Random.Range(-0.3f, 0.3f), 0f, 0f);
+            var go = Instantiate(_floatingDamagePrefab, pos, Quaternion.identity);
 
-            var txt = CreateText(go.transform, (isDamage ? "-" : "+") + amount, 60, FontStyle.Bold,
-                isDamage ? DamageColor : HealColor, TextAnchor.MiddleCenter);
-            txt.rectTransform.anchorMin = Vector2.zero; txt.rectTransform.anchorMax = Vector2.one;
-            txt.rectTransform.offsetMin = txt.rectTransform.offsetMax = Vector2.zero;
-            var shadow = txt.gameObject.AddComponent<Shadow>();
-            shadow.effectColor    = new Color(0f, 0f, 0f, 0.9f);
-            shadow.effectDistance = new Vector2(2f, -2f);
-
-            go.AddComponent<FloatingNumber>().Begin(txt);
+            var dn = go.GetComponent<DamageNumber>();
+            if (dn != null) dn.Show(amount.ToString(), isCrit ? 11f : 8f, isCrit);
+            else Destroy(go, 1.5f);
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
@@ -283,29 +267,6 @@ namespace Runefall.Multiplayer
                     max.x = next;
                     _rt.anchorMax = max;
                 }
-            }
-        }
-
-        // ── Floating number animation: rise + fade ────────────────────────────────
-
-        private class FloatingNumber : MonoBehaviour
-        {
-            private Text  _txt;
-            private float _t;
-            private const float Life = 1.1f;
-
-            public void Begin(Text txt) { _txt = txt; }
-
-            private void Update()
-            {
-                if (_txt == null) { Destroy(gameObject); return; }
-                _t += Time.deltaTime;
-                float k = _t / Life;
-                transform.position += Vector3.up * (Time.deltaTime * 1.6f);
-                var c = _txt.color; c.a = Mathf.Clamp01(1f - k); _txt.color = c;
-                var cam = Camera.main;
-                if (cam != null) transform.rotation = cam.transform.rotation;
-                if (_t >= Life) Destroy(gameObject);
             }
         }
 
