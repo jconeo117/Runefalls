@@ -51,6 +51,11 @@ namespace Runefall.Multiplayer
         private bool _combatOver;
         private readonly HashSet<ulong> _deadBroadcast = new();
 
+        // True while a resolution cycle (cards → enemy → new turn) is running, so a spurious
+        // OnAllPlayersExhausted (e.g. from the slot board resizing on a death) can't start a
+        // second cycle.
+        private bool _phaseRunning;
+
         // ── Client-side events (fired via ClientRpcs on ALL clients) ───────────
 
         /// <summary>Animate the card in slotIndex owned by ownerClientId.</summary>
@@ -161,7 +166,8 @@ namespace Runefall.Multiplayer
 
         private void OnAllPlayersExhausted()
         {
-            if (!IsServer || _ctx == null || _combatOver) return;
+            if (!IsServer || _ctx == null || _combatOver || _phaseRunning) return;
+            _phaseRunning = true;
             StartCoroutine(RunCardResolutionPhase());
         }
 
@@ -265,6 +271,7 @@ namespace Runefall.Multiplayer
             yield return null; // one frame for NetworkList reset to replicate
             Debug.Log($"[Orchestrator] Fase 4: nuevo turno player — round {_ctx.Round}.");
             BeginNewPlayerTurnClientRpc(_ctx.Round);
+            _phaseRunning = false; // ready to accept the next exhaustion
         }
 
         // ── Impact resolution (one hit per reported impact frame / AE) ─────────

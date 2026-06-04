@@ -98,8 +98,10 @@ namespace Runefall.Multiplayer
             _slots.Clear();
             for (int i = 0; i < total; i++) _slots.Add(default);
 
-            ActionsUsed0.Value = 0;
-            ActionsUsed1.Value = 0;
+            // NOTE: do NOT reset ActionsUsed here. Death happens during the enemy phase; the
+            // counters are reset at the next BeginNewPlayerTurn (ResetSlotsServerRpc). Resetting
+            // now would fire CheckAllExhausted (used could momentarily equal the new SlotCount)
+            // and re-trigger a whole extra enemy phase.
             Debug.Log($"[ActionSlotsSync] Player {clientId} muerto → board reducido a {total} slots ({alive} vivos).");
         }
 
