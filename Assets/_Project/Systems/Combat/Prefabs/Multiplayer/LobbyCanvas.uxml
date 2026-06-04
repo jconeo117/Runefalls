@@ -1,0 +1,53 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="LobbyCanvas.uss" />
+    <ui:VisualElement name="lobby-root" class="lobby-root">
+
+        <!-- ── Panel 1: Crear / Unirse ── -->
+        <ui:VisualElement name="main-panel" class="panel">
+            <ui:VisualElement class="panel-header">
+                <ui:VisualElement class="header-titles">
+                    <ui:Label text="RUNEFALLS" class="brand" />
+                    <ui:Label text="Multijugador" class="subtitle" />
+                </ui:VisualElement>
+                <ui:Button name="main-close-btn" text="✕" class="close-btn" />
+            </ui:VisualElement>
+            <ui:VisualElement class="divider" />
+            <ui:Button name="create-btn" text="Crear Sala" class="btn btn-primary" />
+            <ui:Label text="— o únete con un código —" class="separator-label" />
+            <ui:TextField name="ip-input" label="" value="" class="input-field" />
+            <ui:Button name="join-btn" text="Unirse a Sala" class="btn btn-secondary" />
+            <ui:Label name="main-error" text="" class="error-label hidden" />
+        </ui:VisualElement>
+
+        <!-- ── Panel 2: Transición ── -->
+        <ui:VisualElement name="transition-panel" class="panel panel-centered hidden">
+            <ui:VisualElement class="spinner-ring" />
+            <ui:Label name="transition-label" text="Conectando..." class="transition-text" />
+            <ui:Button name="cancel-btn" text="Cancelar" class="btn btn-neutral cancel-btn" />
+        </ui:VisualElement>
+
+        <!-- ── Panel 3: Wait Room ── -->
+        <ui:VisualElement name="waitroom-panel" class="panel hidden">
+            <ui:VisualElement class="panel-header">
+                <ui:Label text="Sala de Espera" class="subtitle header-title" />
+                <ui:Button name="wait-close-btn" text="✕" class="close-btn" />
+            </ui:VisualElement>
+            <ui:VisualElement class="divider" />
+            <ui:Label name="room-code-label" text="Código: --" class="room-code" />
+            <ui:VisualElement class="slots-container">
+                <ui:VisualElement class="player-slot slot-ready">
+                    <ui:Label text="⚔" class="slot-icon" />
+                    <ui:Label name="player1-label" text="Jugador 1  ·  Host" class="slot-name" />
+                </ui:VisualElement>
+                <ui:VisualElement class="player-slot slot-waiting">
+                    <ui:Label text="⚔" class="slot-icon" />
+                    <ui:Label name="player2-label" text="Jugador 2  ·  Esperando..." class="slot-name" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="wait-status" text="Esperando al segundo jugador..." class="wait-status" />
+            <ui:Button name="start-btn" text="Iniciar Combate" class="btn btn-combat hidden" />
+            <ui:Button name="leave-btn" text="Salir de la Sala" class="btn btn-neutral" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

@@ -39,14 +39,14 @@ namespace Runefall.Presentation.Combat
         [Tooltip("Duration of expand/shrink animation in seconds.")]
         public float   slotAnimDuration = 0.3f;
 
-        private TurnManager      _tm;
+        protected TurnManager    _tm;
         private CombatContext    _ctx;
         private CanvasGroup      _rootGroup;
 
         private readonly List<CardView>                 _cardViews        = new();
         private readonly Dictionary<(string, int), int> _pendingMergeFlash = new();
         private readonly List<(int index, ICombatActor target)> _pending  = new();
-        private readonly List<Transform>                _activeSlots      = new();
+        protected readonly List<Transform>              _activeSlots      = new();
 
         [Header("Layout Settings")]
         [SerializeField] private float cardSpacing = 130f;
@@ -55,7 +55,7 @@ namespace Runefall.Presentation.Combat
         [SerializeField] private float slideSpeed  = 12f;
 
         private ICombatActor  _selectedTarget;
-        private Image[]       _slotImages = Array.Empty<Image>();
+        protected Image[]     _slotImages = Array.Empty<Image>();
         private readonly List<Image> _orbImages = new();
         private int           _movesThisTurn = 0;
         private StringBuilder _log           = new();
@@ -75,15 +75,7 @@ namespace Runefall.Presentation.Combat
         {
             _tm        = tm;
             _ctx       = ctx;
-            _rootGroup = GetComponent<CanvasGroup>();
-            if (_rootGroup == null)
-            {
-                _rootGroup = gameObject.AddComponent<CanvasGroup>();
-            }
-            _rootGroup.blocksRaycasts = true;
-            _rootGroup.interactable = true;
-
-            _tm.OnHandChanged += HandleHandChanged;
+            _rootGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
 
             EnsureContainerLayout();
             BuildOrbRow();
@@ -111,19 +103,6 @@ namespace Runefall.Presentation.Combat
                 combatResultText.gameObject.SetActive(false);
         }
 
-        private void OnDestroy()
-        {
-            if (_tm != null)
-            {
-                _tm.OnHandChanged -= HandleHandChanged;
-            }
-        }
-
-        private void HandleHandChanged()
-        {
-            RefreshCardHand();
-        }
-
         public override void OnGaugeChanged(ICombatActor actor, int orbs)
         {
             for (int i = 0; i < _orbImages.Count; i++)
@@ -140,12 +119,7 @@ namespace Runefall.Presentation.Combat
 
         public override void ShowAllUI()
         {
-            if (_rootGroup != null)
-            {
-                _rootGroup.alpha = 1f;
-                _rootGroup.blocksRaycasts = true;
-                _rootGroup.interactable = true;
-            }
+            if (_rootGroup != null) _rootGroup.alpha = 1f;
         }
 
         public override void OnPlayerTurnStarted(int round)
@@ -208,9 +182,8 @@ namespace Runefall.Presentation.Combat
 
         // ── Card click → queue ───────────────────────────────────────────────
 
-        private void QueueCard(CardView cv)
+        protected virtual void QueueCard(CardView cv)
         {
-
             int slotIndex = _pending.Count + _movesThisTurn;
             if (slotIndex >= _activeSlots.Count) return;
 
@@ -439,13 +412,12 @@ namespace Runefall.Presentation.Combat
             return bestSlot;
         }
 
-        public void RefreshCardHand(bool animate = false)
+        protected void RefreshCardHand(bool animate = false)
         {
             if (cardHandContainer == null || cardPrefab == null || _tm?.Hand == null) return;
 
             var slots = _tm.Hand.Slots;
             bool canAct = _tm.Phase == CombatPhase.PlayerTurn && _tm.Hand.ActionsRemaining > 0;
-            Debug.Log($"[CombatHUDPresenter] RefreshCardHand called. Phase: {_tm.Phase}, ActionsRemaining: {_tm.Hand.ActionsRemaining}, canAct: {canAct}");
 
             var oldViews = new List<CardView>(_cardViews);
             _cardViews.Clear();
@@ -865,7 +837,7 @@ namespace Runefall.Presentation.Combat
 
         // ── Action slots ─────────────────────────────────────────────────────
 
-        private void RebuildActionSlots()
+        protected virtual void RebuildActionSlots()
         {
             if (actionSlotContainer == null || actionSlotPrefab == null) return;
 
@@ -1128,7 +1100,7 @@ namespace Runefall.Presentation.Combat
 
         // ── Helpers ──────────────────────────────────────────────────────────
 
-        private static Color ElementColor(ElementType element) => element switch
+        protected static Color ElementColor(ElementType element) => element switch
         {
             ElementType.Fire   => new Color(0.78f, 0.25f, 0.10f),
             ElementType.Ice    => new Color(0.16f, 0.43f, 0.75f),

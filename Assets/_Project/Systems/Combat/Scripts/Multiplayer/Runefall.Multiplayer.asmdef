@@ -1,0 +1,19 @@
+{
+    "name": "Runefall.Multiplayer",
+    "references": [
+        "Runefall",
+        "Unity.Netcode.Runtime",
+        "Unity.Collections",
+        "Unity.Cinemachine",
+        "Unity.Networking.Transport"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

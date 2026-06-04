@@ -57,6 +57,15 @@ namespace Runefall.Presentation.Combat
             Refresh();
         }
 
+        /// <summary>MP: update bar directly from server-authoritative HP values (no actor needed).</summary>
+        public void ForceSetHP(float current, float max)
+        {
+            _displayedHP = current;
+            if (_fillRT == null) return;
+            float pct     = max > 0f ? current / max : 0f;
+            _fillRT.anchorMax = new Vector2(pct, 1f);
+        }
+
         // ── lifecycle ─────────────────────────────────────────────────────────────
 
         private void OnDestroy()

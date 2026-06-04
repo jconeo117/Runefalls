@@ -22,10 +22,10 @@ namespace Runefall.Combat
     /// </summary>
     public class TurnManager
     {
-        public CombatContext Context { get; private set; }
-        public CombatHand    Hand    { get; private set; }
-        public CombatPhase   Phase   { get; private set; } = CombatPhase.Idle;
-        public int           Round   { get; private set; }
+        public CombatContext Context { get; protected set; }
+        public CombatHand    Hand    { get; protected set; }
+        public CombatPhase   Phase   { get; protected set; } = CombatPhase.Idle;
+        public int           Round   { get; protected set; }
 
         /// <summary>Fires immediately when player turn logic begins. Use for camera repositioning.</summary>
         public event Action<int>                OnPlayerTurnBegin;
@@ -40,7 +40,6 @@ namespace Runefall.Combat
         public event Action<string, int>        OnMergeOccurred;      // skillName, newRank
         /// <summary>Fires whenever a player's ultimate gauge changes. (actor, currentOrbs) — max = UltimateGaugeMax (7).</summary>
         public event Action<ICombatActor, int> OnGaugeChanged;
-        public event Action OnHandChanged;
 
         /// <summary>
         /// Optional. When set, BeginPlayerTurn fires OnPlayerTurnBegin immediately (camera),
@@ -56,15 +55,15 @@ namespace Runefall.Combat
         /// </summary>
         public event Action OnPlayerActionsExhausted;
 
-        private IEnemyPhaseAnimator                                  _phaseAnimator;
-        private readonly Dictionary<SkillData, ICombatActor>          _skillOwners   = new();
-        private readonly Dictionary<ICombatActor, CharacterData>      _actorChars    = new();
-        private readonly HashSet<ICombatActor>                        _purgedPlayers = new();
-        private ICombatActor _ultimateOwner;
-        private Random       _rng = new Random();
+        protected readonly IEnemyPhaseAnimator                         _phaseAnimator;
+        protected readonly Dictionary<SkillData, ICombatActor>          _skillOwners   = new();
+        protected readonly Dictionary<ICombatActor, CharacterData>      _actorChars    = new();
+        protected readonly HashSet<ICombatActor>                        _purgedPlayers = new();
+        protected ICombatActor _ultimateOwner;
+        protected Random       _rng;
 
-        private readonly Dictionary<ICombatActor, int> _ultimateGauge = new();
-        private const int UltimateGaugeMax = 7;
+        protected readonly Dictionary<ICombatActor, int> _ultimateGauge = new();
+        protected const int UltimateGaugeMax = 7;
 
         /// <param name="phaseAnimator">
         /// Presentation MonoBehaviour that animates enemy turns.
@@ -75,12 +74,7 @@ namespace Runefall.Combat
             _phaseAnimator = phaseAnimator;
         }
 
-        public void SetPhaseAnimator(IEnemyPhaseAnimator animator)
-        {
-            _phaseAnimator = animator;
-        }
-
-        public void StartCombat(
+        public virtual void StartCombat(
             CombatContext context,
             IReadOnlyList<CharacterData> fieldChars,
             bool hasBench,
@@ -134,15 +128,11 @@ namespace Runefall.Combat
         /// Fires OnActionPending — damage is deferred to ResolveAction() at animation impact frame.
         /// Returns false if phase is wrong, card index invalid, or no valid target exists.
         /// </summary>
-        public bool SubmitSkill(int cardIndex, ICombatActor explicitTarget = null)
+        public virtual bool SubmitSkill(int cardIndex, ICombatActor explicitTarget = null)
         {
             if (Phase != CombatPhase.PlayerTurn) return false;
             if (Context != null && Context.IsOver) return false;
-
-            if (cardIndex < 0 || cardIndex >= Hand.Slots.Count) return false;
-            var slot = Hand.Slots[cardIndex];
-
-            if (!Hand.TryUse(cardIndex, out slot, out _)) return false;
+            if (!Hand.TryUse(cardIndex, out var slot, out _)) return false;
 
             var caster = ResolveCaster(slot);
             FillGauge(caster);                   // +1 gauge for using a card
@@ -181,6 +171,7 @@ namespace Runefall.Combat
                 isUltimate: slot.IsUltimate);
 
             OnActionPending?.Invoke(pending);
+
             if (Hand.ActionsRemaining == 0) NotifyActionsExhausted();
 
             return true;
@@ -196,7 +187,7 @@ namespace Runefall.Combat
         /// Used by AoE projectile triggers where each projectile hits one distinct target.
         /// Returns empty array if target is null or dead.
         /// </summary>
-        public CombatActionResult[] ResolveForTarget(PendingAction pending, float hitFraction, ICombatActor specificTarget)
+        public virtual CombatActionResult[] ResolveForTarget(PendingAction pending, float hitFraction, ICombatActor specificTarget)
         {
             if (specificTarget == null || !specificTarget.IsAlive)
                 return System.Array.Empty<CombatActionResult>();
@@ -211,7 +202,7 @@ namespace Runefall.Combat
         /// Fraction of total skill damage this hit represents.
         /// Pass 1/N for N-hit skills. Default 1f = single hit (full damage).
         /// </param>
-        public CombatActionResult[] ResolveAction(PendingAction pending, float hitFraction = 1f)
+        public virtual CombatActionResult[] ResolveAction(PendingAction pending, float hitFraction = 1f)
         {
             if (pending.Caster == null) return System.Array.Empty<CombatActionResult>();
 
@@ -253,28 +244,65 @@ namespace Runefall.Combat
         /// Player moves card at fromIndex to toIndex. Costs 1 action.
         /// Returns false if phase is wrong or move is invalid.
         /// </summary>
-        public bool SubmitMove(int fromIndex, int toIndex)
+        public virtual bool SubmitMove(int fromIndex, int toIndex)
         {
             if (Phase != CombatPhase.PlayerTurn) return false;
-
             var movedCard = fromIndex >= 0 && fromIndex < Hand.Slots.Count
                 ? Hand.Slots[fromIndex] : default;
-            var casterActor = ResolveCaster(movedCard);
-
             bool ok = Hand.TryMove(fromIndex, toIndex, out _);
             if (ok)
             {
                 if (!movedCard.IsUltimate && movedCard.Skill != null
                     && _skillOwners.TryGetValue(movedCard.Skill, out var mover))
                     FillGauge(mover);            // +1 gauge for moving a card
-
                 if (Hand.ActionsRemaining == 0) NotifyActionsExhausted();
             }
             return ok;
         }
 
+        /// <summary>
+        /// Multiplayer: server resolved the enemy phase remotely.
+        /// Ticks end-of-round effects/regen, redeals hand, and begins the next player turn
+        /// at the server-authoritative round number — skips local enemy phase entirely.
+        /// </summary>
+        public virtual void ForceNewPlayerTurn(int round)
+        {
+            if (Phase == CombatPhase.Over) return;
+            if (Context == null || Hand == null) return;
+
+            // End-of-round maintenance (same as EndOfRound, minus ProcessEnemyPhase)
+            for (int i = 0; i < Context.AllActors.Count; i++)
+            {
+                var actor = Context.AllActors[i];
+                if (actor.IsAlive) actor.Effects.Tick();
+            }
+            for (int i = 0; i < Context.AllActors.Count; i++)
+            {
+                var actor = Context.AllActors[i];
+                if (actor.IsAlive) actor.Model.ApplyRegen();
+            }
+
+            Hand.Refill();
+
+            if (Context.IsOver) { FinishCombat(); return; }
+
+            Round              = round;
+            Phase              = CombatPhase.PlayerTurn;
+            Context.TurnNumber = round;
+            Hand.ResetActions();
+            CheckUltimateInsertion();
+
+            OnPlayerTurnBegin?.Invoke(Round);
+
+            void Fire() => OnPlayerTurnStarted?.Invoke(Round);
+            if (PlayerTurnStartHandler != null)
+                PlayerTurnStartHandler(Fire);
+            else
+                Fire();
+        }
+
         /// <summary>Player ends their turn before exhausting all actions.</summary>
-        public void EndPlayerTurn()
+        public virtual void EndPlayerTurn()
         {
             if (Phase != CombatPhase.PlayerTurn) return;
             if (Context.IsOver) { FinishCombat(); return; }
@@ -451,5 +479,14 @@ namespace Runefall.Combat
             Hand.OnCharacterLeft(cd);
         }
 
+        protected void InvokeOnPlayerTurnBegin(int round) => OnPlayerTurnBegin?.Invoke(round);
+        protected void InvokeOnPlayerTurnStarted(int round) => OnPlayerTurnStarted?.Invoke(round);
+        protected void InvokeOnEnemyTurnStarted() => OnEnemyTurnStarted?.Invoke();
+        protected void InvokeOnActionPending(PendingAction action) => OnActionPending?.Invoke(action);
+        protected void InvokeOnActionResolved(CombatActionResult result) => OnActionResolved?.Invoke(result);
+        protected void InvokeOnCombatEnded(bool playerWon) => OnCombatEnded?.Invoke(playerWon);
+        protected void InvokeOnMergeOccurred(string skillName, int rank) => OnMergeOccurred?.Invoke(skillName, rank);
+        protected void InvokeOnGaugeChanged(ICombatActor actor, int orbs) => OnGaugeChanged?.Invoke(actor, orbs);
+        protected void InvokeOnPlayerActionsExhausted() => OnPlayerActionsExhausted?.Invoke();
     }
 }
