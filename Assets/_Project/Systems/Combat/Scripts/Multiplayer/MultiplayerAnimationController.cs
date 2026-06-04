@@ -165,60 +165,81 @@ namespace Runefall.Multiplayer
             Vector3    targetPos   = target != null ? target.position : attacker.position;
             Quaternion originalRot = attacker.rotation;
 
-            void OnImpact() => targetAnim?.PlayHit();
+            // Target hit reaction is driven by the attacker's Animation Events on the clip:
+            //   melee  → "ImpactFrame" (CombatPawnAnimator.OnImpactFrame) = contact frame
+            //   ranged → "Shoot"       (CombatPawnAnimator.OnShoot)       = release frame
+            // This syncs the reaction to the exact authored frame, not clip end / clip index.
+            int aeHits = 0;
+            void OnAttackAE() { aeHits++; targetAnim?.PlayHit(); }
 
-            // ── Ranged: snap rotate, play clips in place, no lunge ──
-            if (isRanged)
+            bool hasClips = attackerAnim != null && clips != null && clips.Length > 0;
+            if (hasClips)
             {
-                RotateToward(attacker, targetPos);
-                if (attackerAnim != null && clips != null && clips.Length > 0)
-                    yield return StartCoroutine(attackerAnim.PlaySkillSequence(clips, OnImpact, impactIdx));
+                if (isRanged) attackerAnim.OnShoot       += OnAttackAE;
+                else          attackerAnim.OnImpactFrame += OnAttackAE;
+            }
+
+            try
+            {
+                // ── Ranged: snap rotate, play clips in place, no lunge ──
+                if (isRanged)
+                {
+                    RotateToward(attacker, targetPos);
+                    if (hasClips)
+                        yield return StartCoroutine(attackerAnim.PlaySkillSequence(clips));
+                    else
+                        targetAnim?.PlayHit();
+                    if (hasClips && aeHits == 0) targetAnim?.PlayHit(); // fallback: clip had no AE
+                    attacker.rotation = originalRot;
+                    yield break;
+                }
+
+                // ── Melee: rotate + lunge in, attack, return to line ──
+                Vector3 origin      = attacker.position;
+                Vector3 lungeTarget = ComputeLungeTarget(origin, targetPos);
+
+                if (hasClips)
+                {
+                    // Lunge movement is timed off the impact clip; the hit reaction itself
+                    // fires from the "ImpactFrame" AE so contact and reaction stay in sync.
+                    float approachDelay = SumClipDurations(clips, 0, impactIdx - 1);
+                    float approachDur   = (impactIdx >= 0 && impactIdx < clips.Length && clips[impactIdx] != null)
+                                          ? clips[impactIdx].length : 0f;
+                    float rotDur        = Mathf.Max(approachDelay, attackerAnim.BlendDuration);
+
+                    StartCoroutine(SmoothRotateTo(attacker, targetPos, 0f, rotDur));
+                    if (approachDur > 0f)
+                        StartCoroutine(DelayedLungeTo(attacker, lungeTarget, approachDelay, approachDur));
+
+                    yield return StartCoroutine(attackerAnim.PlaySkillSequence(clips));
+                }
                 else
                 {
-                    OnImpact();
-                    yield return new WaitForSeconds(0.3f);
+                    // No clips (fallback): run in, hit on arrival, with approach-state legs.
+                    attackerAnim?.PlayApproach();
+                    yield return StartCoroutine(SmoothRotateTo(attacker, targetPos, 0f, ReturnRotateDuration));
+                    yield return StartCoroutine(LungeTo(attacker, lungeTarget, EnemyLungeDuration));
+                    targetAnim?.PlayHit();
+                    yield return new WaitForSeconds(NoClipImpactPause);
                 }
-                attacker.rotation = originalRot;
-                yield break;
-            }
 
-            // ── Melee: rotate + lunge in, attack, return to line ──
-            Vector3 origin      = attacker.position;
-            Vector3 lungeTarget = ComputeLungeTarget(origin, targetPos);
+                if (hasClips && aeHits == 0) targetAnim?.PlayHit(); // fallback: clip had no AE
 
-            if (clips != null && clips.Length > 0)
-            {
-                float approachDelay = SumClipDurations(clips, 0, impactIdx - 1);
-                float approachDur   = (impactIdx >= 0 && impactIdx < clips.Length && clips[impactIdx] != null)
-                                      ? clips[impactIdx].length : 0f;
-                float blend         = attackerAnim != null ? attackerAnim.BlendDuration : 0f;
-                float rotDur        = Mathf.Max(approachDelay, blend);
-
-                StartCoroutine(SmoothRotateTo(attacker, targetPos, 0f, rotDur));
-                if (approachDur > 0f)
-                    StartCoroutine(DelayedLungeTo(attacker, lungeTarget, approachDelay, approachDur));
-
-                if (attackerAnim != null)
-                    yield return StartCoroutine(attackerAnim.PlaySkillSequence(clips, OnImpact, impactIdx));
-                else
-                    OnImpact();
-            }
-            else
-            {
-                // No clips (enemy / fallback): run in, hit, with approach-state legs.
+                // Sequential return: rotate home, run back, settle to idle.
+                yield return StartCoroutine(SmoothRotateTo(attacker, origin, 0f, ReturnRotateDuration));
                 attackerAnim?.PlayApproach();
-                yield return StartCoroutine(SmoothRotateTo(attacker, targetPos, 0f, ReturnRotateDuration));
-                yield return StartCoroutine(LungeTo(attacker, lungeTarget, EnemyLungeDuration));
-                OnImpact();
-                yield return new WaitForSeconds(NoClipImpactPause);
+                yield return StartCoroutine(LungeTo(attacker, origin, approachReturnLen));
+                attackerAnim?.PlayReturn();
+                attacker.rotation = originalRot;
             }
-
-            // Sequential return: rotate home, run back, settle to idle.
-            yield return StartCoroutine(SmoothRotateTo(attacker, origin, 0f, ReturnRotateDuration));
-            attackerAnim?.PlayApproach();
-            yield return StartCoroutine(LungeTo(attacker, origin, approachReturnLen));
-            attackerAnim?.PlayReturn();
-            attacker.rotation = originalRot;
+            finally
+            {
+                if (hasClips)
+                {
+                    if (isRanged) attackerAnim.OnShoot       -= OnAttackAE;
+                    else          attackerAnim.OnImpactFrame -= OnAttackAE;
+                }
+            }
         }
 
         // ── Skill resolution ───────────────────────────────────────────────────
