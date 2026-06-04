@@ -62,6 +62,20 @@ namespace Runefall.Multiplayer
         public EnemyAgent GetEnemy(int index) =>
             index >= 0 && index < Enemies.Count ? Enemies[index] : null;
 
+        public bool IsPlayerAlive(ulong clientId) => GetPlayer(clientId)?.IsAlive ?? false;
+
+        public bool AllEnemiesDead()
+        {
+            foreach (var e in Enemies) if (e != null && e.IsAlive) return false;
+            return true;
+        }
+
+        public bool AllPlayersDead()
+        {
+            foreach (var p in Players.Values) if (p != null && p.IsAlive) return false;
+            return true;
+        }
+
         public void AdvanceRound() => Round++;
 
         /// <summary>

@@ -33,6 +33,8 @@ namespace Runefall.Multiplayer
         private CombatPresenterBase          _presenter;
         private MultiplayerActionSlotsSync   _syncRef;
         private ServerCombatOrchestrator     _orchestratorRef;
+        private ulong                        _localId;
+        private bool                         _combatEnded;
 
         private IEnumerator Start()
         {
@@ -54,6 +56,7 @@ namespace Runefall.Multiplayer
             }
 
             ulong localId  = NetworkManager.Singleton.LocalClientId;
+            _localId       = localId;
             int   slot     = (int)localId;
             var   chars    = registry.characters;
             var   enemies  = registry.enemies;
@@ -160,7 +163,9 @@ namespace Runefall.Multiplayer
             yield return new WaitUntil(() => ServerCombatOrchestrator.Instance != null);
             _orchestratorRef = ServerCombatOrchestrator.Instance;
             _orchestratorRef.OnBeginNewPlayerTurn += OnNewPlayerTurn;
-            Debug.Log("[LocalCombatSetup] Suscrito a OnBeginNewPlayerTurn.");
+            _orchestratorRef.OnPlayerDied         += OnPlayerDied;
+            _orchestratorRef.OnCombatOver         += OnCombatOver;
+            Debug.Log("[LocalCombatSetup] Suscrito a OnBeginNewPlayerTurn, OnPlayerDied, OnCombatOver.");
         }
 
         private void OnSlotsExhausted()
@@ -171,8 +176,25 @@ namespace Runefall.Multiplayer
 
         private void OnNewPlayerTurn(int round)
         {
+            if (_combatEnded) return;
             _presenter?.SetActionSlotsActive(true);
             _tm?.ForceNewPlayerTurn(round);
+        }
+
+        // Local player died → hide own HUD and become a spectator (arena stays visible).
+        private void OnPlayerDied(ulong clientId)
+        {
+            if (clientId != _localId) return;
+            if (_uiInstance != null) _uiInstance.SetActive(false);
+            Debug.Log("[LocalCombatSetup] Jugador local muerto → modo espectador.");
+        }
+
+        // Combat ended → show victory/defeat screen on every client (alive or dead).
+        private void OnCombatOver(bool won)
+        {
+            if (_combatEnded) return;
+            _combatEnded = true;
+            MultiplayerEndScreen.Show(won);
         }
 
         private void OnDestroy()
@@ -180,7 +202,11 @@ namespace Runefall.Multiplayer
             if (_syncRef != null)
                 _syncRef.OnAllPlayersExhausted -= OnSlotsExhausted;
             if (_orchestratorRef != null)
+            {
                 _orchestratorRef.OnBeginNewPlayerTurn -= OnNewPlayerTurn;
+                _orchestratorRef.OnPlayerDied         -= OnPlayerDied;
+                _orchestratorRef.OnCombatOver         -= OnCombatOver;
+            }
         }
     }
 }

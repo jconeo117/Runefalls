@@ -71,7 +71,9 @@ namespace Runefall.Multiplayer
             var orch = ServerCombatOrchestrator.Instance;
             orch.OnExecuteCard    += OnExecuteCard;
             orch.OnEnemyAttacking += OnEnemyAttacking;
-            Debug.Log("[MPAnimCtrl] Suscrito a OnExecuteCard y OnEnemyAttacking.");
+            orch.OnPlayerDied     += OnPlayerDied;
+            orch.OnCombatOver     += OnCombatOver;
+            Debug.Log("[MPAnimCtrl] Suscrito a OnExecuteCard, OnEnemyAttacking, OnPlayerDied, OnCombatOver.");
         }
 
         private void OnDestroy()
@@ -79,6 +81,37 @@ namespace Runefall.Multiplayer
             if (ServerCombatOrchestrator.Instance == null) return;
             ServerCombatOrchestrator.Instance.OnExecuteCard    -= OnExecuteCard;
             ServerCombatOrchestrator.Instance.OnEnemyAttacking -= OnEnemyAttacking;
+            ServerCombatOrchestrator.Instance.OnPlayerDied     -= OnPlayerDied;
+            ServerCombatOrchestrator.Instance.OnCombatOver     -= OnCombatOver;
+        }
+
+        // ── Death (all clients) ─────────────────────────────────────────────────
+
+        private void OnPlayerDied(ulong clientId)
+        {
+            ScanPawnsIfNeeded();
+            var pawn = GetPlayerPawn(clientId);
+            EnsureInit(pawn);
+            StartCoroutine(KillPawn(pawn));
+        }
+
+        private void OnCombatOver(bool won)
+        {
+            if (!won) return; // defeat → players already played death individually
+            ScanPawnsIfNeeded();
+            foreach (var enemy in _enemyPawns)
+            {
+                EnsureInit(enemy);
+                StartCoroutine(KillPawn(enemy));
+            }
+        }
+
+        private IEnumerator KillPawn(NetworkedCombatPawn pawn)
+        {
+            if (pawn == null) yield break;
+            GetPawnAnimator(pawn)?.PlayDeath();
+            yield return new WaitForSeconds(1.4f); // let the death clip play
+            if (pawn != null) pawn.gameObject.SetActive(false);
         }
 
         // ── Card execution (Phase 2) ───────────────────────────────────────────

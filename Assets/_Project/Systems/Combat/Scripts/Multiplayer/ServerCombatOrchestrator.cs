@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Unity.Netcode;
 
 namespace Runefall.Multiplayer
@@ -43,6 +45,10 @@ namespace Runefall.Multiplayer
         private int  _enemyTotalHits;
         private int  _enemyHitsApplied;
 
+        // End-of-combat state.
+        private bool _combatOver;
+        private readonly HashSet<ulong> _deadBroadcast = new();
+
         // ── Client-side events (fired via ClientRpcs on ALL clients) ───────────
 
         /// <summary>Animate the card in slotIndex owned by ownerClientId.</summary>
@@ -59,6 +65,12 @@ namespace Runefall.Multiplayer
 
         /// <summary>Start new player turn — call _tm.ForceNewPlayerTurn(round).</summary>
         public event Action<int>                           OnBeginNewPlayerTurn;
+
+        /// <summary>A player died — deactivate their pawn (all clients) and HUD (owner).</summary>
+        public event Action<ulong>                         OnPlayerDied;
+
+        /// <summary>Combat ended — show the victory (won=true) or defeat screen on every client.</summary>
+        public event Action<bool>                          OnCombatOver;
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -97,7 +109,7 @@ namespace Runefall.Multiplayer
 
         private void OnAllPlayersExhausted()
         {
-            if (!IsServer || _ctx == null) return;
+            if (!IsServer || _ctx == null || _combatOver) return;
             StartCoroutine(RunCardResolutionPhase());
         }
 
@@ -110,6 +122,8 @@ namespace Runefall.Multiplayer
 
             for (int i = 0; i < sync.SlotCount; i++)
             {
+                if (_combatOver) yield break; // boss died on a previous card → stop
+
                 var slot = sync.GetSlot(i);
                 if (!slot.IsOccupied) continue;
 
@@ -132,6 +146,7 @@ namespace Runefall.Multiplayer
             }
             _currentImpactSlot = -1;
 
+            if (_combatOver) yield break;
             StartCoroutine(RunEnemyPhase());
         }
 
@@ -143,6 +158,8 @@ namespace Runefall.Multiplayer
 
             for (int i = 0; i < _ctx.Enemies.Count; i++)
             {
+                if (_combatOver) yield break;
+
                 var enemy = _ctx.GetEnemy(i);
                 if (enemy == null || !enemy.IsAlive) continue;
 
@@ -150,7 +167,7 @@ namespace Runefall.Multiplayer
                 // different player) and animates independently so all clients see each swing.
                 for (int a = 0; a < EnemyAttacksPerTurn; a++)
                 {
-                    if (!enemy.IsAlive) break;
+                    if (_combatOver || !enemy.IsAlive) break;
 
                     // Pick target + skill up front; each impact frame applies one hit.
                     if (!_ctx.BeginEnemyAttack(i, out ulong targetCid, out _enemyTotalHits))
@@ -172,6 +189,7 @@ namespace Runefall.Multiplayer
                 }
             }
 
+            if (_combatOver) yield break;
             StartCoroutine(BeginNewPlayerTurnPhase());
         }
 
@@ -179,6 +197,7 @@ namespace Runefall.Multiplayer
 
         private IEnumerator BeginNewPlayerTurnPhase()
         {
+            if (_combatOver) yield break;
             _ctx.AdvanceRound();
             MultiplayerActionSlotsSync.Instance?.ResetSlotsServerRpc();
             yield return null; // one frame for NetworkList reset to replicate
@@ -199,6 +218,9 @@ namespace Runefall.Multiplayer
                 if (enemy != null)
                     EnemyHpChangedClientRpc(enemyIdx, (int)enemy.Model.CurrentHP, (int)enemy.Model.MaxHP, damage, crit);
             }
+
+            // Victory: all enemies down.
+            if (!_combatOver && _ctx.AllEnemiesDead()) EndCombat(true);
         }
 
         private void ApplyAndBroadcastEnemyHit()
@@ -211,7 +233,25 @@ namespace Runefall.Multiplayer
                 var player = _ctx.GetPlayer(cid);
                 if (player != null)
                     PlayerHpChangedClientRpc(cid, (int)player.Model.CurrentHP, (int)player.Model.MaxHP, damage, crit);
+
+                // Player died: shrink the slot board, deactivate their pawn + HUD (once).
+                if (!_ctx.IsPlayerAlive(cid) && _deadBroadcast.Add(cid))
+                {
+                    MultiplayerActionSlotsSync.Instance?.MarkPlayerDead(cid);
+                    PlayerDiedClientRpc(cid);
+                }
             }
+
+            // Defeat: all players down.
+            if (!_combatOver && _ctx.AllPlayersDead()) EndCombat(false);
+        }
+
+        private void EndCombat(bool won)
+        {
+            if (_combatOver) return;
+            _combatOver = true;
+            Debug.Log($"[Orchestrator] Combate terminado — won={won}.");
+            CombatEndedClientRpc(won);
         }
 
         // ── Wait helpers (no ref params — C# iterators don't support ref) ──────
@@ -273,6 +313,29 @@ namespace Runefall.Multiplayer
         {
             Debug.Log($"[Orchestrator] BeginNewPlayerTurn round={round}");
             OnBeginNewPlayerTurn?.Invoke(round);
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void PlayerDiedClientRpc(ulong clientId)
+        {
+            Debug.Log($"[Orchestrator] PlayerDied client={clientId}");
+            OnPlayerDied?.Invoke(clientId);
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void CombatEndedClientRpc(bool won)
+        {
+            Debug.Log($"[Orchestrator] CombatEnded won={won}");
+            OnCombatOver?.Invoke(won);
+        }
+
+        /// <summary>Defeat → Retry: any client requests it, host reloads the BossFight scene for all.</summary>
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        public void RetryServerRpc(RpcParams rp = default)
+        {
+            if (!IsServer) return;
+            Debug.Log("[Orchestrator] Retry — recargando Multiplayer_BossFight.");
+            NetworkManager.SceneManager.LoadScene("Multiplayer_BossFight", LoadSceneMode.Single);
         }
 
         // ── RPCs: Clients → Server ─────────────────────────────────────────────

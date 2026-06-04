@@ -128,6 +128,10 @@ namespace Runefall.Multiplayer
         private IEnumerator ReactivateSlotsNextFrame()
         {
             yield return null; // let the server's slot reset replicate first
+
+            // Slot count may have shrunk (a player died, 6 → 3) — rebuild to match.
+            RebuildActionSlots();
+
             var hlg = actionSlotContainer != null ? actionSlotContainer.GetComponent<HorizontalLayoutGroup>() : null;
             if (hlg != null) hlg.enabled = true;
 

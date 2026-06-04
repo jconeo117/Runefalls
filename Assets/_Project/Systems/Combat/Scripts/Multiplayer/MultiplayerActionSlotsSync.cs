@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -25,10 +26,16 @@ namespace Runefall.Multiplayer
         public NetworkVariable<int> ActionsUsed0 = new(writePerm: NetworkVariableWritePermission.Server);
         public NetworkVariable<int> ActionsUsed1 = new(writePerm: NetworkVariableWritePermission.Server);
 
+        // Server-only: dead players are removed from the board — total slots shrink to
+        // aliveCount * ActionsPerPlayer (e.g. 2 players = 6 slots; one dies = 3 slots).
+        private readonly HashSet<ulong> _deadPlayers = new();
+        private int _playerCount;
+
         public int SlotCount => _slots?.Count ?? 0;
 
         public NetworkSlotState GetSlot(int i)    => _slots[i];
-        public int GetActionsRemaining(ulong cid) => ActionsPerPlayer - GetActionsUsed(cid);
+        public int GetActionsRemaining(ulong cid) =>
+            _deadPlayers.Contains(cid) ? 0 : ActionsPerPlayer - GetActionsUsed(cid);
         public int GetActionsUsed(ulong cid)      => cid == 0 ? ActionsUsed0.Value : ActionsUsed1.Value;
 
         public event Action<int> OnSlotUpdated;        // fires on ALL clients when slot changes
@@ -66,11 +73,32 @@ namespace Runefall.Multiplayer
         public void InitializeSlots(int playerCount)
         {
             if (!IsServer) return;
+            _playerCount = playerCount;
             _slots.Clear();
             int total = playerCount * ActionsPerPlayer;
             for (int i = 0; i < total; i++)
                 _slots.Add(default);
             Debug.Log($"[ActionSlotsSync] {total} slots inicializados para {playerCount} jugadores.");
+        }
+
+        /// <summary>
+        /// Server: a player died. Shrink the shared board to aliveCount * ActionsPerPlayer
+        /// and reset usage so the turn can continue with the remaining player(s).
+        /// </summary>
+        public void MarkPlayerDead(ulong clientId)
+        {
+            if (!IsServer) return;
+            if (!_deadPlayers.Add(clientId)) return;
+
+            int alive = Mathf.Max(0, _playerCount - _deadPlayers.Count);
+            int total = alive * ActionsPerPlayer;
+
+            _slots.Clear();
+            for (int i = 0; i < total; i++) _slots.Add(default);
+
+            ActionsUsed0.Value = 0;
+            ActionsUsed1.Value = 0;
+            Debug.Log($"[ActionSlotsSync] Player {clientId} muerto → board reducido a {total} slots ({alive} vivos).");
         }
 
         // ── Private helpers ────────────────────────────────────────────────────
@@ -102,6 +130,11 @@ namespace Runefall.Multiplayer
         {
             ulong cid = rpcParams.Receive.SenderClientId;
 
+            if (_deadPlayers.Contains(cid))
+            {
+                Debug.LogWarning($"[ActionSlotsSync] Cliente {cid} muerto — no puede jugar cartas.");
+                return;
+            }
             if (slotIndex < 0 || slotIndex >= _slots.Count)
             {
                 Debug.LogWarning($"[ActionSlotsSync] Slot {slotIndex} fuera de rango.");
