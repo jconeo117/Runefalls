@@ -234,11 +234,10 @@ namespace Runefall.Multiplayer
                     // Hits apply via EnemyImpactServerRpc as AEs fire during the animation.
                     yield return StartCoroutine(WaitForEnemyAnim(8f, i));
 
-                    // Fallback: apply any unreported hits.
+                    // Fallback: apply any unreported hits (death resolves on the last one).
                     while (_enemyHitsApplied < _enemyTotalHits) ApplyAndBroadcastEnemyHit();
 
-                    // Now the swing animation is done (attacker returned) → resolve death.
-                    ResolvePlayerDeath(targetCid);
+                    // Defeat checked once the swing finished (death already played on the last AE).
                     if (!_combatOver && _ctx.AllPlayersDead()) { EndCombat(false); yield break; }
 
                     if (a < EnemyAttacksPerTurn - 1)
@@ -288,9 +287,12 @@ namespace Runefall.Multiplayer
                 var player = _ctx.GetPlayer(cid);
                 if (player != null)
                     PlayerHpChangedClientRpc(cid, (int)player.Model.CurrentHP, (int)player.Model.MaxHP, damage, crit);
+
+                // Death plays on the LAST impact frame of the swing (like SP): HP can hit 0 on
+                // an earlier AE but the pawn only dies on the final hit. The boss keeps animating
+                // its own return — deactivating the target pawn doesn't touch the boss.
+                if (_enemyHitsApplied >= _enemyTotalHits) ResolvePlayerDeath(cid);
             }
-            // Death / defeat are checked AFTER the full swing animation (see RunEnemyPhase),
-            // so the attacker isn't interrupted mid-attack — the target dies after the last AE.
         }
 
         // Broadcasts a player's death (pawn + HUD off, slot board shrink) once. Call after the
