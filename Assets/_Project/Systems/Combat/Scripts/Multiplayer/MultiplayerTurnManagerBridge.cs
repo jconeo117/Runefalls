@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Unity.Netcode;
 using Runefall.Combat;
@@ -96,6 +97,21 @@ namespace Runefall.Multiplayer
         public void ClientSyncHandClientRpc(NetworkBattleCard[] netCards, int actionsRemaining)
         {
             _manager?.HandleClientSyncHand(netCards, actionsRemaining);
+        }
+
+        // ── Animation sync ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Fired on non-server clients when server is about to drain its animation queue.
+        /// Clients subscribe to call PlayQueuedAnimations(null) on their local CombatAnimationDriver.
+        /// </summary>
+        public event Action OnClientShouldPlayAnimations;
+
+        /// <summary>Server → non-server clients: drain local animation queues now.</summary>
+        [Rpc(SendTo.NotServer)]
+        public void ClientPlayAnimationsClientRpc()
+        {
+            OnClientShouldPlayAnimations?.Invoke();
         }
     }
 }

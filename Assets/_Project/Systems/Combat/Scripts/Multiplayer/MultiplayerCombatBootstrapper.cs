@@ -18,6 +18,8 @@ namespace Runefall.Multiplayer
         [Header("Multiplayer Setup")]
         [SerializeField] private MultiplayerTurnManagerBridge turnManagerBridgePrefab;
         [SerializeField] private MultiplayerCombatRegistry multiplayerRegistry;
+        [Tooltip("Auto-call BeginCombat after init (BossFight). Disable when EncounterPromptPresenter calls it externally (exploration path).")]
+        [SerializeField] private bool _autoBeginCombat = true;
 
         private MultiplayerTurnManagerBridge _bridgeInstance;
 
@@ -163,6 +165,20 @@ namespace Runefall.Multiplayer
 
             vfxPlayer?.Init(_actorPawns, _actorEnemyData);
 
+            // Server wires enemy-drain hook so non-server clients animate in sync.
+            if (NetworkManager.Singleton.IsServer && animationDriver != null)
+                animationDriver.OnBeforeEnemyQueueDrain = () => _bridgeInstance?.ClientPlayAnimationsClientRpc();
+
+            // Non-server clients drain their animation queues when server signals.
+            if (!NetworkManager.Singleton.IsServer && _bridgeInstance != null)
+            {
+                _bridgeInstance.OnClientShouldPlayAnimations += () =>
+                {
+                    _presenter?.SetActionSlotsActive(false);
+                    animationDriver?.PlayQueuedAnimations(null, fadeSlots: true);
+                };
+            }
+
             if (cameraDirector != null && cameraController != null)
             {
                 Vector3 fieldCenter = arenaAssembler != null && arenaAssembler.IsReady
@@ -182,7 +198,13 @@ namespace Runefall.Multiplayer
             EnterCombatModeLocal();
 
             _pendingFieldChars = fieldChars;
+
+            // BossFight scene: no external caller for BeginCombat, so start combat loop immediately.
+            // SP exploration path: EncounterPromptPresenter calls BeginCombat() after fade-in.
+            if (_autoBeginCombat)
+                BeginCombat();
         }
+
 
         // --- Helper overrides to map protected base variables/methods safely ---
 
@@ -277,6 +299,9 @@ namespace Runefall.Multiplayer
             _tm.OnPlayerActionsExhausted += () =>
             {
                 _presenter?.SetActionSlotsActive(false);
+                // Server broadcasts to non-server clients to drain their queues, then drains its own.
+                if (NetworkManager.Singleton.IsServer)
+                    _bridgeInstance?.ClientPlayAnimationsClientRpc();
                 animationDriver?.PlayQueuedAnimations(() => _tm.EndPlayerTurn(), fadeSlots: true);
             };
 

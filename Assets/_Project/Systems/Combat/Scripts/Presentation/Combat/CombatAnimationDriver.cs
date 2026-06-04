@@ -72,6 +72,10 @@ namespace Runefall.Presentation.Combat
         protected readonly Queue<PendingAction> _animQueue = new();
         protected Camera _camera;
 
+        // Injected by multiplayer bootstrapper: called on server before each enemy queue drain
+        // so non-server clients receive the signal to drain their local queues in sync.
+        public Action OnBeforeEnemyQueueDrain;
+
         // World-space positions of the attacker and target on the killing blow.
         // Captured in RaiseImpactHit when _ctx.IsOver && _ctx.PlayerWon, passed to FinisherManager.
         private Vector3 _killingBlowAttackerPos;
@@ -133,6 +137,7 @@ namespace Runefall.Presentation.Combat
                 if (_ctx != null && _ctx.IsOver) break;
                 if (!enemies[i].IsAlive) continue;
                 executeTurn(enemies[i]);                     // fires TM.OnActionPending → Bootstrapper.Enqueue()
+                OnBeforeEnemyQueueDrain?.Invoke();           // server notifies clients to drain their queues
                 yield return StartCoroutine(DrainQueue(null));
             }
 
