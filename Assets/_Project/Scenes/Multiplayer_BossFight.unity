@@ -3917,7 +3917,7 @@ MonoBehaviour:
   arenaAssembler: {fileID: 1791672175}
   networkedCombatPawnPrefab: {fileID: 8428032145972948308, guid: 5f270d340c014464a9dee322ba5c4489, type: 3}
   registry: {fileID: 11400000, guid: a5377ddd0bfcbe445aa11c2dcada00a6, type: 2}
-  actionSlotsSyncPrefab: {fileID: 519611415296976170, guid: 561402d2cf92d554f8fc81e4f7e01532, type: 3}
+  actionSlotsSyncPrefab: {fileID: 0}
   serverCombatOrchestratorPrefab: {fileID: 0}
   maxPlayers: 2
   enemySlots: 1
@@ -3963,6 +3963,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   combatUIPrefab: {fileID: 7073142559132807637, guid: 4d63338c0dfc11c4898d01a4774fb9b0, type: 3}
   registry: {fileID: 11400000, guid: a5377ddd0bfcbe445aa11c2dcada00a6, type: 2}
+  combatBaseController: {fileID: 9100000, guid: 1c939d5c041b0c84d912aeb95bbb30f7, type: 2}
 --- !u!1 &1848294529
 GameObject:
   m_ObjectHideFlags: 0

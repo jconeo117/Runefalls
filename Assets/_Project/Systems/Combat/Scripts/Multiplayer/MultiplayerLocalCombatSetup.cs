@@ -20,6 +20,10 @@ namespace Runefall.Multiplayer
     {
         [SerializeField] private GameObject combatUIPrefab;
         [SerializeField] private MultiplayerCombatRegistry registry;
+        [Tooltip("Shared combat base AnimatorController (Idle/Approach/Hit/Death + placeholder clips). " +
+                 "Same asset assigned to CombatAnimationDriver.combatBaseController in SP. " +
+                 "Drives PlayApproach/PlayHit/PlayReturn cross-fades on MP pawns.")]
+        [SerializeField] private RuntimeAnimatorController combatBaseController;
 
         private TurnManager                  _tm;
         private CombatContext                _ctx;
@@ -125,7 +129,7 @@ namespace Runefall.Multiplayer
             // Animation controller — drives pawn animations in response to server RPCs.
             var animCtrlGo = new GameObject("MultiplayerAnimationController");
             var animCtrl   = animCtrlGo.AddComponent<MultiplayerAnimationController>();
-            animCtrl.Initialize(localId);
+            animCtrl.Initialize(localId, combatBaseController, registry);
 
             // HP controller — manages world-space player bars + boss screen bar.
             var hpCtrlGo = new GameObject("MultiplayerHPController");
