@@ -193,6 +193,9 @@ namespace Runefall.Multiplayer
 
                 // Fallback: apply any hits the client never reported (missing AEs / disconnect).
                 while (_cardHitsApplied < _cardTotalHits) ApplyAndBroadcastCardHit();
+
+                // Victory checked after the full card animation (boss dies after the last AE).
+                if (_ctx.AllEnemiesDead()) { EndCombat(true); break; }
             }
             _currentImpactSlot = -1;
 
@@ -234,6 +237,10 @@ namespace Runefall.Multiplayer
                     // Fallback: apply any unreported hits.
                     while (_enemyHitsApplied < _enemyTotalHits) ApplyAndBroadcastEnemyHit();
 
+                    // Now the swing animation is done (attacker returned) → resolve death.
+                    ResolvePlayerDeath(targetCid);
+                    if (!_combatOver && _ctx.AllPlayersDead()) { EndCombat(false); yield break; }
+
                     if (a < EnemyAttacksPerTurn - 1)
                         yield return new WaitForSeconds(BetweenAttacksDelay);
                 }
@@ -268,9 +275,7 @@ namespace Runefall.Multiplayer
                 if (enemy != null)
                     EnemyHpChangedClientRpc(enemyIdx, (int)enemy.Model.CurrentHP, (int)enemy.Model.MaxHP, damage, crit);
             }
-
-            // Victory: all enemies down.
-            if (!_combatOver && _ctx.AllEnemiesDead()) EndCombat(true);
+            // Death / victory are checked AFTER the full animation (see RunCardResolutionPhase).
         }
 
         private void ApplyAndBroadcastEnemyHit()
@@ -283,17 +288,20 @@ namespace Runefall.Multiplayer
                 var player = _ctx.GetPlayer(cid);
                 if (player != null)
                     PlayerHpChangedClientRpc(cid, (int)player.Model.CurrentHP, (int)player.Model.MaxHP, damage, crit);
-
-                // Player died: shrink the slot board, deactivate their pawn + HUD (once).
-                if (!_ctx.IsPlayerAlive(cid) && _deadBroadcast.Add(cid))
-                {
-                    MultiplayerActionSlotsSync.Instance?.MarkPlayerDead(cid);
-                    PlayerDiedClientRpc(cid);
-                }
             }
+            // Death / defeat are checked AFTER the full swing animation (see RunEnemyPhase),
+            // so the attacker isn't interrupted mid-attack — the target dies after the last AE.
+        }
 
-            // Defeat: all players down.
-            if (!_combatOver && _ctx.AllPlayersDead()) EndCombat(false);
+        // Broadcasts a player's death (pawn + HUD off, slot board shrink) once. Call after the
+        // attacker's animation has finished so the death never interrupts the swing.
+        private void ResolvePlayerDeath(ulong cid)
+        {
+            if (cid == ulong.MaxValue) return;
+            if (_ctx.IsPlayerAlive(cid)) return;
+            if (!_deadBroadcast.Add(cid)) return;
+            MultiplayerActionSlotsSync.Instance?.MarkPlayerDead(cid);
+            PlayerDiedClientRpc(cid);
         }
 
         private void EndCombat(bool won)
