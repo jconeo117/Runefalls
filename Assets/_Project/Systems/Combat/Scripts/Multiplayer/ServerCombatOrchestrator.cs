@@ -56,6 +56,9 @@ namespace Runefall.Multiplayer
         // second cycle.
         private bool _phaseRunning;
 
+        // Retry consensus: both players must agree before the battle reloads.
+        private readonly HashSet<ulong> _retryVotes = new();
+
         // ── Client-side events (fired via ClientRpcs on ALL clients) ───────────
 
         /// <summary>Animate the card in slotIndex owned by ownerClientId.</summary>
@@ -78,6 +81,9 @@ namespace Runefall.Multiplayer
 
         /// <summary>Combat ended — show the victory (won=true) or defeat screen on every client.</summary>
         public event Action<bool>                          OnCombatOver;
+
+        /// <summary>Retry vote progress (ready, total) — update the "waiting for player" UI.</summary>
+        public event Action<int, int>                      OnRetryStatus;
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -402,13 +408,29 @@ namespace Runefall.Multiplayer
             OnCombatOver?.Invoke(won);
         }
 
-        /// <summary>Defeat → Retry: any client requests it, host reloads the BossFight scene for all.</summary>
+        /// <summary>
+        /// Defeat → Retry: a player votes to retry. Both players must vote before the host reloads
+        /// the BossFight scene; meanwhile every client is told how many are ready.
+        /// </summary>
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public void RetryServerRpc(RpcParams rp = default)
         {
             if (!IsServer) return;
-            Debug.Log("[Orchestrator] Retry — recargando Multiplayer_BossFight.");
-            NetworkManager.SceneManager.LoadScene("Multiplayer_BossFight", LoadSceneMode.Single);
+            _retryVotes.Add(rp.Receive.SenderClientId);
+
+            int total = NetworkManager.ConnectedClientsIds.Count;
+            int ready = _retryVotes.Count;
+            Debug.Log($"[Orchestrator] Retry vote {ready}/{total}.");
+            RetryStatusClientRpc(ready, total);
+
+            if (ready >= total)
+                NetworkManager.SceneManager.LoadScene("Multiplayer_BossFight", LoadSceneMode.Single);
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void RetryStatusClientRpc(int ready, int total)
+        {
+            OnRetryStatus?.Invoke(ready, total);
         }
 
         // ── RPCs: Clients → Server ─────────────────────────────────────────────

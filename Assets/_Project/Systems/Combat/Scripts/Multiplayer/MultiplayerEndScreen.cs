@@ -15,12 +15,21 @@ namespace Runefall.Multiplayer
     {
         private const string LobbySceneName = "Multiplayer_Lobby";
 
+        private Button                   _retryBtn;
+        private Text                     _statusLabel;
+        private ServerCombatOrchestrator _orch;
+
         public static MultiplayerEndScreen Show(bool won)
         {
             var go = new GameObject("MultiplayerEndScreen");
             var screen = go.AddComponent<MultiplayerEndScreen>();
             screen.Build(won);
             return screen;
+        }
+
+        private void OnDestroy()
+        {
+            if (_orch != null) _orch.OnRetryStatus -= OnRetryStatus;
         }
 
         private void Build(bool won)
@@ -55,8 +64,20 @@ namespace Runefall.Multiplayer
             }
             else
             {
-                MakeButton("Reintentar",      new Vector2(-180f, y), new Color(0.25f, 0.6f, 0.3f), Retry);
+                _retryBtn = MakeButton("Reintentar",      new Vector2(-180f, y), new Color(0.25f, 0.6f, 0.3f), Retry);
                 MakeButton("Volver al Lobby", new Vector2( 180f, y), new Color(0.6f, 0.25f, 0.25f), ReturnToLobby);
+
+                // Retry consensus status (both players must agree).
+                _statusLabel = NewText(transform, "RetryStatus", "", 26, FontStyle.Normal,
+                    new Color(0.9f, 0.9f, 0.7f), TextAnchor.MiddleCenter);
+                var srt = _statusLabel.rectTransform;
+                srt.anchorMin = new Vector2(0.5f, 0.5f); srt.anchorMax = new Vector2(0.5f, 0.5f);
+                srt.pivot = new Vector2(0.5f, 0.5f);
+                srt.anchoredPosition = new Vector2(0f, -180f);
+                srt.sizeDelta = new Vector2(900f, 50f);
+
+                _orch = ServerCombatOrchestrator.Instance;
+                if (_orch != null) _orch.OnRetryStatus += OnRetryStatus;
             }
         }
 
@@ -64,8 +85,18 @@ namespace Runefall.Multiplayer
 
         private void Retry()
         {
-            // Host reloads the BossFight scene for all; any client may request it.
+            // Cast this player's vote. The host reloads only once BOTH players have voted.
             ServerCombatOrchestrator.Instance?.RetryServerRpc();
+            if (_retryBtn != null) _retryBtn.interactable = false;
+            if (_statusLabel != null) _statusLabel.text = "Esperando al otro jugador…";
+        }
+
+        private void OnRetryStatus(int ready, int total)
+        {
+            if (_statusLabel == null) return;
+            _statusLabel.text = ready >= total
+                ? "¡Ambos listos! Reiniciando…"
+                : $"Listos {ready}/{total} — esperando al otro jugador…";
         }
 
         private void ReturnToLobby()
@@ -78,7 +109,7 @@ namespace Runefall.Multiplayer
 
         // ── UI builders ──────────────────────────────────────────────────────────
 
-        private void MakeButton(string label, Vector2 anchoredPos, Color color, UnityEngine.Events.UnityAction onClick)
+        private Button MakeButton(string label, Vector2 anchoredPos, Color color, UnityEngine.Events.UnityAction onClick)
         {
             var img = NewImage(transform, $"Btn_{label}", color);
             var rt  = img.rectTransform;
@@ -93,6 +124,7 @@ namespace Runefall.Multiplayer
 
             var txt = NewText(img.transform, "Label", label, 30, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
             Stretch(txt.rectTransform);
+            return btn;
         }
 
         private static Image NewImage(Transform parent, string name, Color color)
