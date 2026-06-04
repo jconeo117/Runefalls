@@ -40,19 +40,46 @@ namespace Runefall.Multiplayer
                     _enemyByName[e.enemyName] = e;
             }
 
-            _skillByName = new Dictionary<string, SkillData>();
+            _skillByName    = new Dictionary<string, SkillData>();
+            _ultimateByName = new Dictionary<string, UltimateData>();
+
+            // Explicit lists first.
             foreach (var s in skills)
-            {
                 if (s != null && !string.IsNullOrEmpty(s.skillName))
                     _skillByName[s.skillName] = s;
-            }
-
-            _ultimateByName = new Dictionary<string, UltimateData>();
             foreach (var u in ultimates)
-            {
                 if (u != null && !string.IsNullOrEmpty(u.ultimateName))
                     _ultimateByName[u.ultimateName] = u;
+
+            // Auto-index skills/ultimates carried by each character and enemy, so remote
+            // clients can resolve any card's SkillData (for art/name) even when the explicit
+            // skills/ultimates lists are left empty. Characters/enemies are the source of truth.
+            foreach (var c in characters)
+            {
+                if (c == null) continue;
+                IndexSkill(c.skill1);
+                IndexSkill(c.skill2);
+                IndexUltimate(c.ultimate);
             }
+            foreach (var e in enemies)
+            {
+                if (e == null) continue;
+                IndexSkill(e.skill1);
+                IndexSkill(e.skill2);
+                IndexUltimate(e.ultimate);
+            }
+        }
+
+        private void IndexSkill(SkillData s)
+        {
+            if (s != null && !string.IsNullOrEmpty(s.skillName) && !_skillByName.ContainsKey(s.skillName))
+                _skillByName[s.skillName] = s;
+        }
+
+        private void IndexUltimate(UltimateData u)
+        {
+            if (u != null && !string.IsNullOrEmpty(u.ultimateName) && !_ultimateByName.ContainsKey(u.ultimateName))
+                _ultimateByName[u.ultimateName] = u;
         }
 
         public CharacterData GetCharacter(string name)
