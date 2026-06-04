@@ -182,33 +182,59 @@ namespace Runefall.Multiplayer
 
             bool hasClips = attackerAnim != null && clips != null && clips.Length > 0;
 
-            // Impact is resolved by the skill's ImpactTriggerData — exactly like singleplayer:
-            //   Projectile → spawns the prefab on the "shoot" AE, travels to target, fires on arrival
-            //   AnimEvent  → fires on the "ImpactFrame" AE (melee contact frame)
-            //   Timer      → fires after a fixed delay
-            // The callback plays the target hit reaction. Falls back to a direct AE subscription
-            // (or a single delayed PlayHit) when the skill defines no trigger.
+            // Drive impacts directly off the attacker's Animation Events so behaviour is exact:
+            //   one projectile per "Shoot" AE (ranged), one hit per "ImpactFrame" AE (melee).
+            // Each projectile fires its hit on arrival; melee fires on the contact frame.
+            var projData = triggerData as ProjectileTriggerData;
+
             int impactCount = 0;
             void DoHit()
             {
                 impactCount++;
                 targetAnim?.PlayHit();
-                onImpact?.Invoke(); // every AE / projectile arrival = one hit (signal server)
+                onImpact?.Invoke(); // every hit signals the server (one damage number per hit)
             }
 
-            IImpactTrigger trigger  = null;
-            System.Action  manualAE = null;
-
-            if (hasClips && triggerData != null)
+            // Spawn + fly one projectile to the target, then resolve a hit on arrival.
+            int inFlight = 0;
+            IEnumerator FlyProjectile()
             {
-                trigger = triggerData.Create(attacker, target, this, clips);
-                trigger.Arm((wave, total, actor) => DoHit());
+                inFlight++;
+                Vector3 spawn = attacker.position + Vector3.up * projData.heightOffset;
+                var go = Instantiate(projData.projectilePrefab, spawn, Quaternion.identity);
+                while (go != null && target != null)
+                {
+                    Vector3 dest = target.position + Vector3.up * projData.heightOffset;
+                    if (Vector3.Distance(go.transform.position, dest) <= projData.arrivalThreshold) break;
+                    Vector3 dir = (dest - go.transform.position).normalized;
+                    go.transform.position += dir * projData.speed * Time.deltaTime;
+                    if (dir != Vector3.zero) go.transform.rotation = Quaternion.LookRotation(dir);
+                    yield return null;
+                }
+                if (go != null) Destroy(go);
+                inFlight--;
+                DoHit();
             }
-            else if (hasClips)
+
+            System.Action onShoot       = null;
+            System.Action onImpactFrame = null;
+            if (hasClips)
             {
-                manualAE = DoHit;
-                if (isRanged) attackerAnim.OnShoot       += manualAE;
-                else          attackerAnim.OnImpactFrame += manualAE;
+                if (isRanged && projData != null && projData.projectilePrefab != null)
+                {
+                    onShoot = () => StartCoroutine(FlyProjectile()); // projectile per Shoot AE
+                    attackerAnim.OnShoot += onShoot;
+                }
+                else if (isRanged)
+                {
+                    onShoot = DoHit; // ranged with no projectile prefab → hit per Shoot AE
+                    attackerAnim.OnShoot += onShoot;
+                }
+                else
+                {
+                    onImpactFrame = DoHit; // melee → hit per ImpactFrame AE
+                    attackerAnim.OnImpactFrame += onImpactFrame;
+                }
             }
 
             try
@@ -218,8 +244,12 @@ namespace Runefall.Multiplayer
                 {
                     RotateToward(attacker, targetPos);
                     if (hasClips) yield return StartCoroutine(attackerAnim.PlaySkillSequence(clips));
-                    yield return WaitTriggerLanded(trigger);
-                    if (hasClips && impactCount == 0) DoHit(); // fallback: no AE/prefab → react once
+
+                    // Wait for any in-flight projectiles to land (bounded).
+                    float wt = 0f;
+                    while (inFlight > 0 && wt < 3f) { wt += Time.deltaTime; yield return null; }
+
+                    if (hasClips && impactCount == 0) DoHit(); // fallback: no AE → react once
                     attacker.rotation = originalRot;
                     yield break;
                 }
@@ -230,8 +260,7 @@ namespace Runefall.Multiplayer
 
                 if (hasClips)
                 {
-                    // Lunge movement timed off the impact clip; the hit reaction fires from the
-                    // trigger (ImpactFrame AE) so contact and reaction stay in sync.
+                    // Lunge timed off the impact clip; hits fire from the ImpactFrame AE.
                     float approachDelay = SumClipDurations(clips, 0, impactIdx - 1);
                     float approachDur   = (impactIdx >= 0 && impactIdx < clips.Length && clips[impactIdx] != null)
                                           ? clips[impactIdx].length : 0f;
@@ -245,16 +274,15 @@ namespace Runefall.Multiplayer
                 }
                 else
                 {
-                    // No clips (fallback): run in, hit on arrival, with approach-state legs.
+                    // No clips (enemy / fallback): run in, hit on arrival.
                     attackerAnim?.PlayApproach();
                     yield return StartCoroutine(SmoothRotateTo(attacker, targetPos, 0f, ReturnRotateDuration));
                     yield return StartCoroutine(LungeTo(attacker, lungeTarget, EnemyLungeDuration));
-                    targetAnim?.PlayHit();
+                    DoHit();
                     yield return new WaitForSeconds(NoClipImpactPause);
                 }
 
-                yield return WaitTriggerLanded(trigger);
-                if (hasClips && impactCount == 0) DoHit(); // fallback: no AE/prefab → react once
+                if (hasClips && impactCount == 0) DoHit(); // fallback: no AE → react once
 
                 // Sequential return: rotate home, run back, settle to idle.
                 yield return StartCoroutine(SmoothRotateTo(attacker, origin, 0f, ReturnRotateDuration));
@@ -265,20 +293,9 @@ namespace Runefall.Multiplayer
             }
             finally
             {
-                if (manualAE != null)
-                {
-                    if (isRanged) attackerAnim.OnShoot       -= manualAE;
-                    else          attackerAnim.OnImpactFrame -= manualAE;
-                }
+                if (onShoot       != null) attackerAnim.OnShoot       -= onShoot;
+                if (onImpactFrame != null) attackerAnim.OnImpactFrame -= onImpactFrame;
             }
-        }
-
-        // Bounded wait for the trigger (e.g. projectile travel) to land before continuing.
-        private IEnumerator WaitTriggerLanded(IImpactTrigger trigger)
-        {
-            if (trigger == null) yield break;
-            float t = 0f;
-            while (!trigger.HasFired && t < 2f) { t += Time.deltaTime; yield return null; }
         }
 
         // ── Skill resolution ───────────────────────────────────────────────────
