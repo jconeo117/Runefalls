@@ -99,60 +99,52 @@ namespace Runefall.Multiplayer
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        // Host-only debug hotkeys to exercise end-of-combat without playing it out:
-        //   F9  → Victory (kill boss)   F10 → kill one player (spectator)   F11 → Defeat (kill all players)
+        // Host-only debug hotkeys to set up end-of-combat — sets HP to 1 so the next real
+        // hit triggers the actual death / victory / defeat flow:
+        //   F9  → boss HP = 1   F10 → one player HP = 1   F11 → both players HP = 1
         private void Update()
         {
             if (!IsServer || _combatOver || _ctx == null) return;
             var kb = UnityEngine.InputSystem.Keyboard.current;
             if (kb == null) return;
-            if (kb.f9Key.wasPressedThisFrame)  DebugForceVictory();
-            if (kb.f10Key.wasPressedThisFrame) DebugKillOnePlayer();
-            if (kb.f11Key.wasPressedThisFrame) DebugForceDefeat();
+            if (kb.f9Key.wasPressedThisFrame)  DebugSetBossLow();
+            if (kb.f10Key.wasPressedThisFrame) DebugSetOnePlayerLow();
+            if (kb.f11Key.wasPressedThisFrame) DebugSetAllPlayersLow();
         }
 
-        private void DebugForceVictory()
+        private void DebugSetBossLow()
         {
             for (int i = 0; i < _ctx.Enemies.Count; i++)
             {
                 var e = _ctx.Enemies[i];
-                if (e == null) continue;
-                e.Model.SetHPDirectly(0);
-                EnemyHpChangedClientRpc(i, 0, (int)e.Model.MaxHP, 0, false);
+                if (e == null || !e.IsAlive) continue;
+                e.Model.SetHPDirectly(1);
+                EnemyHpChangedClientRpc(i, 1, (int)e.Model.MaxHP, 0, false);
             }
-            EndCombat(true);
         }
 
-        private void DebugKillOnePlayer()
+        private void DebugSetOnePlayerLow()
         {
-            // Kill the highest-id alive player so the host can stay and spectate.
+            // Highest-id alive player → 1 HP.
             ulong target = ulong.MaxValue;
             foreach (var kvp in _ctx.Players)
                 if (kvp.Value.IsAlive && (target == ulong.MaxValue || kvp.Key > target))
                     target = kvp.Key;
-            if (target == ulong.MaxValue) return;
-            DebugKill(target);
-            if (_ctx.AllPlayersDead()) EndCombat(false);
+            if (target != ulong.MaxValue) DebugSetPlayerLow(target);
         }
 
-        private void DebugForceDefeat()
+        private void DebugSetAllPlayersLow()
         {
             foreach (var kvp in _ctx.Players)
-                if (kvp.Value.IsAlive) DebugKill(kvp.Key);
-            EndCombat(false);
+                if (kvp.Value.IsAlive) DebugSetPlayerLow(kvp.Key);
         }
 
-        private void DebugKill(ulong cid)
+        private void DebugSetPlayerLow(ulong cid)
         {
             var p = _ctx.GetPlayer(cid);
             if (p == null) return;
-            p.Model.SetHPDirectly(0);
-            PlayerHpChangedClientRpc(cid, 0, (int)p.Model.MaxHP, 0, false);
-            if (_deadBroadcast.Add(cid))
-            {
-                MultiplayerActionSlotsSync.Instance?.MarkPlayerDead(cid);
-                PlayerDiedClientRpc(cid);
-            }
+            p.Model.SetHPDirectly(1);
+            PlayerHpChangedClientRpc(cid, 1, (int)p.Model.MaxHP, 0, false);
         }
 #endif
 
