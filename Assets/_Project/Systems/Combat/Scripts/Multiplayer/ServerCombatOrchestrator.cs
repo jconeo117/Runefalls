@@ -20,6 +20,11 @@ namespace Runefall.Multiplayer
     [RequireComponent(typeof(NetworkObject))]
     public class ServerCombatOrchestrator : NetworkBehaviour
     {
+        // ── Tuning ─────────────────────────────────────────────────────────────
+        // Attacks each enemy performs per enemy turn (boss is meant to hit 3 times).
+        private const int   EnemyAttacksPerTurn  = 3;
+        private const float BetweenAttacksDelay  = 0.25f;
+
         // ── Singleton ──────────────────────────────────────────────────────────
         public static ServerCombatOrchestrator Instance { get; private set; }
 
@@ -134,23 +139,33 @@ namespace Runefall.Multiplayer
                 var enemy = _ctx.GetEnemy(i);
                 if (enemy == null || !enemy.IsAlive) continue;
 
-                var (damage, targetCid) = _ctx.ResolveEnemyAttack(i);
-                if (damage < 0) continue;
-
-                _enemyAnimDone = false;
-                EnemyAttackingClientRpc(i, targetCid, damage);
-                yield return StartCoroutine(WaitForEnemyAnim(8f, i));
-
-                if (targetCid != ulong.MaxValue)
+                // Boss attacks multiple times per turn. Each attack re-targets (may hit a
+                // different player) and animates independently so all clients see each swing.
+                for (int a = 0; a < EnemyAttacksPerTurn; a++)
                 {
-                    var player = _ctx.GetPlayer(targetCid);
-                    if (player != null)
+                    if (!enemy.IsAlive) break;
+
+                    var (damage, targetCid) = _ctx.ResolveEnemyAttack(i);
+                    if (damage < 0) continue;
+
+                    _enemyAnimDone = false;
+                    EnemyAttackingClientRpc(i, targetCid, damage);
+                    yield return StartCoroutine(WaitForEnemyAnim(8f, i));
+
+                    if (targetCid != ulong.MaxValue)
                     {
-                        int newHp = (int)player.Model.CurrentHP;
-                        int maxHp = (int)player.Model.MaxHP;
-                        Debug.Log($"[Orchestrator] Enemy[{i}] → client {targetCid}: {damage} dmg, HP={newHp}/{maxHp}");
-                        PlayerHpChangedClientRpc(targetCid, newHp, maxHp);
+                        var player = _ctx.GetPlayer(targetCid);
+                        if (player != null)
+                        {
+                            int newHp = (int)player.Model.CurrentHP;
+                            int maxHp = (int)player.Model.MaxHP;
+                            Debug.Log($"[Orchestrator] Enemy[{i}] ataque {a + 1}/{EnemyAttacksPerTurn} → client {targetCid}: {damage} dmg, HP={newHp}/{maxHp}");
+                            PlayerHpChangedClientRpc(targetCid, newHp, maxHp);
+                        }
                     }
+
+                    if (a < EnemyAttacksPerTurn - 1)
+                        yield return new WaitForSeconds(BetweenAttacksDelay);
                 }
             }
 
