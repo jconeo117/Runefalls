@@ -48,7 +48,7 @@ namespace Runefall.Multiplayer.Lobby
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxPeers);
             string     joinCode   = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
-            GetTransport().SetRelayServerData(allocation.ToRelayServerData(ConnectionType));
+            GetTransport().SetRelayServerData(new RelayServerData(allocation, ConnectionType));
             return joinCode;
         }
 
@@ -58,7 +58,7 @@ namespace Runefall.Multiplayer.Lobby
             await EnsureSignedInAsync();
 
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
-            GetTransport().SetRelayServerData(joinAllocation.ToRelayServerData(ConnectionType));
+            GetTransport().SetRelayServerData(new RelayServerData(joinAllocation, ConnectionType));
         }
 
         private static UnityTransport GetTransport()
