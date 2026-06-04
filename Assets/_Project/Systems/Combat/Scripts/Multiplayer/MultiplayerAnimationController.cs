@@ -45,6 +45,9 @@ namespace Runefall.Multiplayer
         private readonly Dictionary<ulong, NetworkedCombatPawn> _playerPawns = new();
         private readonly List<NetworkedCombatPawn>              _enemyPawns  = new();
         private readonly HashSet<CombatPawnAnimator>            _initialized = new();
+        // Each pawn's spawn rotation (faces the opposing line). Restored after every attack so a
+        // pawn always returns home facing the enemy line, never a specific (dead/remaining) target.
+        private readonly Dictionary<Transform, Quaternion>     _homeRot     = new();
         private bool _pawnsScanned;
 
         // ── Initialization ─────────────────────────────────────────────────────
@@ -282,7 +285,7 @@ namespace Runefall.Multiplayer
                     while (inFlight > 0 && wt < 3f) { wt += Time.deltaTime; yield return null; }
 
                     if (hasClips && impactCount == 0) DoHit(); // fallback: no AE → react once
-                    RotateToward(attacker, targetPos); // deterministic: always face the target
+                    FaceHome(attacker, targetPos);
                     yield break;
                 }
 
@@ -321,7 +324,7 @@ namespace Runefall.Multiplayer
                 attackerAnim?.PlayApproach();
                 yield return StartCoroutine(LungeTo(attacker, origin, approachReturnLen));
                 attackerAnim?.PlayReturn();
-                RotateToward(attacker, targetPos); // deterministic: always face the target (boss)
+                FaceHome(attacker, targetPos);
             }
             finally
             {
@@ -448,6 +451,10 @@ namespace Runefall.Multiplayer
         private void EnsureInit(NetworkedCombatPawn pawn)
         {
             if (pawn == null) return;
+            // Capture the spawn rotation once, before any choreography rotates the pawn.
+            if (!_homeRot.ContainsKey(pawn.transform))
+                _homeRot[pawn.transform] = pawn.transform.rotation;
+
             var anim = GetPawnAnimator(pawn);
             if (anim == null || _initialized.Contains(anim)) return;
 
@@ -505,6 +512,14 @@ namespace Runefall.Multiplayer
             dir.y = 0f;
             if (dir.sqrMagnitude > 0.001f)
                 t.rotation = Quaternion.LookRotation(dir);
+        }
+
+        // Snap back to the pawn's spawn rotation (faces the enemy line) so it ends every attack
+        // ready for the next approach, regardless of which target it hit or who died.
+        private void FaceHome(Transform pawn, Vector3 fallbackLookTarget)
+        {
+            if (_homeRot.TryGetValue(pawn, out var home)) pawn.rotation = home;
+            else RotateToward(pawn, fallbackLookTarget);
         }
 
         private IEnumerator SmoothRotateTo(Transform pawn, Vector3 lookTarget, float delay, float duration)
