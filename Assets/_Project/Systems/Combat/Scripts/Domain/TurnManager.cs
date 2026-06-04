@@ -142,35 +142,6 @@ namespace Runefall.Combat
             if (cardIndex < 0 || cardIndex >= Hand.Slots.Count) return false;
             var slot = Hand.Slots[cardIndex];
 
-            if (Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening)
-            {
-                var netTM = UnityEngine.Object.FindAnyObjectByType<Runefall.Presentation.Network.NetworkedTurnManager>();
-                if (netTM != null)
-                {
-                    int skillType = 0;
-                    if (slot.IsUltimate) skillType = 2;
-                    else if (slot.Skill != null && _skillOwners.TryGetValue(slot.Skill, out var slotOwner) && _actorChars.TryGetValue(slotOwner, out var ownerCd))
-                    {
-                        if (slot.Skill == ownerCd.skill2) skillType = 1;
-                    }
-
-                    var casterActor = ResolveCaster(slot);
-                    ulong casterNetId = casterActor != null ? netTM.GetNetworkIdForActor(casterActor) : 0;
-
-                    if (!netTM.IsServer)
-                    {
-                        netTM.SubmitSkillFromClientServerRpc(skillType, slot.Rank, netTM.GetNetworkIdForActor(explicitTarget), casterNetId);
-                    }
-                    else
-                    {
-                        netTM.SubmitSkillFromHostServer(skillType, slot.Rank, netTM.GetNetworkIdForActor(explicitTarget), casterNetId);
-                    }
-                    
-                    if (!Hand.TryUse(cardIndex, out slot, out _)) return false;
-                    return true;
-                }
-            }
-
             if (!Hand.TryUse(cardIndex, out slot, out _)) return false;
 
             var caster = ResolveCaster(slot);
@@ -209,11 +180,8 @@ namespace Runefall.Combat
                 targetType: targetType,
                 isUltimate: slot.IsUltimate);
 
-            if (Unity.Netcode.NetworkManager.Singleton == null || !Unity.Netcode.NetworkManager.Singleton.IsListening)
-            {
-                OnActionPending?.Invoke(pending);
-                if (Hand.ActionsRemaining == 0) NotifyActionsExhausted();
-            }
+            OnActionPending?.Invoke(pending);
+            if (Hand.ActionsRemaining == 0) NotifyActionsExhausted();
 
             return true;
         }
@@ -293,37 +261,14 @@ namespace Runefall.Combat
                 ? Hand.Slots[fromIndex] : default;
             var casterActor = ResolveCaster(movedCard);
 
-            if (Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening)
-            {
-                var netTM = UnityEngine.Object.FindAnyObjectByType<Runefall.Presentation.Network.NetworkedTurnManager>();
-                if (netTM != null)
-                {
-                    ulong casterNetId = casterActor != null ? netTM.GetNetworkIdForActor(casterActor) : 0;
-                    if (!netTM.IsServer)
-                    {
-                        netTM.SubmitMoveFromClientServerRpc(movedCard.Id, toIndex, casterNetId);
-                    }
-                    else
-                    {
-                        netTM.SubmitMoveFromHostServer(fromIndex, toIndex, casterNetId);
-                    }
-                }
-            }
-
             bool ok = Hand.TryMove(fromIndex, toIndex, out _);
             if (ok)
             {
                 if (!movedCard.IsUltimate && movedCard.Skill != null
                     && _skillOwners.TryGetValue(movedCard.Skill, out var mover))
                     FillGauge(mover);            // +1 gauge for moving a card
-                
-                if (Hand.ActionsRemaining == 0)
-                {
-                    if (Unity.Netcode.NetworkManager.Singleton == null || !Unity.Netcode.NetworkManager.Singleton.IsListening)
-                    {
-                        NotifyActionsExhausted();
-                    }
-                }
+
+                if (Hand.ActionsRemaining == 0) NotifyActionsExhausted();
             }
             return ok;
         }
@@ -331,24 +276,6 @@ namespace Runefall.Combat
         /// <summary>Player ends their turn before exhausting all actions.</summary>
         public void EndPlayerTurn()
         {
-            if (Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening)
-            {
-                var netTM = UnityEngine.Object.FindAnyObjectByType<Runefall.Presentation.Network.NetworkedTurnManager>();
-                if (netTM != null)
-                {
-                    if (!netTM.IsServer)
-                    {
-                        netTM.EndPlayerTurnFromClientServerRpc();
-                        return;
-                    }
-                    else
-                    {
-                        netTM.EndPlayerTurnFromHostServer();
-                        return;
-                    }
-                }
-            }
-
             if (Phase != CombatPhase.PlayerTurn) return;
             if (Context.IsOver) { FinishCombat(); return; }
             Phase = CombatPhase.EnemyTurn;
@@ -524,65 +451,5 @@ namespace Runefall.Combat
             Hand.OnCharacterLeft(cd);
         }
 
-        // ── Networked Multiplayer Client Synchronization Helpers ─────────────────
-
-        public void SetPhaseNetworked(CombatPhase phase) => Phase = phase;
-        public void SetRoundNetworked(int round) => Round = round;
-        public void RaisePlayerTurnBeginNetworked(int round) => OnPlayerTurnBegin?.Invoke(round);
-        public void RaisePlayerTurnStartedNetworked(int round) => OnPlayerTurnStarted?.Invoke(round);
-        public void RaiseEnemyTurnStartedNetworked() => OnEnemyTurnStarted?.Invoke();
-        public void RaiseActionPendingNetworked(PendingAction pending) => OnActionPending?.Invoke(pending);
-        public void RaiseActionResolvedNetworked(CombatActionResult result) => OnActionResolved?.Invoke(result);
-        public void RaiseMergeOccurredNetworked(string skillName, int newRank) => OnMergeOccurred?.Invoke(skillName, newRank);
-        public void RaiseGaugeChangedNetworked(ICombatActor actor, int orbs)
-        {
-            if (actor != null)
-            {
-                _ultimateGauge[actor] = orbs;
-                OnGaugeChanged?.Invoke(actor, orbs);
-            }
-        }
-        public void RaiseCombatEndedNetworked(bool playerWon)
-        {
-            Phase = CombatPhase.Over;
-            OnCombatEnded?.Invoke(playerWon);
-        }
-
-        public void SyncHandNetworked(IReadOnlyList<BattleCard> slots)
-        {
-            if (Hand == null) return;
-            var listField = typeof(CombatHand).GetField("_slots", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var list = listField?.GetValue(Hand) as List<BattleCard>;
-            if (list != null)
-            {
-                list.Clear();
-                list.AddRange(slots);
-            }
-            OnHandChanged?.Invoke();
-        }
-
-        public void SyncActionsRemainingNetworked(int actions)
-        {
-            if (Hand == null) return;
-            var prop = typeof(CombatHand).GetProperty("ActionsRemaining", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            prop?.SetValue(Hand, actions);
-            OnHandChanged?.Invoke();
-        }
-
-        public void SetContextAndHandNetworked(CombatContext context, CombatHand hand)
-        {
-            Context = context;
-            Hand = hand;
-        }
-
-        public void EndOfRoundManually()
-        {
-            EndOfRound();
-        }
-
-        public void FinishCombatNetworked()
-        {
-            FinishCombat();
-        }
     }
 }

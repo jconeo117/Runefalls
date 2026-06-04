@@ -210,17 +210,6 @@ namespace Runefall.Presentation.Combat
 
         private void QueueCard(CardView cv)
         {
-            var netTM = UnityEngine.Object.FindAnyObjectByType<Runefall.Presentation.Network.NetworkedTurnManager>();
-            bool isMultiplayer = netTM != null;
-
-            if (isMultiplayer)
-            {
-                // In networked multiplayer, submit the action in real-time.
-                // The network will handle visual synchronization via SyncMultiplayerActionSlots.
-                _tm.SubmitSkill(cv.HandIndex, _selectedTarget);
-                RefreshCardHand(animate: false);
-                return;
-            }
 
             int slotIndex = _pending.Count + _movesThisTurn;
             if (slotIndex >= _activeSlots.Count) return;
@@ -880,10 +869,7 @@ namespace Runefall.Presentation.Combat
         {
             if (actionSlotContainer == null || actionSlotPrefab == null) return;
 
-            // In networked multiplayer cooperative boss fight, we show 6 global action slots
-            int slotCount = (UnityEngine.Object.FindAnyObjectByType<Runefall.Presentation.Network.NetworkedTurnManager>() != null) 
-                ? 6 
-                : (_tm?.Hand != null ? _tm.Hand.ActionsPerTurn : 3);
+            int slotCount = _tm?.Hand != null ? _tm.Hand.ActionsPerTurn : 3;
 
             if (slotCount == _activeSlots.Count) return;
 
@@ -908,91 +894,6 @@ namespace Runefall.Presentation.Combat
                 // Inner stays visible — dark color = empty slot, blue = MOVE state.
                 if (_slotImages[i] != null)
                     _slotImages[i].color = new Color(0.06f, 0.06f, 0.10f, 0.92f);
-            }
-        }
-
-        public void SyncMultiplayerActionSlots(
-            bool[] isActive,
-            ulong[] clientIds,
-            int[] skillTypes,
-            int[] ranks,
-            Runefall.Presentation.Network.NetworkedTurnManager netTM)
-        {
-            if (_activeSlots == null) return;
-
-            for (int i = 0; i < _activeSlots.Count; i++)
-            {
-                if (i >= isActive.Length) break;
-
-                Transform slotT = _activeSlots[i];
-                if (slotT == null) continue;
-
-                // 1. Clean existing visual cards in this slot
-                for (int c = slotT.childCount - 1; c >= 0; c--)
-                {
-                    var child = slotT.GetChild(c);
-                    if (child.name.StartsWith("SlotCard_") || child.GetComponent<CardView>() != null)
-                    {
-                        Destroy(child.gameObject);
-                    }
-                }
-
-                var inner = slotT.Find("Inner");
-
-                if (isActive[i])
-                {
-                    if (inner != null) inner.gameObject.SetActive(false);
-
-                    CharacterData cd = (clientIds[i] == 0) ? netTM.PlayerCharacterData : (netTM.ClientCharacterData != null ? netTM.ClientCharacterData : netTM.PlayerCharacterData);
-
-                    if (skillTypes[i] == 3)
-                    {
-                        // Show "MOVE" slot
-                        ShowMoveInSlot(i);
-                    }
-                    else if (cardPrefab != null)
-                    {
-                        var cardObj = Instantiate(cardPrefab, slotT);
-                        cardObj.name = $"SlotCard_{i}";
-                        cardObj.transform.localPosition = Vector3.zero;
-                        cardObj.transform.localScale = Vector3.one;
-
-                        var rt = cardObj.GetComponent<RectTransform>();
-                        if (rt != null)
-                        {
-                            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-                            rt.anchoredPosition = Vector2.zero;
-                            rt.sizeDelta = new Vector2(130f, 170f);
-                        }
-
-                        if (cd != null)
-                        {
-                            var cv = cardObj.GetComponent<CardView>();
-                            if (cv != null)
-                            {
-                                BattleCard bc;
-                                if (skillTypes[i] == 2)
-                                    bc = new BattleCard(cd.ultimate);
-                                else
-                                    bc = new BattleCard(skillTypes[i] == 0 ? cd.skill1 : cd.skill2, ranks[i]);
-
-                                cv.Setup(bc, ElementColor(cd.element));
-                                var btn = cv.GetComponent<Button>();
-                                if (btn != null) btn.interactable = false;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (inner != null)
-                    {
-                        inner.gameObject.SetActive(true);
-                        var img = inner.GetComponent<Image>();
-                        if (img != null)
-                            img.color = new Color(0.06f, 0.06f, 0.10f, 0.92f);
-                    }
-                }
             }
         }
 
