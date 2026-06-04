@@ -98,7 +98,7 @@ namespace Runefall.Multiplayer
             EnsureInit(attackerPawn);
             EnsureInit(targetPawn);
 
-            ResolveCardClips(card, out var clips, out bool isRanged, out int impactIdx);
+            ResolveClips(attackerPawn, card, out var clips, out bool isRanged, out int impactIdx);
             float approachReturnLen = GetApproachClipLength(attackerPawn) ?? FallbackApproachLen;
 
             if (attackerPawn != null && targetPawn != null)
@@ -136,12 +136,15 @@ namespace Runefall.Multiplayer
             EnsureInit(enemyPawn);
             EnsureInit(targetPawn);
 
+            // Enemy attack uses its EnemyData.skill1 clips (orchestrator broadcasts no skill id).
+            ResolveEnemyClips(enemyPawn, out var clips, out bool isRanged, out int impactIdx);
+            float approachReturnLen = GetApproachClipLength(enemyPawn) ?? EnemyLungeDuration;
+
             if (enemyPawn != null && targetPawn != null)
-                // Enemy has no broadcast skill clips → simple melee lunge + hit + return.
                 yield return StartCoroutine(PlayAttackChoreography(
                     enemyPawn.transform, enemyAnim,
                     targetPawn.transform, targetAnim,
-                    clips: null, isRanged: false, impactIdx: 0, approachReturnLen: EnemyLungeDuration));
+                    clips, isRanged, impactIdx, approachReturnLen));
             else
                 yield return new WaitForSeconds(0.4f);
 
@@ -220,17 +223,27 @@ namespace Runefall.Multiplayer
 
         // ── Skill resolution ───────────────────────────────────────────────────
 
-        private void ResolveCardClips(NetworkBattleCard card,
+        // Resolves clips from the ATTACKER's own data (CharacterData.skill1/skill2/ultimate),
+        // not the registry — registry.skills is often empty, and the character always carries
+        // its own skill assets. Registry is a last-resort fallback.
+        private void ResolveClips(NetworkedCombatPawn attackerPawn, NetworkBattleCard card,
             out AnimationClip[] clips, out bool isRanged, out int impactIdx)
         {
             clips     = null;
             isRanged  = false;
             impactIdx = 0;
-            if (_registry == null) return;
+
+            var cd = attackerPawn != null ? attackerPawn.GetComponent<CharacterSlot>()?.data : null;
+            var ed = attackerPawn != null ? attackerPawn.GetComponent<EnemySlot>()?.data     : null;
 
             if (!card.IsUltimate)
             {
-                if (_registry.GetSkill(card.SkillName.ToString()) is DefaultSkillData dsd)
+                string n   = card.SkillName.ToString();
+                var    dsd = cd != null ? MatchSkill(cd.skill1, cd.skill2, n) : null;
+                if (dsd == null && ed != null) dsd = MatchSkill(ed.skill1, ed.skill2, n);
+                if (dsd == null && _registry != null) dsd = _registry.GetSkill(n) as DefaultSkillData;
+
+                if (dsd != null)
                 {
                     clips     = dsd.animSequence;
                     isRanged  = dsd.isRanged;
@@ -239,13 +252,43 @@ namespace Runefall.Multiplayer
             }
             else
             {
-                var ud = _registry.GetUltimate(card.UltimateName.ToString());
-                if (ud != null)
+                string n  = card.UltimateName.ToString();
+                var ult = cd != null && cd.ultimate != null && cd.ultimate.ultimateName == n
+                          ? cd.ultimate
+                          : _registry != null ? _registry.GetUltimate(n) : null;
+                if (ult != null)
                 {
-                    clips     = ud.animSequence;
+                    clips     = ult.animSequence;
                     impactIdx = Mathf.Max(0, (clips?.Length ?? 1) - 1); // ultimate impacts on last clip
                 }
             }
+        }
+
+        // Enemy attack: use EnemyData.skill1 (preferred) or skill2 as a DefaultSkillData.
+        private void ResolveEnemyClips(NetworkedCombatPawn enemyPawn,
+            out AnimationClip[] clips, out bool isRanged, out int impactIdx)
+        {
+            clips     = null;
+            isRanged  = false;
+            impactIdx = 0;
+
+            var ed = enemyPawn != null ? enemyPawn.GetComponent<EnemySlot>()?.data : null;
+            if (ed == null) return;
+
+            var dsd = (ed.skill1 as DefaultSkillData) ?? (ed.skill2 as DefaultSkillData);
+            if (dsd != null)
+            {
+                clips     = dsd.animSequence;
+                isRanged  = dsd.isRanged;
+                impactIdx = dsd.impactAfterClipIndex;
+            }
+        }
+
+        private static DefaultSkillData MatchSkill(SkillData a, SkillData b, string name)
+        {
+            if (a is DefaultSkillData da && a.skillName == name) return da;
+            if (b is DefaultSkillData db && b.skillName == name) return db;
+            return null;
         }
 
         private float? GetApproachClipLength(NetworkedCombatPawn pawn)
