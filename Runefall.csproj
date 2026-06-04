@@ -62,8 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ImpactContext.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\LobbyRelayService.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\LobbyPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\HPBarPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\ICombatActor.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Domain\EnemyState.cs" />
@@ -80,16 +78,13 @@
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\UltimateData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ArrebatoEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DepletarEffectDef.cs" />
-    <Compile Include="Assets\_Project\Editor\BossFightArenaSceneBuilder.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CardHandAnimator.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\DominioGlacialPassive.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ImpactTriggers\AnimEventTriggerData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatVFXPlayer.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterState.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ActiveEffect.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\BossRoomDoorTrigger.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DoTEffectDef.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\LobbyView.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\BillboardCanvas.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CharacterSlot.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\SkillEffect.cs" />
@@ -116,13 +111,11 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTransitionScreen.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IImpactTrigger.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\PlayerActor.cs" />
-    <Compile Include="Assets\_Project\Editor\MultiplayerLobbySceneBuilder.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\HealEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\RoomVolume.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\PassiveDefinition.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ImpactTriggers\ProjectileTriggerData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatOutroSequencer.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\LobbyConnectionData.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\ScriptableObjects\Enemies\EnemyData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DamageEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\EnemySlot.cs" />
@@ -130,18 +123,16 @@
     <Compile Include="Assets\_Project\Systems\Characters\ScriptableObjects\Weapons\WeaponData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\EffectExecutionContext.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Domain\EnemyAgent.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\VictorySequencer.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\SkillUsedPayload.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\ImpactEvent.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\WaitRoomAssembler.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\CombatResolver.cs" />
     <Compile Include="Assets\_Project\Core\Scripts\GameEvent.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\PendingAction.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\MultiplayerCombatSpawner.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\DefaultSkillData.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\CharacterStats.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatBootstrapper.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\StanceEffectDef.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\SimpleCharacterController.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatHUDPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterReadyEvent.cs" />
     <Compile Include="Assets\_Project\Core\Scripts\GameInputActions.cs" />
@@ -150,7 +141,6 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatAnimationDriver.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Presentation\Player\CharacterAnimationController.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\EnemyEncounterTrigger.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\NetworkedCombatUIAdapter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ICombatPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterAcceptedEvent.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\SkillUsedEvent.cs" />
@@ -158,11 +148,9 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\InfectEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\TurnManager.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Presentation\Enemies\EnemyAnimationDriver.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\NetworkedCombatHUD.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatArenaAssembler.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\SkillVFXConfig.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\CombatFormulas.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\NetworkedTurnManager.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\LifestealEffectDef.cs" />
     <Compile Include="Assets\_Project\Core\Scripts\InputReader.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\DamageNumber.cs" />
@@ -170,8 +158,6 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\EffectTag.cs" />
     <Compile Include="Assets\_Project\Core\Scripts\ServiceLocator.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CameraComponentCleaner.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\MultiplayerCombatAnimationDriver.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\NetworkedCombatPawn.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\FinisherManager.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\SkillData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\CombatHand.cs" />
@@ -180,7 +166,6 @@
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\RarityType.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\CharacterModel.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\HipotermiaEffectDef.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Network\MultiplayerManager.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\ElementType.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\ActorEffects.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\StatModEffectDef.cs" />
@@ -188,7 +173,9 @@
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Domain\ExplorationBrain.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\_Project\Systems\Combat\Prefabs\Multiplayer\LobbyCanvas.uss" />
     <None Include="Assets\_Project\Runefall.asmdef" />
+    <None Include="Assets\_Project\Systems\Combat\Prefabs\Multiplayer\LobbyCanvas.uxml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -1289,14 +1276,6 @@
     </Reference>
     <Reference Include="Unity.Services.Authentication">
       <HintPath>Library\ScriptAssemblies\Unity.Services.Authentication.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Services.Lobbies">
-      <HintPath>Library\ScriptAssemblies\Unity.Services.Lobbies.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Services.Relay">
-      <HintPath>Library\ScriptAssemblies\Unity.Services.Relay.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">

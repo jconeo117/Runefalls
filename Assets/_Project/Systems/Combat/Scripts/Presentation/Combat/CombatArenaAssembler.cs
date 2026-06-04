@@ -80,7 +80,7 @@ namespace Runefall.Presentation.Combat
         /// CharacterData/EnemyData. Spawned pawns get CharacterSlot/EnemySlot added so
         /// BuildFromSlots in CombatBootstrapper can find them.
         /// </summary>
-        public void SpawnFromEncounterState(EncounterState state, Vector3 worldOffset = default)
+        public virtual void SpawnFromEncounterState(EncounterState state, Vector3 worldOffset = default)
         {
             if (state == null)
             {

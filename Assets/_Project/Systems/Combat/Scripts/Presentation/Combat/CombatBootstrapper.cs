@@ -31,7 +31,7 @@ namespace Runefall.Presentation.Combat
         [Header("Combat UI")]
         [Tooltip("Prefab with CombatPresenterBase. Instantiated at combat start, destroyed on exit. " +
                  "Leave null and assign presenter directly for blockout/editor testing.")]
-        [SerializeField] private GameObject _combatUIPrefab;
+        [SerializeField] protected GameObject _combatUIPrefab;
 
         [Header("Wiring")]
         public CombatPresenterBase    presenter;          // auto-populated from _combatUIPrefab, or set manually for blockout
@@ -44,11 +44,11 @@ namespace Runefall.Presentation.Combat
 
         [Header("Timing")]
         [Tooltip("Seconds to wait after camera starts moving before firing OnPlayerTurnStarted (passives, UI, cards). Match to camera lerpSpeed settle time.")]
-        [SerializeField] private float _playerTurnCameraDelay = 0.6f;
+        [SerializeField] protected float _playerTurnCameraDelay = 0.6f;
 
         [Header("Post-Combat")]
-        [SerializeField] private CombatOutroSequencer _outroSequencer;
-        [SerializeField] private CombatTransitionScreen _exitTransition;
+        [SerializeField] protected VictorySequencer       _victorySequencer;
+        [SerializeField] protected CombatTransitionScreen _exitTransition;
 
         [Header("Arena")]
         [Tooltip("Optional. When assigned, controls slot positions and camera anchors.")]
@@ -61,32 +61,31 @@ namespace Runefall.Presentation.Combat
         public Transform enemyTeam;
 
         [Header("Exploration (disabled during combat, restored on end)")]
-        [SerializeField] private CinemachineBrain                  _explorationBrain;
-        [SerializeField] private GameObject                         _explorationVcam;
-        [SerializeField] private PlayerController                   _playerController;
-        [SerializeField] private CinemachineInputAxisController     _cameraInput;
-        [SerializeField] private Runefall.Presentation.Player.CameraWallAvoidance _cameraWallAvoidance;
+        [SerializeField] protected CinemachineBrain                  _explorationBrain;
+        [SerializeField] protected GameObject                         _explorationVcam;
+        [SerializeField] protected PlayerController                   _playerController;
+        [SerializeField] protected CinemachineInputAxisController     _cameraInput;
+        [SerializeField] protected Runefall.Presentation.Player.CameraWallAvoidance _cameraWallAvoidance;
 
         // Runtime state
-        private GameObject                    _combatUIInstance;
-        private TurnManager                   _tm;
-        private CombatContext                 _ctx;
-        private ICombatPresenter              _presenter;
-        private Camera                        _mainCamera;
-        private List<CharacterData>           _pendingFieldChars;   // held until BeginCombat() is called
-        private bool                          _playerWon;
-        private System.Action<PendingAction>  _onActionPendingHandler;
+        protected GameObject                    _combatUIInstance;
+        protected TurnManager                   _tm;
+        protected CombatContext                 _ctx;
+        protected ICombatPresenter              _presenter;
+        protected Camera                        _mainCamera;
+        protected List<CharacterData>           _pendingFieldChars;   // held until BeginCombat() is called
+        protected bool                          _playerWon;
+        protected System.Action<PendingAction>  _onActionPendingHandler;
 
-        private Transform[]         _enemySlots = System.Array.Empty<Transform>();
-        private EnemyTargetMarker[] _markers    = System.Array.Empty<EnemyTargetMarker>();
-        private int                 _selectedIndex = -1;
+        protected Transform[]         _enemySlots = System.Array.Empty<Transform>();
+        protected EnemyTargetMarker[] _markers    = System.Array.Empty<EnemyTargetMarker>();
+        protected int                 _selectedIndex = -1;
 
-        private readonly List<HPBarPresenter>                     _hpBars         = new();
-        private readonly Dictionary<ICombatActor, HPBarPresenter>  _actorHPBars    = new();
-        private readonly Dictionary<ICombatActor, Transform>       _actorPawns     = new();
-        private readonly Dictionary<ICombatActor, CharacterData>   _actorCharData  = new();
-        private readonly Dictionary<ICombatActor, EnemyData>       _actorEnemyData = new();
-        private readonly Dictionary<ICombatActor, PassiveDefinition> _activePassiveInstances = new();
+        protected readonly List<HPBarPresenter>                     _hpBars         = new();
+        protected readonly Dictionary<ICombatActor, HPBarPresenter>  _actorHPBars    = new();
+        protected readonly Dictionary<ICombatActor, Transform>       _actorPawns     = new();
+        protected readonly Dictionary<ICombatActor, CharacterData>   _actorCharData  = new();
+        protected readonly Dictionary<ICombatActor, EnemyData>       _actorEnemyData = new();
 
         // ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -108,7 +107,7 @@ namespace Runefall.Presentation.Combat
             catch (Exception e) { Debug.LogError($"[CombatBootstrapper] OnEnable FAILED: {e}", this); }
         }
 
-        private void OnEnableImpl()
+        protected virtual void OnEnableImpl()
         {
             LogMissingRefs();
 
@@ -120,12 +119,6 @@ namespace Runefall.Presentation.Combat
             }
             else if (presenter != null && !presenter.gameObject.activeSelf)
                 presenter.gameObject.SetActive(true);
-
-            var targetUIObj = _combatUIInstance != null ? _combatUIInstance : (presenter != null ? presenter.gameObject : null);
-            if (targetUIObj != null && targetUIObj.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
-            {
-                targetUIObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
-            }
 
             // Inject HUD CanvasGroup and presenter into FinisherManager.
             var finisher = GetComponent<FinisherManager>();
@@ -221,10 +214,15 @@ namespace Runefall.Presentation.Combat
                 Time.timeScale      = 1f;
                 Time.fixedDeltaTime = 0.02f;
 
-                Debug.Log($"[CombatBootstrapper] OnCombatEnded — won={won} timeScale={Time.timeScale} sequencer={_outroSequencer != null}");
+                Debug.Log($"[CombatBootstrapper] OnCombatEnded — won={won} timeScale={Time.timeScale} sequencer={_victorySequencer != null}");
 
-                if (_outroSequencer != null)
-                    _outroSequencer.PlayOutro(won, EndCombat);
+                // RunCombatEndDrama (finisher / fallback slow-mo) has already completed
+                // before DrainQueue calls EndPlayerTurn → FinishCombat → here.
+                // No need to subscribe to OnSequenceComplete — the finisher is done.
+                if (!won) { EndCombat(); return; }
+
+                if (_victorySequencer != null)
+                    _victorySequencer.Play(EndCombat);
                 else
                     EndCombat();
             };
@@ -276,34 +274,26 @@ namespace Runefall.Presentation.Combat
 
         private void ActivatePassives(System.Collections.Generic.List<CharacterData> fieldChars)
         {
-            _activePassiveInstances.Clear();
             for (int i = 0; i < fieldChars.Count && i < _ctx.Players.Count; i++)
             {
                 var cd = fieldChars[i];
                 if (cd.passive == null) continue;
-
-                // Instantiate runtime clone to ensure state sandbox
-                var runtimeClone = UnityEngine.Object.Instantiate(cd.passive);
-                _activePassiveInstances[_ctx.Players[i]] = runtimeClone;
-                runtimeClone.Activate(_ctx.Players[i], _tm, _ctx);
+                cd.passive.Activate(_ctx.Players[i], _tm, _ctx);
             }
         }
 
         private void DeactivatePassives()
         {
             if (_tm == null || _ctx == null) return;
-            foreach (var kvp in _activePassiveInstances)
+            foreach (var kvp in _actorCharData)
             {
-                if (kvp.Value != null)
-                {
-                    kvp.Value.Deactivate(kvp.Key, _tm);
-                    UnityEngine.Object.Destroy(kvp.Value); // Clean up memory
-                }
+                var cd = kvp.Value;
+                if (cd.passive == null) continue;
+                cd.passive.Deactivate(kvp.Key, _tm);
             }
-            _activePassiveInstances.Clear();
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             DeactivatePassives();
             DestroyUIInstance();
@@ -399,7 +389,7 @@ namespace Runefall.Presentation.Combat
 
         // ── slot-driven encounter ─────────────────────────────────────────────────
 
-        private (CombatContext, List<CharacterData>) BuildFromSlots()
+        protected virtual (CombatContext, List<CharacterData>) BuildFromSlots()
         {
             var fieldChars    = new List<CharacterData>();
             var playerActors  = new List<ICombatActor>();
@@ -491,7 +481,7 @@ namespace Runefall.Presentation.Combat
 
         // ── HP bars ───────────────────────────────────────────────────────────────
 
-        private void BindHPBars()
+        protected virtual void BindHPBars()
         {
             for (int i = 0; i < _ctx.Players.Count; i++)
             {

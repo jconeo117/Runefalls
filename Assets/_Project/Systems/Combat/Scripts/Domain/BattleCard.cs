@@ -30,7 +30,7 @@ namespace Runefall.Combat
             IsUltimate = true;
         }
 
-        private BattleCard(int id, SkillData skill, UltimateData ultimate, int rank, bool isUltimate)
+        public BattleCard(int id, SkillData skill, UltimateData ultimate, int rank, bool isUltimate)
         {
             Id         = id;
             Skill      = skill;

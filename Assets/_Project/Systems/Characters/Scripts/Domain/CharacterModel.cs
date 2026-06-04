@@ -71,6 +71,17 @@ namespace Runefall.Characters
             _statsDirty = true;
         }
 
+        public void SetHPDirectly(float hp)
+        {
+            CurrentHP = Clamp(hp, 0f, MaxHP);
+            OnHPChanged?.Invoke(CurrentHP);
+        }
+
+        public void SetShieldDirectly(float shield)
+        {
+            CurrentShield = Math.Max(0f, shield);
+        }
+
         public void AddShield(float amount)
         {
             if (amount <= 0f) return;
@@ -97,12 +108,6 @@ namespace Runefall.Characters
             if (IsHealBlocked || amount <= 0f) return;
             float effective = amount * (1f + EffectiveStats.vitales.tasaRecuperacion);
             CurrentHP = Clamp(CurrentHP + effective, 0f, MaxHP);
-            OnHPChanged?.Invoke(CurrentHP);
-        }
-
-        public void SyncHP(float hp)
-        {
-            CurrentHP = Clamp(hp, 0f, MaxHP);
             OnHPChanged?.Invoke(CurrentHP);
         }
 
