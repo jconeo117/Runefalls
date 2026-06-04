@@ -62,43 +62,96 @@ namespace Runefall.Multiplayer
         private void OnCardExecuted(int slotIndex, ulong ownerClientId, NetworkBattleCard card)
         {
             if (slotIndex < 0 || slotIndex >= _activeSlots.Count) return;
-            var slot = _activeSlots[slotIndex];
-            if (slot != null) StartCoroutine(RollOutSlotCard(slotIndex, slot));
+            if (_activeSlots[slotIndex] != null) StartCoroutine(RollOutSlot(slotIndex));
         }
 
-        // Animate the card visuals INSIDE the slot (not the slot itself), so the container's
-        // HorizontalLayoutGroup isn't fought. Cards fade + roll up-left, then are destroyed.
-        private IEnumerator RollOutSlotCard(int slotIndex, Transform slot)
+        // MP suppresses the base bulk shrink: each slot deactivates as its card is consumed,
+        // and the remaining slots roll left to fill the gap (mirrors SP FadeOutActionSlot).
+        public override void SetActionSlotsActive(bool active)
         {
-            var items = new List<(RectTransform rt, CanvasGroup cg, Vector3 from)>();
-            for (int c = 0; c < slot.childCount; c++)
-            {
-                var child = slot.GetChild(c);
-                if (child.GetComponent<CardView>() == null) continue;
-                var rt = child as RectTransform;
-                if (rt == null) continue;
-                var cg = child.GetComponent<CanvasGroup>() ?? child.gameObject.AddComponent<CanvasGroup>();
-                items.Add((rt, cg, rt.localPosition));
-            }
-            // Drop the optimistic-clone bookkeeping so turn reset doesn't try to reuse it.
+            if (active) StartCoroutine(ReactivateSlotsNextFrame());
+            // inactive: no-op — RollOutSlot handles per-card deactivation during resolution.
+        }
+
+        private IEnumerator RollOutSlot(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= _activeSlots.Count) yield break;
+            var slot = _activeSlots[slotIndex];
+            if (slot == null) yield break;
+
             _pendingSlotViews.Remove(slotIndex);
 
-            if (items.Count == 0) yield break;
-
-            const float dur = 0.3f;
-            for (float t = 0f; t < 1f; t += Time.deltaTime / dur)
+            // Fade the whole slot out.
+            var cg = slot.GetComponent<CanvasGroup>() ?? slot.gameObject.AddComponent<CanvasGroup>();
+            for (float t = 0f; t < 1f; t += Time.deltaTime / 0.2f)
             {
-                float s = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
-                foreach (var it in items)
-                {
-                    if (it.rt == null) continue;
-                    it.cg.alpha        = 1f - s;
-                    it.rt.localPosition = it.from + new Vector3(-140f * s, 10f * s, 0f);
-                }
+                if (slot == null) yield break;
+                cg.alpha = 1f - Mathf.Clamp01(t);
                 yield return null;
             }
-            foreach (var it in items)
-                if (it.rt != null) Destroy(it.rt.gameObject);
+            cg.alpha = 0f;
+
+            // Snapshot world positions of slots to the right, then deactivate this one.
+            var remaining = new List<(Transform t, Vector3 from)>();
+            for (int i = slotIndex + 1; i < _activeSlots.Count; i++)
+            {
+                var s = _activeSlots[i];
+                if (s != null && s.gameObject.activeSelf) remaining.Add((s, s.position));
+            }
+            slot.gameObject.SetActive(false);
+            if (remaining.Count == 0) yield break;
+
+            // Recompute layout targets, then animate remaining slots left with HLG disabled.
+            var crt = actionSlotContainer as RectTransform;
+            if (crt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(crt);
+
+            var to = new Vector3[remaining.Count];
+            for (int i = 0; i < remaining.Count; i++) to[i] = remaining[i].t.position;
+
+            var hlg = actionSlotContainer != null ? actionSlotContainer.GetComponent<HorizontalLayoutGroup>() : null;
+            if (hlg != null) hlg.enabled = false;
+            for (int i = 0; i < remaining.Count; i++) remaining[i].t.position = remaining[i].from;
+
+            for (float t = 0f; t < 1f; t += Time.deltaTime / 0.2f)
+            {
+                float s = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
+                for (int i = 0; i < remaining.Count; i++)
+                    if (remaining[i].t != null) remaining[i].t.position = Vector3.Lerp(remaining[i].from, to[i], s);
+                yield return null;
+            }
+            for (int i = 0; i < remaining.Count; i++)
+                if (remaining[i].t != null) remaining[i].t.position = to[i];
+            if (hlg != null) hlg.enabled = true;
+        }
+
+        // New turn: bring all slots back (reactivate, restore alpha, clear leftover cards, relayout).
+        private IEnumerator ReactivateSlotsNextFrame()
+        {
+            yield return null; // let the server's slot reset replicate first
+            var hlg = actionSlotContainer != null ? actionSlotContainer.GetComponent<HorizontalLayoutGroup>() : null;
+            if (hlg != null) hlg.enabled = true;
+
+            for (int i = 0; i < _activeSlots.Count; i++)
+            {
+                var slot = _activeSlots[i];
+                if (slot == null) continue;
+                slot.gameObject.SetActive(true);
+                var cg = slot.GetComponent<CanvasGroup>();
+                if (cg != null) cg.alpha = 1f;
+
+                for (int c = slot.childCount - 1; c >= 0; c--)
+                {
+                    var child = slot.GetChild(c);
+                    if (child.GetComponent<CardView>() != null) Destroy(child.gameObject);
+                }
+                if (i < _slotImages.Length && _slotImages[i] != null)
+                {
+                    _slotImages[i].gameObject.SetActive(true);
+                    _slotImages[i].color = new Color(0.06f, 0.06f, 0.10f, 0.92f);
+                }
+            }
+            var crt = actionSlotContainer as RectTransform;
+            if (crt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(crt);
         }
 
         // ── Overrides ──────────────────────────────────────────────────────────
