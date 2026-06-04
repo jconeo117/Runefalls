@@ -108,7 +108,10 @@ namespace Runefall.Multiplayer
                 _cardSkill = MatchSkill(_cardCaster.Data, n) ?? registry.GetSkill(n);
                 if (_cardSkill == null) return false;
                 _cardRank      = netCard.Rank;
-                _cardTotalHits = (_cardSkill is DefaultSkillData d) ? Mathf.Max(1, d.hitCount) : 1;
+                // Total hits = number of impact AEs in the clips (one damage number per AE),
+                // matching what the client dispatches — not the designer hitCount hint.
+                _cardTotalHits = CountImpactAEs(
+                    (_cardSkill as DefaultSkillData)?.animSequence, _cardSkill.isRanged);
             }
             totalHits = _cardTotalHits;
             return true;
@@ -153,7 +156,8 @@ namespace Runefall.Multiplayer
             else
             {
                 _enemyAtkSkill     = pending.Skill;
-                _enemyAtkTotalHits = (pending.Skill is DefaultSkillData d) ? Mathf.Max(1, d.hitCount) : 1;
+                _enemyAtkTotalHits = CountImpactAEs(
+                    (pending.Skill as DefaultSkillData)?.animSequence, pending.Skill.isRanged);
             }
 
             foreach (var kvp in Players)
@@ -182,6 +186,28 @@ namespace Runefall.Multiplayer
             if (cd.skill1 != null && cd.skill1.skillName == name) return cd.skill1;
             if (cd.skill2 != null && cd.skill2.skillName == name) return cd.skill2;
             return null;
+        }
+
+        // Counts every impact Animation Event in the clips — one hit (and one damage number)
+        // per AE call. Matches the names the client dispatches: ranged "Shoot", melee
+        // "ImpactFrame"/"Hit" (CombatPawnAnimator). Falls back to 1 when none are present.
+        private static int CountImpactAEs(UnityEngine.AnimationClip[] clips, bool isRanged)
+        {
+            if (clips == null) return 1;
+            int count = 0;
+            foreach (var c in clips)
+            {
+                if (c == null) continue;
+                foreach (var ev in c.events)
+                {
+                    string fn = ev.functionName;
+                    bool impact = isRanged
+                        ? fn == "Shoot"
+                        : (fn == "ImpactFrame" || fn == "Hit");
+                    if (impact) count++;
+                }
+            }
+            return count > 0 ? count : 1;
         }
 
         // ── Private helpers ────────────────────────────────────────────────────
