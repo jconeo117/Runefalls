@@ -260,7 +260,9 @@ namespace Runefall.Multiplayer
 
         private void OnNetworkSlotUpdated(int idx)
         {
-            if (_sync == null || idx < 0 || idx >= _activeSlots.Count) return;
+            // Guard against shrink events (board resized on player death) where the index
+            // can momentarily exceed the live slot list or the local view.
+            if (_sync == null || idx < 0 || idx >= _sync.SlotCount || idx >= _activeSlots.Count) return;
 
             var state         = _sync.GetSlot(idx);
             var slotTransform = _activeSlots[idx];

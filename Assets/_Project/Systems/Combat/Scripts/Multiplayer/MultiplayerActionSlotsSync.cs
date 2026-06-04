@@ -55,7 +55,9 @@ namespace Runefall.Multiplayer
             // the destroyed GO while Instance still pointed to the uninitialized prior object.
             Instance = this;
 
-            _slots.OnListChanged        += e => OnSlotUpdated?.Invoke(e.Index);
+            // Skip Clear/out-of-range events (board is resized on death) so subscribers
+            // never read an index past the live list.
+            _slots.OnListChanged        += e => { if (e.Index >= 0 && e.Index < _slots.Count) OnSlotUpdated?.Invoke(e.Index); };
             ActionsUsed0.OnValueChanged += (_, _) => { OnActionsChanged?.Invoke(); CheckAllExhausted(); };
             ActionsUsed1.OnValueChanged += (_, _) => { OnActionsChanged?.Invoke(); CheckAllExhausted(); };
 
