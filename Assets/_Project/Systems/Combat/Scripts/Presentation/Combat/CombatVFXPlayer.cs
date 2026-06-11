@@ -93,12 +93,9 @@ namespace Runefall.Presentation.Combat
             Spawn(config.onImpactVFX, pos, rot, config.autoDestroyAfter);
         }
 
-        // ── Helpers ───────────────────────────────────────────────────────────────
-
         private SkillVFXConfig ResolveConfig(ImpactContext ctx)
         {
-            if (ctx.Skill is DefaultSkillData defaultSkill) return defaultSkill.vfxConfig;
-            // Skill covers both player skills and enemy skill1/skill2 (EnemyAgent passes skill in result).
+            if (ctx.Skill != null) return ctx.Skill.VfxConfig;
             return null;
         }
 

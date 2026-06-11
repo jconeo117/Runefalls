@@ -379,10 +379,11 @@ namespace Runefall.Combat
                 if (actor.IsAlive) actor.Model.ApplyRegen();
             }
 
-            Hand.Refill();
-
+            // Check defeat/victory BEFORE refilling: a dead player team means combat is over, and the
+            // card pool may be empty (no field characters left) — refilling there throws.
             if (Context.IsOver) { FinishCombat(); return; }
 
+            Hand.Refill();
             BeginPlayerTurn();
         }
 

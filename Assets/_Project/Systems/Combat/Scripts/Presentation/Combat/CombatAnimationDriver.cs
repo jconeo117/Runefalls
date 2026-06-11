@@ -24,8 +24,9 @@ namespace Runefall.Presentation.Combat
         public RuntimeAnimatorController combatBaseController;
 
         [Header("Timing")]
-        [Tooltip("Seconds camera has to reach enemy side before the first enemy acts.")]
-        public float enemyPhaseDelay = 0.45f;
+        [Tooltip("Seconds the camera settles on the enemy side before the first enemy acts. Higher = the " +
+                 "combat camera fully arrives before the per-skill camera takes over, avoiding a jarring double move.")]
+        public float enemyPhaseDelay = 1.4f;
         [Tooltip("How far a pawn stops in front of its target (world units).")]
         public float lungeStopDistance = 1.5f;
         [Tooltip("Seconds the pawn rotates toward origin before the return lunge starts.")]
@@ -899,9 +900,13 @@ namespace Runefall.Presentation.Combat
 
         private int ResolveReturnClipIndex(PendingAction pending, AnimationClip[] clips)
         {
-            if (pending.Skill != null)
-                return pending.Skill.ReturnLungeClipIndex;
-            return clips != null ? clips.Length : 0;
+            int raw = pending.Skill != null ? pending.Skill.ReturnLungeClipIndex : -1;
+            // -1 → "return after all clips": use clips.Length as the sentinel so `afterAll` triggers a
+            // clean sequential return (approach back home) once the whole sequence has played. Without
+            // this the pawn lunges in, hits, and never walks back (returnLunge stays null).
+            if (raw < 0 && clips != null && clips.Length > 0)
+                return clips.Length;
+            return raw;
         }
 
         private float GetApproachClipDuration(ICombatActor actor)

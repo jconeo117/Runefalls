@@ -159,7 +159,8 @@ namespace Runefall.Multiplayer
             BindHPBars();
 
             animationDriver?.Init(
-                _ctx, _tm, _actorPawns, _actorCharData, _actorEnemyData, _actorHPBars, _presenter);
+                _ctx, _tm, _actorPawns, _actorCharData, _actorEnemyData, _actorHPBars, _presenter,
+                (actor, pawn) => _actorPawns[actor] = pawn);
 
             vfxPlayer?.Init(_actorPawns, _actorEnemyData);
 

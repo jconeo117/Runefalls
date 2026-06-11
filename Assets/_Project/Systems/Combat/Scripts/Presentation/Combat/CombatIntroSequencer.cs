@@ -53,6 +53,12 @@ namespace Runefall.Presentation.Combat
         private bool _directorFinished;
         private bool _cameraHandedOver;
 
+        public void Initialize(CombatBootstrapper bootstrapper, CombatPresenterBase hudPresenter)
+        {
+            _bootstrapper = bootstrapper;
+            _hudPresenter = hudPresenter;
+        }
+
         public void Run(Action onComplete)
         {
             _onCompleteCallback = onComplete;
@@ -60,12 +66,15 @@ namespace Runefall.Presentation.Combat
             _cameraHandedOver = false;
 
             // 1. Locate and hide the active gameplay HUD presenter so it doesn't clutter the cinematic intro
-            _hudPresenter = FindFirstObjectByType<CombatPresenterBase>();
             if (_hudPresenter == null)
             {
-                #pragma warning disable CS0618
-                _hudPresenter = FindObjectOfType<CombatPresenterBase>();
-                #pragma warning restore CS0618
+                _hudPresenter = FindFirstObjectByType<CombatPresenterBase>();
+                if (_hudPresenter == null)
+                {
+                    #pragma warning disable CS0618
+                    _hudPresenter = FindObjectOfType<CombatPresenterBase>();
+                    #pragma warning restore CS0618
+                }
             }
 
             if (_hudPresenter != null)
@@ -74,12 +83,15 @@ namespace Runefall.Presentation.Combat
             }
 
             // Find Bootstrapper and look for an active PlayableDirector in the instantiated arena layout
-            _bootstrapper = FindFirstObjectByType<CombatBootstrapper>();
             if (_bootstrapper == null)
             {
-                #pragma warning disable CS0618
-                _bootstrapper = FindObjectOfType<CombatBootstrapper>();
-                #pragma warning restore CS0618
+                _bootstrapper = FindFirstObjectByType<CombatBootstrapper>();
+                if (_bootstrapper == null)
+                {
+                    #pragma warning disable CS0618
+                    _bootstrapper = FindObjectOfType<CombatBootstrapper>();
+                    #pragma warning restore CS0618
+                }
             }
 
             PlayableDirector activeDirector = null;

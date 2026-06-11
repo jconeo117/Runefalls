@@ -81,6 +81,9 @@ namespace Runefall.Presentation.Combat
         protected EnemyTargetMarker[] _markers    = System.Array.Empty<EnemyTargetMarker>();
         protected int                 _selectedIndex = -1;
 
+        [Header("HP Bar")]
+        [Tooltip("World-space HP bar prefab. Its root HPBarPresenter must have _fillRT / _secondaryFillRT / _frameImage wired.")]
+        [SerializeField] protected GameObject _hpBarPrefab;
         protected readonly List<HPBarPresenter>                     _hpBars         = new();
         protected readonly Dictionary<ICombatActor, HPBarPresenter>  _actorHPBars    = new();
         protected readonly Dictionary<ICombatActor, Transform>       _actorPawns     = new();
@@ -135,6 +138,10 @@ namespace Runefall.Presentation.Combat
             }
 
             _presenter  = presenter;
+            if (introSequencer != null)
+                introSequencer.Initialize(this, presenter as CombatPresenterBase);
+            if (_victorySequencer != null)
+                _victorySequencer.Initialize(this, presenter as CombatPresenterBase);
             _mainCamera = Camera.main;
 
             // EncounterState path (production): spawn pawns from runtime data.
@@ -166,9 +173,11 @@ namespace Runefall.Presentation.Combat
                 _presenter?.RegisterEnemyMarkers(_markers);
 
             BindHPBars();
+            SetHPBarsVisible(false); // hidden during the intro; revealed with the combat UI in StartLoop
 
             animationDriver?.Init(
-                _ctx, _tm, _actorPawns, _actorCharData, _actorEnemyData, _actorHPBars, _presenter);
+                _ctx, _tm, _actorPawns, _actorCharData, _actorEnemyData, _actorHPBars, _presenter,
+                (actor, pawn) => _actorPawns[actor] = pawn);
 
             vfxPlayer?.Init(_actorPawns, _actorEnemyData);
 
@@ -202,6 +211,12 @@ namespace Runefall.Presentation.Combat
             _onActionPendingHandler  = pending => animationDriver?.Enqueue(pending);
             _tm.OnActionPending     += _onActionPendingHandler;
             _tm.OnActionResolved    += OnActionResolved;
+
+            if (animationDriver != null)
+            {
+                animationDriver.OnVictoryOutroTriggered -= HandleVictoryOutroTriggered;
+                animationDriver.OnVictoryOutroTriggered += HandleVictoryOutroTriggered;
+            }
             _tm.OnCombatEnded       += won =>
             {
                 _playerWon = won;
@@ -211,20 +226,18 @@ namespace Runefall.Presentation.Combat
                 // against interrupted sequences (stopped coroutine, missing assignment, etc).
                 // ForceCleanupIfActive is a no-op if the finisher already ran to completion.
                 GetComponent<FinisherManager>()?.ForceCleanupIfActive();
-                Time.timeScale      = 1f;
-                Time.fixedDeltaTime = 0.02f;
 
                 Debug.Log($"[CombatBootstrapper] OnCombatEnded — won={won} timeScale={Time.timeScale} sequencer={_victorySequencer != null}");
 
-                // RunCombatEndDrama (finisher / fallback slow-mo) has already completed
-                // before DrainQueue calls EndPlayerTurn → FinishCombat → here.
-                // No need to subscribe to OnSequenceComplete — the finisher is done.
-                if (!won) { EndCombat(); return; }
-
-                if (_victorySequencer != null)
-                    _victorySequencer.Play(EndCombat);
-                else
-                    EndCombat();
+                if (!won)
+                {
+                    Time.timeScale      = 1f;
+                    Time.fixedDeltaTime = 0.02f;
+                    if (_victorySequencer != null)
+                        _victorySequencer.PlayOutro(won, EndCombat, RestartCombat);
+                    else
+                        EndCombat();
+                }
             };
             _tm.OnMergeOccurred     += (name, rank) => _presenter?.OnCardMerged(name, rank);
 
@@ -262,6 +275,7 @@ namespace Runefall.Presentation.Combat
 
             void StartLoop()
             {
+                SetHPBarsVisible(true); // appear together with the combat UI (intro just revealed the HUD)
                 _tm.StartCombat(_ctx, fieldChars, hasBench: false);
                 ActivatePassives(fieldChars);
             }
@@ -297,6 +311,11 @@ namespace Runefall.Presentation.Combat
         {
             DeactivatePassives();
             DestroyUIInstance();
+
+            if (animationDriver != null)
+            {
+                animationDriver.OnVictoryOutroTriggered -= HandleVictoryOutroTriggered;
+            }
 
             if (_tm != null)
             {
@@ -444,7 +463,11 @@ namespace Runefall.Presentation.Combat
                         var child = slotT.GetChild(c);
                         var slot  = child.GetComponent<EnemySlot>();
                         if (slot?.data == null) continue;
-                        var agent = new EnemyAgent(slot.data);
+                        
+                        ICombatActor agent = slot.data is BossEnemyData bossData
+                            ? new BossAgent(bossData)
+                            : new EnemyAgent(slot.data);
+                            
                         enemyActors.Add(agent);
                         enemySlotList.Add(child);
                         _actorPawns[agent]     = child;
@@ -460,7 +483,11 @@ namespace Runefall.Presentation.Combat
                     var child = enemyTeam.GetChild(i);
                     var slot  = child.GetComponent<EnemySlot>();
                     if (slot?.data == null) continue;
-                    var agent = new EnemyAgent(slot.data);
+                    
+                    ICombatActor agent = slot.data is BossEnemyData bossData
+                        ? new BossAgent(bossData)
+                        : new EnemyAgent(slot.data);
+                        
                     enemyActors.Add(agent);
                     enemySlotList.Add(child);
                     _actorPawns[agent]     = child;
@@ -491,7 +518,9 @@ namespace Runefall.Presentation.Combat
                 var bar  = AttachHPBar(pawn, actor,
                     slot != null ? slot.hpBarOffset    : 3.5f,
                     slot != null ? slot.headBoneOffset : 0.5f,
-                    slot != null ? slot.headBone       : null);
+                    slot != null ? slot.headBone       : null,
+                    slot != null && slot.data != null ? slot.data.hpBarFrame : null,
+                    fixedLocal: true);
                 _hpBars.Add(bar);
                 _actorHPBars[actor] = bar;
             }
@@ -510,9 +539,16 @@ namespace Runefall.Presentation.Combat
             }
         }
 
-        private static HPBarPresenter AttachHPBar(
+        protected void SetHPBarsVisible(bool visible)
+        {
+            for (int i = 0; i < _hpBars.Count; i++)
+                if (_hpBars[i] != null) _hpBars[i].gameObject.SetActive(visible);
+        }
+
+        private HPBarPresenter AttachHPBar(
             Transform pawn, ICombatActor actor,
-            float yOffset, float headBoneOffset = 0.5f, Transform headBoneOverride = null)
+            float yOffset, float headBoneOffset = 0.5f, Transform headBoneOverride = null,
+            Sprite frameSprite = null, bool fixedLocal = false)
         {
             Transform attachPoint = pawn;
             float     offset      = yOffset;
@@ -532,36 +568,39 @@ namespace Runefall.Presentation.Combat
                 }
             }
 
-            var barGO = new GameObject("HPBar");
-            barGO.transform.SetParent(pawn, false);
-            barGO.transform.localPosition = Vector3.zero;
-            barGO.transform.localScale    = new Vector3(0.01f, 0.01f, 0.01f);
+            if (_hpBarPrefab == null)
+            {
+                Debug.LogWarning("[CombatBootstrapper] _hpBarPrefab not assigned — no HP bar spawned.", this);
+                return null;
+            }
 
-            var canvas = barGO.AddComponent<Canvas>();
-            canvas.renderMode      = RenderMode.WorldSpace;
-            canvas.overrideSorting = true;
-            canvas.sortingOrder    = 100;
-            barGO.GetComponent<RectTransform>().sizeDelta = new Vector2(200f, 28f);
+            // Just instantiate the prefab; its visual layout (frame, fills, sizes) is authored there.
+            var barGO = Instantiate(_hpBarPrefab, pawn);
 
-            var bgGO = new GameObject("BG");
-            bgGO.transform.SetParent(barGO.transform, false);
-            var bgRT = bgGO.AddComponent<RectTransform>();
-            bgRT.anchorMin = Vector2.zero;
-            bgRT.anchorMax = Vector2.one;
-            bgRT.offsetMin = bgRT.offsetMax = Vector2.zero;
-            bgGO.AddComponent<UnityEngine.UI.Image>().color = new Color(0.12f, 0.04f, 0.04f, 0.9f);
+            var hp = barGO.GetComponent<HPBarPresenter>();
+            if (hp == null)
+            {
+                Debug.LogError("[CombatBootstrapper] HP bar prefab is missing HPBarPresenter on its root.", this);
+                Destroy(barGO);
+                return null;
+            }
 
-            var fillGO = new GameObject("Fill");
-            fillGO.transform.SetParent(barGO.transform, false);
-            var fillRT = fillGO.AddComponent<RectTransform>();
-            fillRT.anchorMin = Vector2.zero;
-            fillRT.anchorMax = Vector2.one;
-            fillRT.offsetMin = fillRT.offsetMax = Vector2.zero;
-            fillGO.AddComponent<UnityEngine.UI.Image>().color = new Color(0.18f, 0.80f, 0.22f, 0.95f);
+            hp.SetFrame(frameSprite);   // per-character frame sprite (null = hide / keep prefab default)
+            hp.Bind(actor);             // wires the actor; presenter drives the serialized fills
 
-            var hp = barGO.AddComponent<HPBarPresenter>();
-            hp.Bind(actor, fillRT);
-            hp.SetFollow(attachPoint, Vector3.up * offset);
+            if (fixedLocal)
+            {
+                // Baked rule (from runtime): fixed transform relative to the pawn — no follow/billboard.
+                var t = barGO.transform;
+                t.localPosition    = new Vector3(0.0215696f, 1.046f, 0.0780792f);
+                t.localEulerAngles = new Vector3(26.02198f, 0f, 359.853f);
+                t.localScale       = new Vector3(0.0072876f, 0.0092222f, 0.0092222f);
+            }
+            else
+            {
+                barGO.transform.localPosition = Vector3.zero;
+                hp.SetFollow(attachPoint, Vector3.up * offset);
+            }
             return hp;
         }
 
@@ -604,6 +643,47 @@ namespace Runefall.Presentation.Combat
             Debug.Log($"[CombatBootstrapper] EndCombat — timeScale={Time.timeScale} won={_playerWon}");
             ResetEnemyTrigger();
             StartCoroutine(EndCombatRoutine());
+        }
+
+        /// <summary>
+        /// Retry (defeat screen): tear down the current arena + combat UI and re-run the full combat
+        /// setup in place — re-assembles via the arena assembler and replays the intro, exactly like a
+        /// fresh encounter. NOT a scene reload (that would dump the player back into exploration).
+        /// Re-activating the GameObject re-fires OnEnable → OnEnableImpl, the same path used to re-use
+        /// this bootstrapper across encounters. Invoked by VictorySequencer's Retry button (external GO),
+        /// so toggling this GameObject's active state is safe.
+        /// </summary>
+        public void RestartCombat()
+        {
+            Debug.Log($"[Restart] ▶ START — tm={_tm != null} ctx={_ctx != null} " +
+                      $"pawns={_actorPawns.Count} enemies={_ctx?.Enemies?.Count ?? -1} " +
+                      $"arenaReady={(arenaAssembler != null ? arenaAssembler.IsReady : false)} " +
+                      $"timeScale={Time.timeScale}");
+
+            Time.timeScale      = 1f;
+            Time.fixedDeltaTime = 0.02f;
+
+            // 1. Destroy the assembled arena. OnDisable (fired by SetActive(false)) clears combat state,
+            // UI and dictionaries, but does NOT tear down the spawned pawns — do that here so the fresh
+            // OnEnableImpl re-assembles from a clean slate instead of duplicating pawns.
+            arenaAssembler?.Teardown();
+            Debug.Log($"[Restart] 1/4 arena torn down — arenaReady={(arenaAssembler != null ? arenaAssembler.IsReady : false)} pawns={_actorPawns.Count}");
+
+            // 2. Full reset: OnDisable tears down combat state.
+            gameObject.SetActive(false);
+            Debug.Log($"[Restart] 2/4 deactivated (OnDisable ran) — tm={_tm != null} pawns={_actorPawns.Count}");
+
+            // 3. OnEnable → OnEnableImpl rebuilds everything from scratch.
+            gameObject.SetActive(true);
+            Debug.Log($"[Restart] 3/4 reactivated (OnEnableImpl ran) — tm={_tm != null} " +
+                      $"pendingFieldChars={_pendingFieldChars?.Count ?? -1} pawns={_actorPawns.Count} " +
+                      $"enemies={_ctx?.Enemies?.Count ?? -1} arenaReady={(arenaAssembler != null ? arenaAssembler.IsReady : false)}");
+
+            // 4. OnEnable only PREPARES combat (it waits for an external BeginCombat after the intro fade).
+            // Without this call the arena sits assembled but the turn loop never starts — pawns frozen.
+            BeginCombat();
+            Debug.Log($"[Restart] 4/4 BeginCombat called — phase={(_tm != null ? _tm.Phase.ToString() : "null")} " +
+                      $"intro={(introSequencer != null)}");
         }
 
         private IEnumerator EndCombatRoutine()
@@ -779,6 +859,15 @@ namespace Runefall.Presentation.Combat
             if (_playerTurnCameraDelay > 0f)
                 yield return new WaitForSeconds(_playerTurnCameraDelay);
             fire();
+        }
+
+        private void HandleVictoryOutroTriggered()
+        {
+            Debug.Log("[CombatBootstrapper] HandleVictoryOutroTriggered - Triggering victory outro timeline.");
+            if (_victorySequencer != null)
+                _victorySequencer.PlayVictoryOutro(EndCombat);
+            else
+                EndCombat();
         }
 
         private void LogMissingRefs()

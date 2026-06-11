@@ -94,7 +94,9 @@ namespace Runefall.Combat
             int safety = HandSize * 4; // guard against degenerate all-rank-3 pools
             while (_slots.Count < HandSize && safety-- > 0)
             {
-                _slots.Add(new BattleCard(_pool.Draw(), rank: 1));
+                var skill = _pool.Draw();
+                if (skill == null) break;   // empty pool — stop instead of crashing
+                _slots.Add(new BattleCard(skill, rank: 1));
                 CheckMerges();
             }
             NewCardsThisRefill = _slots.Count - before;

@@ -9,20 +9,49 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 420638d998f77e0488fcd7b2dff27720, type: 3}
+  m_Script: {fileID: 11500000, guid: ae50bb8ea424d884baa5e917bbddff89, type: 3}
   m_Name: IceQueen_Skill1
   m_EditorClassIdentifier: 
-  skillName: Frost Bolt
+  skillName: Cristalizacion
   cardArt: {fileID: 0}
   type: 0
   element: 2
-  targetType: 0
-  isRanged: 0
+  targetType: 1
+  isRanged: 1
   ultimateChargeAmount: 15
-  effectsByRank: []
-  impactAfterClipIndex: 0
-  returnAtClipIndex: -1
+  effectsByRank:
+  - effects: []
+    damageMultiplier: 1.5
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 2.2
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 3.7
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  skillTimeline: {fileID: 11400000, guid: c1a2b3d4e5f60718293a4b5c6d7e8f01, type: 2}
   hitCount: 1
-  impactTrigger: {fileID: 0}
   vfxConfig: {fileID: 0}
-  animSequence: []
+  vfxCues:
+  - label: Freeze Circle
+    prefab: {fileID: 4932088507883938021, guid: 0e5709a7ddb77924090c112cf73bb98a, type: 3}
+    anchor: 2
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 0
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 1
+  - label: Ice Crystal
+    prefab: {fileID: 584207449403360073, guid: b1ae5055f08b8284d9e996465d1d37e3, type: 3}
+    anchor: 3
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 0
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 1.5

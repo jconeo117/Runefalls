@@ -11,11 +11,12 @@ namespace Runefall.Combat
     {
         public readonly ICombatActor Caster;
         public readonly ICombatActor Target;      // null for AoE
-        public readonly SkillData    Skill;       // null if ultimate
-        public readonly UltimateData Ultimate;    // null if skill
+        public readonly SkillData    Skill;       // Unified ability reference
         public readonly int          Rank;
         public readonly TargetType   TargetType;
         public readonly bool         IsUltimate;
+
+        public UltimateData Ultimate => Skill as UltimateData;
 
         public PendingAction(
             ICombatActor caster,
@@ -28,8 +29,7 @@ namespace Runefall.Combat
         {
             Caster     = caster;
             Target     = target;
-            Skill      = skill;
-            Ultimate   = ultimate;
+            Skill      = skill != null ? skill : ultimate;
             Rank       = rank;
             TargetType = targetType;
             IsUltimate = isUltimate;

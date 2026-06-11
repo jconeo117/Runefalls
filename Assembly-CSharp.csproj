@@ -63,139 +63,139 @@
   <ItemGroup>
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterMovementController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\UnarmedAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\CollisionSphere.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\DelayActive.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Move.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\HandlerTypes.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\HitType.cs" />
-    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\CrosshairSystem.cs" />
-    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\ColorExtensions.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Weapon.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\KnockbackType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DualPistolAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\InstantActionHandler.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\Gravity.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Null.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperGround.cs" />
-    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ObjectMoveDestroy.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\CastType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperStateMachine.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerMachineDebug.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Knockdown.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Weapon\Relax.cs" />
-    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\IInteractable.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Attack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Fall.cs" />
-    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\LookAtTarget.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\Side.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DodgeType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedBowAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\EmoteType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Dodge.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\ControllerExtensions.cs" />
-    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ScaleFactorApplyToMaterial.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Emote.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\BlockedHitType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerMachine.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\AnimationVariations.cs" />
-    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousMouseOrbit.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Math3d.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackCastContext.cs" />
-    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\WorldTooltipSystem.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\PistolAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedSpearAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterNavigationController.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\RollType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\IgnoredCollider.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\CrawlType.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Turn.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\SwordAttack.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\MovementActionHandler.cs" />
-    <Compile Include="Assets\Santiago\Scripts\MainMenuScripts\MainMenu.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\CastContext.cs" />
-    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousEffectsScene.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollision.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollisionType.cs" />
-    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ObjectMove.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\SimpleStateMachine.cs" />
-    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\AnimatorExtensions.cs" />
-    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\CollisionSphere.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterInputSystemController.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousTranslateMove.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousRotateObject.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\HandlerTypes.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\HitType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\CrosshairSystem.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\ColorExtensions.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\CharacterState.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackCast.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Weapon.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapPlayerController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Talk.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\DoubleJump.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\GetHit.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\KnockbackType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedAxeAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperMath.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Reload.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerInputController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\SpearAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\KickType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DualPistolAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\InstantActionHandler.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\Gravity.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Null.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TurnType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperGround.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\WeaponExtensions.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ObjectMoveDestroy.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerCamera.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollider.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\CastType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperStateMachine.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\IKHands.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Cast.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DiveRollType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerMachineDebug.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Weapon\SwitchWeapon.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapCameraController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\KnockdownType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Knockback.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\EmptyContext.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Knockdown.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Roll.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Weapon\Relax.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\AnimationParameters.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\SimpleActionHandler.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\MultipleObjectsMake.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\BSPTree.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\ShieldAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\ItemAttack.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\IInteractable.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Attack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\EmoteCombat.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Fall.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\LookAtTarget.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\ClimbType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\Side.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DodgeType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\SlowTime.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\DebugDraw.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedBowAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\HitContext.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\PlayerInteractionRaycaster.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\NewMaterialChange.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TalkType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Swim.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\EmoteType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Dodge.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DaggerAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedCrossbowAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\ControllerExtensions.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCharacterController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedStaffAttack.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ScaleFactorApplyToMaterial.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Emote.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Jump.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Navigation.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\BlockedHitType.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\PlayerMachine.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonUIPanel.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Crawl.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedSwordAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\AnimatorTrigger.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Shoot.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\AnimationVariations.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\AnimationData.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousMouseOrbit.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Math3d.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ShieldActivate.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\BaseActionHandler.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackCastContext.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\WorldTooltipSystem.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\ActionHandler.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\DiveRoll.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\_ObjectsMakeBase.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\PistolAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Idle.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedSpearAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\MaceAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterWeaponController.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonInteractable.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterNavigationController.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\RollType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DualAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\IgnoredCollider.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterInputController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\CoroutineQueue.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\CrawlType.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ChangeSizeColor.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Turn.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\SwordAttack.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\MovementActionHandler.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\WeaponGroupings.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\ShootingAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackContext.cs" />
+    <Compile Include="Assets\Santiago\Scripts\MainMenuScripts\MainMenu.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\AnimatorWeapon.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\ClimbLadder.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\CastContext.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousEffectsScene.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollision.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\SuperCollisionType.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\DestroyObject.cs" />
+    <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ObjectMove.cs" />
+    <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Examples\SimpleStateMachine.cs" />
+    <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\AnimatorExtensions.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\AttackCastType.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1237,12 +1237,12 @@
       <HintPath>A:\Unity_Engines\6000.0.73f1\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.Xml.Serialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEditor.UI.Analytics">
-      <HintPath>Library\ScriptAssemblies\UnityEditor.UI.Analytics.dll</HintPath>
+    <Reference Include="Unity.Services.Relay">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Relay.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Services.Vivox.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Services.Vivox.Editor.dll</HintPath>
+    <Reference Include="UnityEditor.UI.Analytics">
+      <HintPath>Library\ScriptAssemblies\UnityEditor.UI.Analytics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.AI.Navigation">
@@ -1367,10 +1367,6 @@
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Services.Vivox">
-      <HintPath>Library\ScriptAssemblies\Unity.Services.Vivox.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Services.Core.Analytics">
@@ -1595,10 +1591,6 @@
     </Reference>
     <Reference Include="Unity.Multiplayer.Center.NetcodeForGameObjectsExample">
       <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.NetcodeForGameObjectsExample.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Multiplayer.Widgets.Vivox">
-      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Widgets.Vivox.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.State.Editor">

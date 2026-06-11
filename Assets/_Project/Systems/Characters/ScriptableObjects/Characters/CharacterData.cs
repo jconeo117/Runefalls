@@ -30,6 +30,10 @@ namespace Runefall.Data
         public AnimationClip animGetHit;
         public AnimationClip animDeath;
 
+        [Header("HP Bar")]
+        [Tooltip("Frame sprite drawn over the HP bar (the character's themed border). Null = plain bar.")]
+        public Sprite hpBarFrame;
+
         [Header("Gacha")]
         [Range(0f, 1f)] public float baseDropRate;
     }

@@ -36,7 +36,7 @@ namespace Runefall.Combat
         }
 
         /// <summary>Returns random skill. Never removes it from pool.</summary>
-        public SkillData Draw() => _skills[_rng.Next(_skills.Count)];
+        public SkillData Draw() => _skills.Count > 0 ? _skills[_rng.Next(_skills.Count)] : null;
 
         public void AddCharacter(CharacterData character)
         {

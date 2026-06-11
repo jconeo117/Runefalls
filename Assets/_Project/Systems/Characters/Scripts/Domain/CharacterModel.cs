@@ -18,7 +18,7 @@ namespace Runefall.Characters
         /// <summary>Set by ActorEffects when Infected is applied/removed. Heal() returns early when true.</summary>
         public bool IsHealBlocked { get; set; }
 
-        public CharacterStats Stats { get; }
+        public CharacterStats Stats { get; private set; }
 
         /// <summary>Base stats + all active StatModifiers. Recomputed lazily on change.</summary>
         public CharacterStats EffectiveStats
@@ -69,6 +69,15 @@ namespace Runefall.Characters
         {
             _statModifiers.Remove(mod);
             _statsDirty = true;
+        }
+
+        public void ResetStats(CharacterStats newStats)
+        {
+            if (newStats == null) throw new ArgumentNullException(nameof(newStats));
+            Stats = newStats;
+            _statsDirty = true;
+            CurrentHP = MaxHP;
+            OnHPChanged?.Invoke(CurrentHP);
         }
 
         public void SetHPDirectly(float hp)

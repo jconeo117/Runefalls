@@ -9,20 +9,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 420638d998f77e0488fcd7b2dff27720, type: 3}
+  m_Script: {fileID: 11500000, guid: ae50bb8ea424d884baa5e917bbddff89, type: 3}
   m_Name: IceQueen_Skill2
   m_EditorClassIdentifier: 
-  skillName: Glacial Shard
+  skillName: Rueda Helada
   cardArt: {fileID: 0}
   type: 0
   element: 2
   targetType: 0
-  isRanged: 0
+  isRanged: 1
   ultimateChargeAmount: 20
-  effectsByRank: []
-  impactAfterClipIndex: 0
-  returnAtClipIndex: -1
+  effectsByRank:
+  - effects: []
+    damageMultiplier: 1.4
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 2.2
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 3.8
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  skillTimeline: {fileID: 11400000, guid: c2a3b4d5e6f70819203a4b5c6d7e8f02, type: 2}
   hitCount: 1
-  impactTrigger: {fileID: 0}
   vfxConfig: {fileID: 0}
-  animSequence: []
+  vfxCues:
+  - label: Ice Fatal Wheel
+    prefab: {fileID: 8432317251264659796, guid: c010541b216137240bde60349595f2fc, type: 3}
+    anchor: 0
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0.2, y: 0.2, z: 0.2}
+    faceTarget: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 1.5

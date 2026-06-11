@@ -67,5 +67,13 @@ namespace Runefall.Data
             ICombatActor target, 
             int rank, 
             System.Action onComplete);
+
+        // ── SOLID Polymorphism properties ─────────────────────────────────────────
+        public virtual AnimationClip[] AnimSequence => null;
+        public virtual int ImpactAfterClipIndex => 0;
+        public virtual int ReturnLungeClipIndex => -1;
+        public virtual int HitCount => 1;
+        public virtual ImpactTriggerData ImpactTrigger => null;
+        public virtual SkillVFXConfig VfxConfig => null;
     }
 }

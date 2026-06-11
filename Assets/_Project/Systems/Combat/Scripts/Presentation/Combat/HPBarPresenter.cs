@@ -7,8 +7,12 @@ namespace Runefall.Presentation.Combat
 {
     public class HPBarPresenter : MonoBehaviour
     {
+        [Header("Wired in the HP bar prefab")]
+        [SerializeField] private RectTransform _fillRT;
+        [SerializeField] private RectTransform _secondaryFillRT;
+        [SerializeField] private Image         _frameImage;
+
         private ICombatActor  _actor;
-        private RectTransform _fillRT;
         private float         _displayedHP;
         private Transform     _followTarget;
         private Vector3       _worldOffset;
@@ -19,23 +23,40 @@ namespace Runefall.Presentation.Combat
 
         // ── public API ────────────────────────────────────────────────────────────
 
-        public void Bind(ICombatActor actor, RectTransform fillRT)
+        public void Bind(ICombatActor actor)
         {
             _actor       = actor;
-            _fillRT      = fillRT;
             _displayedHP = actor.Model.CurrentHP;
 
             BuildIconRow();
             actor.Effects.OnEffectsChanged += RebuildEffectIcons;
             actor.Effects.OnEffectApplied  += OnEffectApplied;
 
+            SetSecondary(1f);
             Refresh();
+        }
+
+        /// <summary>Per-character frame sprite (wired Image in the prefab). Null hides it.</summary>
+        public void SetFrame(Sprite frame)
+        {
+            if (_frameImage == null) return;
+            _frameImage.sprite  = frame;
+            _frameImage.enabled = frame != null;
         }
 
         public void SetFollow(Transform target, Vector3 worldOffset)
         {
             _followTarget = target;
             _worldOffset  = worldOffset;
+        }
+
+        /// <summary>Sets the secondary bar fill fraction (0..1). Wire to a shield/charge/etc.</summary>
+        public void SetSecondary(float pct)
+        {
+            if (_secondaryFillRT == null) return;
+            var am = _secondaryFillRT.anchorMax;
+            am.x = Mathf.Clamp01(pct);   // preserve Y so the bottom-region layout stays intact
+            _secondaryFillRT.anchorMax = am;
         }
 
         public void ApplyVisualDamage(float amount)
@@ -77,8 +98,9 @@ namespace Runefall.Presentation.Combat
 
         private void LateUpdate()
         {
-            if (_followTarget != null)
-                transform.position = _followTarget.position + _worldOffset;
+            // No follow target = fixed local transform (set at spawn); leave it alone.
+            if (_followTarget == null) return;
+            transform.position = _followTarget.position + _worldOffset;
             if (Camera.main != null)
                 transform.rotation = Camera.main.transform.rotation;
         }

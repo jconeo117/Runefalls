@@ -157,5 +157,19 @@ namespace Runefall.Combat
                 if (_effects[i].Tag == tag) n++;
             return n;
         }
+
+        /// <summary>Removes all active effects and cleans up their stat modifiers.</summary>
+        public void ClearAll()
+        {
+            for (int i = _effects.Count - 1; i >= 0; i--)
+            {
+                var e = _effects[i];
+                if (e.StatMod != null)
+                    _actor.Model.RemoveStatModifier(e.StatMod);
+            }
+            _effects.Clear();
+            _actor.Model.IsHealBlocked = false;
+            OnEffectsChanged?.Invoke();
+        }
     }
 }

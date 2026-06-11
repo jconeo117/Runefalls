@@ -43,5 +43,12 @@ namespace Runefall.Data
         {
             driver.PlayDefaultAnimationSequence(this, caster, target, rank, onComplete);
         }
+
+        public override AnimationClip[] AnimSequence => animSequence;
+        public override int ImpactAfterClipIndex => impactAfterClipIndex;
+        public override int ReturnLungeClipIndex => returnAtClipIndex;
+        public override int HitCount => hitCount;
+        public override ImpactTriggerData ImpactTrigger => impactTrigger;
+        public override SkillVFXConfig VfxConfig => vfxConfig;
     }
 }

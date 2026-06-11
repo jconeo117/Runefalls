@@ -114,12 +114,19 @@ namespace Runefall.Presentation.Combat
         {
             // Stop any in-flight slot animation so it doesn't fight the alpha=0.
             if (_slotAnim != null) { StopCoroutine(_slotAnim); _slotAnim = null; }
-            if (_rootGroup != null) _rootGroup.alpha = 0f;
+            if (_rootGroup != null) { _rootGroup.alpha = 0f; _rootGroup.blocksRaycasts = false; }
+
+            // Card hand and action slots live outside _rootGroup, so alpha=0 doesn't hide them —
+            // deactivate their containers fully.
+            if (cardHandContainer != null)    cardHandContainer.gameObject.SetActive(false);
+            if (actionSlotContainer != null)  actionSlotContainer.gameObject.SetActive(false);
         }
 
         public override void ShowAllUI()
         {
-            if (_rootGroup != null) _rootGroup.alpha = 1f;
+            if (_rootGroup != null) { _rootGroup.alpha = 1f; _rootGroup.blocksRaycasts = true; }
+            if (cardHandContainer != null)    cardHandContainer.gameObject.SetActive(true);
+            if (actionSlotContainer != null)  actionSlotContainer.gameObject.SetActive(true);
         }
 
         public override void OnPlayerTurnStarted(int round)

@@ -62,30 +62,32 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerCombatHUDPresenter.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\ServerCombatContext.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\LobbyCamera.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkedCombatPawn.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerActionSlotsSync.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\LobbyPlayerController.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkBattleCard.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerCombatRegistry.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerTurnManagerBridge.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerTurnManager.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerCombatBootstrapper.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkSlotState.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerBossFightInitializer.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerLocalCombatSetup.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\LobbyUIController.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkCombatActionResult.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\ServerCombatContext.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\LobbyCamera.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkBattleCard.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerAnimationController.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\LobbyManager.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerActionSlotsPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerHPController.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\LobbyDoorTrigger.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerEndScreen.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerCombatBootstrapper.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkPendingAction.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkSlotState.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\RelayConnectionService.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerCombatArenaAssembler.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerBossFightInitializer.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkActorRef.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\MultiplayerLocalCombatSetup.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\ServerCombatOrchestrator.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\LobbyUIController.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\NetworkCombatActionResult.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Multiplayer\Lobby\NetworkedLobbyManager.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1170,6 +1172,22 @@
     </Reference>
     <Reference Include="Unity.Networking.Transport">
       <HintPath>Library\ScriptAssemblies\Unity.Networking.Transport.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>Library\ScriptAssemblies\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Core">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Authentication">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Authentication.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Relay">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Relay.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">

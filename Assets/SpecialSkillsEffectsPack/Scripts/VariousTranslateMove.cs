@@ -21,11 +21,11 @@ public class VariousTranslateMove : MonoBehaviour {
         m_changedFactor = VariousEffectsScene.m_gaph_scenesizefactor;
 
         if (m_fowardMove)
-            transform.Translate(transform.forward * m_power * m_changedFactor * Time.deltaTime * 150);
+            transform.Translate(Vector3.forward * m_power * m_changedFactor * Time.deltaTime * 150);
         if (m_rightMove)
-            transform.Translate(transform.right * m_power* m_changedFactor * Time.deltaTime * 150);
+            transform.Translate(Vector3.right * m_power* m_changedFactor * Time.deltaTime * 150);
         if (m_upMove)
-            transform.Translate(transform.up * m_power* m_changedFactor * Time.deltaTime * 150);
+            transform.Translate(Vector3.up * m_power* m_changedFactor * Time.deltaTime * 150);
 
         //transform.LookAt(Vector3.zero);
 
