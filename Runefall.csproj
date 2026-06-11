@@ -77,6 +77,7 @@
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Domain\EnemyState.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatPresenterBase.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatQueueManager.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatOutroVfxPlayer.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\EffectDefinition.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CardView.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\VictorySequencer.cs" />
@@ -116,8 +117,10 @@
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterState.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ActiveEffect.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DoTEffectDef.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTimeDilationManager.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\BillboardCanvas.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\EnemyEncounterTrigger.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatOutroTimelineBinder.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CharacterSlot.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\ScriptableObjects\Enemies\BossEnemyData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ICombatPresenter.cs" />
@@ -145,6 +148,7 @@
     <Compile Include="Assets\_Project\Core\Scripts\InputReader.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\DamageNumber.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ICameraDirector.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CinematicCameraDolly.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\EnemyTargetMarker.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\RuneData.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\ScriptableObjects\Characters\CharacterData.cs" />
@@ -180,6 +184,7 @@
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\RoomVolume.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\PassiveDefinition.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\ActorEffects.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatUIOutroPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\ElementType.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ImpactTriggers\ProjectileTriggerData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\StatModEffectDef.cs" />
