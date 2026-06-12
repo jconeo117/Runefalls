@@ -161,10 +161,12 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatFeedbackManager.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\SkillEventBridge.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\EffectTag.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatLogView.cs" />
     <Compile Include="Assets\_Project\Core\Scripts\ServiceLocator.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CameraComponentCleaner.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\TimelineSkillData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\FinisherManager.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\UltimateGaugeView.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\SkillData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IEnemyPhaseAnimator.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Presentation\Player\ExplorationPlayer.cs" />
@@ -177,6 +179,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ImpactTriggers\TimerTriggerData.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Presentation\Player\CameraWallAvoidance.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterData.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ActionSlotStyle.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTransitionScreen.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\ArenaData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\IPawnMover.cs" />
@@ -197,6 +200,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\StatModEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\DefaultPassiveDefinition.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatOutroSequencer.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ActionSlotsAnimator.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\ScriptableObjects\Enemies\EnemyData.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Domain\ExplorationBrain.cs" />
   </ItemGroup>

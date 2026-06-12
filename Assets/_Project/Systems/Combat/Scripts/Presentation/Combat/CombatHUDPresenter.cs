@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using Runefall.Characters;
@@ -10,6 +9,21 @@ using Runefall.Data;
 
 namespace Runefall.Presentation.Combat
 {
+    /// <summary>
+    /// Coordinates the combat HUD. It owns the domain references and the action
+    /// queue, and routes presentation concerns to focused collaborators:
+    ///   • <see cref="CombatLogView"/>      — the rolling battle log
+    ///   • <see cref="UltimateGaugeView"/>  — the 7-orb ultimate gauge
+    ///   • <see cref="CardHandAnimator"/>   — card slide / merge / draw motion
+    ///   • <see cref="ActionSlotsAnimator"/>— slot fade-out / shrink / expand motion
+    ///   • <see cref="ActionSlotStyle"/>    — procedural slot look (idle / move)
+    ///
+    /// The card-hand layout, the action-slot lifecycle and the play/move queue stay
+    /// here because they are the coordination this presenter exists to perform — and
+    /// because <c>MultiplayerCombatHUDPresenter</c> extends this surface. New screens
+    /// (e.g. the character-stats overlay) plug in as further collaborators alongside
+    /// the views above rather than swelling this class.
+    /// </summary>
     public class CombatHUDPresenter : CombatPresenterBase
     {
         [Header("Card Hand")]
@@ -39,36 +53,33 @@ namespace Runefall.Presentation.Combat
         [Tooltip("Duration of expand/shrink animation in seconds.")]
         public float   slotAnimDuration = 0.3f;
 
-        protected TurnManager    _tm;
-        private CombatContext    _ctx;
-        private CanvasGroup      _rootGroup;
-
-        private readonly List<CardView>                 _cardViews        = new();
-        private readonly Dictionary<(string, int), int> _pendingMergeFlash = new();
-        private readonly List<(int index, ICombatActor target)> _pending  = new();
-        protected readonly List<Transform>              _activeSlots      = new();
-
         [Header("Layout Settings")]
         [SerializeField] private float cardSpacing = 130f;
         [SerializeField] private float actionSlotSpacing = -10f;
         [SerializeField] private float cardScale = 0.8f;
         [SerializeField] private float slideSpeed  = 12f;
 
+        protected TurnManager    _tm;
+        private CombatContext    _ctx;
+        private CanvasGroup      _rootGroup;
+
+        private readonly List<CardView>                 _cardViews   = new();
+        private readonly List<(int index, ICombatActor target)> _pending = new();
+        protected readonly List<Transform>              _activeSlots = new();
+
         private ICombatActor  _selectedTarget;
         protected Image[]     _slotImages = Array.Empty<Image>();
-        private readonly List<Image> _orbImages = new();
         private int           _movesThisTurn = 0;
         private bool          _isExecutingQueue = false;   // true while plays commit one-by-one (gauge fills in real time)
-        private StringBuilder _log           = new();
 
-        private static readonly Color _orbFull = new Color(0.72f, 0.32f, 1f,  1f);
-        private static readonly Color _orbDim  = new Color(0.22f, 0.12f, 0.35f, 1f);
-
-        private Vector3   _slotOrigLocalPos;
-        private Vector3   _slotOrigScale;
         private Coroutine _slotAnim;
         private readonly List<(CardView cv, int finalRank, Color elemColor)> _newlyDrawnCards = new();
-        private readonly HashSet<Transform> _drawingCards = new();
+
+        // ── collaborators (constructed in Initialize) ───────────────────────
+        private CombatLogView       _logView;
+        private UltimateGaugeView   _gaugeView;
+        private CardHandAnimator    _cardAnimator;
+        private ActionSlotsAnimator _slotsAnimator;
 
         // ── CombatPresenterBase ─────────────────────────────────────────────
 
@@ -79,37 +90,35 @@ namespace Runefall.Presentation.Combat
             _rootGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
 
             EnsureContainerLayout();
-            BuildOrbRow();
+
+            _gaugeView = new UltimateGaugeView(gaugeContainer);
+            _logView   = new CombatLogView(logText);
 
             _newlyDrawnCards.Clear();
-            _drawingCards.Clear();
 
             if (cardPrefab != null)
             {
                 cardScale = cardPrefab.transform.localScale.x;
-                
+
                 // 20% overlap: spacing is 80% of the visual width (base width * scale)
                 var cardRt = cardPrefab.GetComponent<RectTransform>();
                 float baseWidth = cardRt != null ? cardRt.rect.width : 145f;
                 cardSpacing = baseWidth * cardScale * 0.8f;
             }
 
-            if (actionSlotContainer != null)
-            {
-                _slotOrigLocalPos = actionSlotContainer.localPosition;
-                _slotOrigScale    = actionSlotContainer.localScale;
-            }
+            _cardAnimator = new CardHandAnimator(
+                this, cardHandContainer, cardPrefab, animConfig, cardScale,
+                _cardViews, GetCardTargetLocalPos, ResolveMergeFinalRank);
+
+            _slotsAnimator = new ActionSlotsAnimator(
+                actionSlotContainer, _activeSlots, slotMiniScale, slotMiniMargin, slotAnimDuration);
 
             if (combatResultText != null)
                 combatResultText.gameObject.SetActive(false);
         }
 
         public override void OnGaugeChanged(ICombatActor actor, int orbs)
-        {
-            for (int i = 0; i < _orbImages.Count; i++)
-                if (_orbImages[i] != null)
-                    _orbImages[i].color = i < orbs ? _orbFull : _orbDim;
-        }
+            => _gaugeView?.SetOrbs(orbs);
 
         public override void HideAllUI()
         {
@@ -160,12 +169,7 @@ namespace Runefall.Presentation.Combat
         }
 
         public override void OnCardMerged(string skillName, int newRank)
-        {
-            Log($"MERGE! {skillName} → Rank {newRank}");
-            var key = (skillName, newRank);
-            _pendingMergeFlash.TryGetValue(key, out int count);
-            _pendingMergeFlash[key] = count + 1;
-        }
+            => Log($"MERGE! {skillName} → Rank {newRank}");
 
         public override void OnCombatEnded(bool playerWon)
         {
@@ -241,7 +245,7 @@ namespace Runefall.Presentation.Combat
             StartCoroutine(ExecuteQueueRoutine());
         }
 
-        private System.Collections.IEnumerator ExecuteQueueRoutine()
+        private IEnumerator ExecuteQueueRoutine()
         {
             _isExecutingQueue = true;
 
@@ -274,10 +278,10 @@ namespace Runefall.Presentation.Combat
             if (cardHandContainer == null) return;
 
             int fromDomain = cv.HandIndex;
-            
+
             // Map the visual X position of drop to visual index
             int toVisual = GetVirtualVisualIndex(cv.transform.position.x);
-            
+
             // Convert visual index back to domain index (indices are reversed)
             int toDomain = _cardViews.Count - 1 - toVisual;
             toDomain = Mathf.Clamp(toDomain, 0, _tm.Hand.Slots.Count - 1);
@@ -315,55 +319,12 @@ namespace Runefall.Presentation.Combat
             }
         }
 
+        /// <summary>Light a slot up as "a card was moved here" (visuals owned by <see cref="ActionSlotStyle"/>).</summary>
         private void ShowMoveInSlot(int slotIndex)
         {
             if (slotIndex < 0 || slotIndex >= _activeSlots.Count) return;
-
-            // Slot lights up cyan with a glowing frame; the idle emblem hides under the move glyph.
-            if (slotIndex < _slotImages.Length && _slotImages[slotIndex] != null)
-            {
-                var inner = _slotImages[slotIndex];
-                inner.color = k_SlotMoveFill;
-                var frame = inner.GetComponent<Outline>();
-                if (frame != null)
-                {
-                    frame.effectColor    = k_SlotMoveGlow;
-                    frame.effectDistance = new Vector2(3f, -3f);
-                }
-                var em = inner.transform.Find("Emblem");
-                if (em != null) em.gameObject.SetActive(false);
-            }
-
-            var slot = _activeSlots[slotIndex];
-            var lbl  = slot.Find("MoveLabel");
-            if (lbl == null)
-            {
-                var lblGO     = new GameObject("MoveLabel");
-                lblGO.transform.SetParent(slot, false);
-                var labelRt   = lblGO.AddComponent<RectTransform>();
-                labelRt.anchorMin = Vector2.zero;
-                labelRt.anchorMax = Vector2.one;
-                labelRt.offsetMin = labelRt.offsetMax = Vector2.zero;
-
-                // Glow halo around the glyph.
-                var glow = lblGO.AddComponent<Outline>();
-                glow.effectColor    = new Color(0.6f, 0.95f, 1f, 0.9f);
-                glow.effectDistance = new Vector2(1.5f, -1.5f);
-
-                var txt       = lblGO.AddComponent<Text>();
-                txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                txt.fontSize  = 30;
-                txt.fontStyle = FontStyle.Bold;
-                txt.alignment = TextAnchor.MiddleCenter;
-                txt.color     = Color.white;
-                txt.text      = "→";   // → move-into-slot glyph
-                txt.raycastTarget = false;
-            }
-            else
-            {
-                lbl.gameObject.SetActive(true);
-                lbl.GetComponent<Text>().text = "→";
-            }
+            Image inner = slotIndex < _slotImages.Length ? _slotImages[slotIndex] : null;
+            ActionSlotStyle.ApplyMove(_activeSlots[slotIndex], inner);
         }
 
         // ── Card hand ────────────────────────────────────────────────────────
@@ -378,10 +339,6 @@ namespace Runefall.Presentation.Combat
         {
             int totalCards = _cardViews.Count;
             if (totalCards == 0) return;
-
-            var containerRt = cardHandContainer as RectTransform;
-            float containerHeight = containerRt != null ? containerRt.rect.height : 180f;
-            float containerPivotY = containerRt != null ? containerRt.pivot.y : 0.5f;
 
             CardView draggedCard = null;
             int draggedVisualIdx = -1;
@@ -401,7 +358,8 @@ namespace Runefall.Presentation.Combat
                 CardView cv = _cardViews[i];
                 if (cv == null) continue;
 
-                if (_drawingCards.Contains(cv.transform)) continue; // Let sequential draw coroutine handle it!
+                // Let the draw coroutine own a card's position while it slides in.
+                if (_cardAnimator != null && _cardAnimator.IsAnimatingDraw(cv.transform)) continue;
 
                 var cardRt = cv.GetComponent<RectTransform>();
 
@@ -471,10 +429,6 @@ namespace Runefall.Presentation.Combat
             var newViews = new CardView[slots.Count];
             var display = _pending.Count > 0 ? BuildVirtualHand() : BuildDirectDisplay(slots);
 
-            var containerRt = cardHandContainer as RectTransform;
-            float rawH = containerRt != null ? containerRt.rect.height : 170f;
-            float containerHeight = Mathf.Clamp(rawH, 50f, 200f);
-
             for (int i = 0; i < display.Count; i++)
             {
                 var (domIdx, visRank) = display[i];
@@ -514,9 +468,7 @@ namespace Runefall.Presentation.Combat
 
                     // Rank-Up blink & pop scale animation
                     if (visRank > oldRank && !slot.IsUltimate)
-                    {
                         matchedView.PlayRankUpAnimation(elemColor, animConfig);
-                    }
 
                     newViews[i] = matchedView;
                 }
@@ -525,7 +477,7 @@ namespace Runefall.Presentation.Combat
                     // Newly drawn card!
                     var cv = Instantiate(cardPrefab, cardHandContainer);
                     cv.targetScale = cardScale;
-                    
+
                     // Hide initially until sequential draw starts
                     var cg = cv.GetComponent<CanvasGroup>() ?? cv.gameObject.AddComponent<CanvasGroup>();
                     cg.alpha = 0f;
@@ -570,11 +522,11 @@ namespace Runefall.Presentation.Combat
                         ? (mergeTarget.Card.Ultimate?.element ?? ElementType.Neutral)
                         : (mergeTarget.Card.Skill?.element    ?? ElementType.Neutral);
                     Color elemColor = ElementColor(elem);
-                    StartCoroutine(AnimateMergeSlide(oldCv, mergeTarget, elemColor));
+                    _cardAnimator?.PlayMergeSlide(oldCv, mergeTarget, elemColor);
                 }
                 else
                 {
-                    StartCoroutine(AnimatePlaySlide(oldCv));
+                    _cardAnimator?.PlayUsedSlide(oldCv);
                 }
             }
 
@@ -590,87 +542,17 @@ namespace Runefall.Presentation.Combat
 
             if (_newlyDrawnCards.Count > 0)
             {
-                StartCoroutine(AnimateDrawSequence(new List<(CardView cv, int finalRank, Color elemColor)>(_newlyDrawnCards)));
+                _cardAnimator?.PlayDrawSequence(new List<(CardView cv, int finalRank, Color elemColor)>(_newlyDrawnCards));
                 _newlyDrawnCards.Clear();
             }
         }
 
-        private IEnumerator AnimateMergeSlide(CardView oldCv, CardView targetCv, Color elemColor)
+        /// <summary>The rank a merge target lands on — its hand slot's rank, or one above its current rank.</summary>
+        private int ResolveMergeFinalRank(CardView targetCv)
         {
-            if (oldCv == null) yield break;
-
-            var cg = oldCv.GetComponent<CanvasGroup>();
-            if (cg != null) cg.blocksRaycasts = false;
-
-            float elapsed = 0f;
-            float duration = animConfig != null ? animConfig.slideDuration : 0.22f;
-
-            Vector3 startPos = oldCv.transform.localPosition;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float norm = Mathf.Clamp01(elapsed / duration);
-
-                if (oldCv == null) yield break;
-                if (targetCv == null)
-                {
-                    Destroy(oldCv.gameObject);
-                    yield break;
-                }
-
-                oldCv.transform.localPosition = Vector3.Lerp(startPos, targetCv.transform.localPosition, norm);
-                if (cg != null) cg.alpha = 1f - norm;
-
-                yield return null;
-            }
-
-            if (oldCv != null) Destroy(oldCv.gameObject);
-
-            if (targetCv != null)
-            {
-                int finalRank = 1;
-                if (_tm != null && _tm.Hand != null && targetCv.HandIndex >= 0 && targetCv.HandIndex < _tm.Hand.Slots.Count)
-                {
-                    finalRank = _tm.Hand.Slots[targetCv.HandIndex].Rank;
-                }
-                else
-                {
-                    finalRank = targetCv.Card.Rank + 1;
-                }
-                
-                targetCv.Setup(targetCv.Card.WithRank(finalRank), elemColor);
-                targetCv.PlayRankUpAnimation(elemColor, animConfig);
-            }
-        }
-
-        private IEnumerator AnimatePlaySlide(CardView oldCv)
-        {
-            if (oldCv == null) yield break;
-
-            var cg = oldCv.GetComponent<CanvasGroup>();
-            if (cg != null) cg.blocksRaycasts = false;
-
-            float elapsed = 0f;
-            float duration = 0.25f;
-
-            Vector3 startPos = oldCv.transform.localPosition;
-            Vector3 targetPos = startPos + new Vector3(0f, 300f, 0f); // Slide up towards action slots
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float norm = Mathf.Clamp01(elapsed / duration);
-
-                if (oldCv == null) yield break;
-
-                oldCv.transform.localPosition = Vector3.Lerp(startPos, targetPos, norm);
-                if (cg != null) cg.alpha = 1f - norm;
-
-                yield return null;
-            }
-
-            if (oldCv != null) Destroy(oldCv.gameObject);
+            if (_tm?.Hand != null && targetCv.HandIndex >= 0 && targetCv.HandIndex < _tm.Hand.Slots.Count)
+                return _tm.Hand.Slots[targetCv.HandIndex].Rank;
+            return targetCv.Card.Rank + 1;
         }
 
         private Vector3 GetCardTargetLocalPos(int visualSlotIdx, int totalCards, float cardWidth)
@@ -686,140 +568,6 @@ namespace Runefall.Presentation.Combat
             float targetY = containerHeight * (0.5f - containerPivotY);
 
             return new Vector3(targetX, targetY, 0f);
-        }
-
-        private IEnumerator AnimateDrawSequence(List<(CardView cv, int finalRank, Color elemColor)> cards)
-        {
-            foreach (var item in cards)
-            {
-                if (item.cv == null) continue;
-                
-                var transform = item.cv.transform;
-                _drawingCards.Add(transform);
-                
-                yield return StartCoroutine(AnimateSingleCardDraw(item.cv, item.finalRank, item.elemColor));
-                
-                _drawingCards.Remove(transform);
-            }
-        }
-
-        private IEnumerator AnimateSingleCardDraw(CardView cv, int finalRank, Color elemColor)
-        {
-            if (cv == null) yield break;
-
-            float elapsed = 0f;
-            float duration = 0.35f; // duration of the slide-in per card
-
-            var cardRt = cv.GetComponent<RectTransform>();
-            float cardWidth = cardRt != null ? cardRt.rect.width : 145f;
-
-            // 1. Draw the main card as Rank 1
-            int visualIdx = _cardViews.IndexOf(cv);
-            if (visualIdx < 0) visualIdx = _cardViews.Count; // fallback
-            
-            Vector3 targetPos = GetCardTargetLocalPos(visualIdx, _cardViews.Count, cardWidth);
-            Vector3 startPos = new Vector3(targetPos.x - 400f, targetPos.y, 0f); // start 400 units to the left
-
-            cv.transform.localPosition = startPos;
-            cv.transform.localScale = Vector3.one * cardScale * 0.5f; // start smaller for a nice pop-in effect
-            var cg = cv.GetComponent<CanvasGroup>() ?? cv.gameObject.AddComponent<CanvasGroup>();
-            cg.alpha = 0f;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float norm = Mathf.Clamp01(elapsed / duration);
-                
-                // Ease-out cubic curve
-                float t = 1f - Mathf.Pow(1f - norm, 3f);
-
-                if (cv == null) yield break;
-
-                // Re-calculate targetPos dynamically in case other cards shifting
-                visualIdx = _cardViews.IndexOf(cv);
-                if (visualIdx >= 0)
-                {
-                    targetPos = GetCardTargetLocalPos(visualIdx, _cardViews.Count, cardWidth);
-                    startPos = new Vector3(targetPos.x - 400f, targetPos.y, 0f);
-                }
-
-                cv.transform.localPosition = Vector3.Lerp(startPos, targetPos, t);
-                cv.transform.localScale = Vector3.Lerp(Vector3.one * cardScale * 0.5f, Vector3.one * cardScale, t);
-                cg.alpha = norm;
-
-                yield return null;
-            }
-
-            if (cv != null)
-            {
-                visualIdx = _cardViews.IndexOf(cv);
-                if (visualIdx >= 0)
-                {
-                    cv.transform.localPosition = GetCardTargetLocalPos(visualIdx, _cardViews.Count, cardWidth);
-                }
-                cv.transform.localScale = Vector3.one * cardScale;
-                cg.alpha = 1f;
-            }
-
-            // 2. If the final rank is greater than 1, draw temporary cards and merge them sequentially!
-            for (int r = 2; r <= finalRank; r++)
-            {
-                if (cv == null) yield break;
-
-                // Instantiate a temporary card representing the merging card
-                var tempCv = Instantiate(cardPrefab, cardHandContainer);
-                tempCv.Setup(cv.Card.WithRank(1), elemColor); // Starts as Rank 1!
-                
-                // Hide initially until slide starts
-                var tempCg = tempCv.GetComponent<CanvasGroup>() ?? tempCv.gameObject.AddComponent<CanvasGroup>();
-                tempCg.alpha = 0f;
-                tempCv.transform.localScale = Vector3.zero;
-
-                float tempElapsed = 0f;
-                float tempDuration = 0.35f;
-
-                Vector3 tempTarget = cv.transform.localPosition;
-                Vector3 tempStart = new Vector3(tempTarget.x - 400f, tempTarget.y, 0f);
-
-                tempCv.transform.localPosition = tempStart;
-                tempCv.transform.localScale = Vector3.one * cardScale * 0.5f;
-
-                while (tempElapsed < tempDuration)
-                {
-                    tempElapsed += Time.deltaTime;
-                    float norm = Mathf.Clamp01(tempElapsed / tempDuration);
-                    float t = 1f - Mathf.Pow(1f - norm, 3f);
-
-                    if (tempCv == null) yield break;
-                    if (cv == null)
-                    {
-                        Destroy(tempCv.gameObject);
-                        yield break;
-                    }
-
-                    tempTarget = cv.transform.localPosition;
-                    tempStart = new Vector3(tempTarget.x - 400f, tempTarget.y, 0f);
-
-                    tempCv.transform.localPosition = Vector3.Lerp(tempStart, tempTarget, t);
-                    tempCv.transform.localScale = Vector3.Lerp(Vector3.one * cardScale * 0.5f, Vector3.one * cardScale, t);
-                    tempCg.alpha = norm;
-
-                    yield return null;
-                }
-
-                // Temporary card has landed on the main card!
-                if (tempCv != null) Destroy(tempCv.gameObject);
-
-                if (cv != null)
-                {
-                    // Upgrade cv to the rank reached so far and play rank-up blink!
-                    cv.Setup(cv.Card.WithRank(r), elemColor);
-                    cv.PlayRankUpAnimation(elemColor, animConfig);
-                    
-                    // Small delay to let the rank-up animation breathe before the next draw
-                    yield return new WaitForSeconds(0.12f);
-                }
-            }
         }
 
         private static List<(int domainIdx, int visRank)> BuildDirectDisplay(IReadOnlyList<BattleCard> slots)
@@ -910,71 +658,7 @@ namespace Runefall.Presentation.Combat
                 var inner = _activeSlots[i].Find("Inner");
                 _slotImages[i] = inner?.GetComponent<Image>();
                 if (_slotImages[i] != null)
-                    StyleIdleSlot(_slotImages[i]);   // rounded frame + emblem (no sprites needed)
-            }
-        }
-
-        // ── procedural action-slot styling (no custom sprites) ─────────────────────
-        private static readonly Color k_SlotIdleFill  = new Color(0.08f, 0.11f, 0.14f, 0.95f);
-        private static readonly Color k_SlotIdleFrame = new Color(0.34f, 0.55f, 0.60f, 0.70f);
-        private static readonly Color k_SlotEmblem    = new Color(0.42f, 0.64f, 0.68f, 0.28f);
-        private static readonly Color k_SlotMoveFill  = new Color(0.16f, 0.55f, 0.82f, 0.92f);
-        private static readonly Color k_SlotMoveGlow  = new Color(0.45f, 0.88f, 1.00f, 1.00f);
-
-        private static Sprite Rounded() => Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
-        private static Sprite Disc()    => Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
-
-        /// <summary>Empty slot = rounded slate-teal card back: dark fill + teal frame + faint central emblem.</summary>
-        private void StyleIdleSlot(Image inner)
-        {
-            inner.sprite = Rounded();
-            inner.type   = Image.Type.Sliced;
-            inner.color  = k_SlotIdleFill;
-
-            var frame = inner.GetComponent<Outline>() ?? inner.gameObject.AddComponent<Outline>();
-            frame.effectColor    = k_SlotIdleFrame;
-            frame.effectDistance = new Vector2(2f, -2f);
-
-            // Central emblem: a faint disc with its own ring outline — suggests a rune sigil.
-            var emT = inner.transform.Find("Emblem");
-            if (emT == null)
-            {
-                var emGO = new GameObject("Emblem");
-                emGO.transform.SetParent(inner.transform, false);
-                var emRT = emGO.AddComponent<RectTransform>();
-                emRT.anchorMin = new Vector2(0.5f, 0.5f);
-                emRT.anchorMax = new Vector2(0.5f, 0.5f);
-                emRT.sizeDelta = new Vector2(34f, 34f);
-                emRT.anchoredPosition = Vector2.zero;
-                var emImg = emGO.AddComponent<Image>();
-                emImg.sprite = Disc();
-                emImg.color  = k_SlotEmblem;
-                emImg.raycastTarget = false;
-                var emRing = emGO.AddComponent<Outline>();
-                emRing.effectColor    = new Color(k_SlotIdleFrame.r, k_SlotIdleFrame.g, k_SlotIdleFrame.b, 0.5f);
-                emRing.effectDistance = new Vector2(1.5f, -1.5f);
-            }
-        }
-
-        private void BuildOrbRow()
-        {
-            if (gaugeContainer == null) return;
-
-            var hlg = gaugeContainer.GetComponent<HorizontalLayoutGroup>()
-                   ?? gaugeContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
-            hlg.spacing               = 4f;
-            hlg.childAlignment        = TextAnchor.MiddleCenter;
-            hlg.childForceExpandWidth = false;
-
-            for (int i = 0; i < 7; i++)
-            {
-                var go       = new GameObject("Orb_" + i);
-                go.transform.SetParent(gaugeContainer, false);
-                var rt       = go.AddComponent<RectTransform>();
-                rt.sizeDelta = new Vector2(18f, 18f);
-                var img      = go.AddComponent<Image>();
-                img.color    = _orbDim;
-                _orbImages.Add(img);
+                    ActionSlotStyle.ApplyIdle(_slotImages[i]);   // rounded frame + emblem (no sprites needed)
             }
         }
 
@@ -999,7 +683,8 @@ namespace Runefall.Presentation.Combat
                        ?? cardHandContainer.gameObject.AddComponent<ContentSizeFitter>();
                 csf.enabled = false;
 
-                // Remove RectMask2D, Mask, and Image components to allow cards to overlap/scale-bounce beyond bounds without clipping.
+                // Remove RectMask2D, Mask, and Image components to allow cards to overlap/scale-bounce
+                // beyond bounds without clipping.
                 var mask2D = cardHandContainer.GetComponent<RectMask2D>();
                 if (mask2D != null) Destroy(mask2D);
 
@@ -1018,7 +703,7 @@ namespace Runefall.Presentation.Combat
                 var slot = _activeSlots[i];
                 if (slot == null) continue;
 
-                // FadeOutActionSlot may have deactivated this slot and zeroed its alpha.
+                // FadeOutSlot may have deactivated this slot and zeroed its alpha.
                 slot.gameObject.SetActive(true);
                 var cg = slot.GetComponent<CanvasGroup>();
                 if (cg != null) cg.alpha = 1f;
@@ -1032,35 +717,21 @@ namespace Runefall.Presentation.Combat
                 if (i < _slotImages.Length && _slotImages[i] != null)
                 {
                     _slotImages[i].gameObject.SetActive(true);
-                    RestoreIdleSlot(_slotImages[i]);
+                    ActionSlotStyle.RestoreIdle(_slotImages[i]);
                 }
             }
         }
 
-        /// <summary>Reset a slot's dynamic look back to the idle card-back (after a move/skill cleared it).</summary>
-        private void RestoreIdleSlot(Image inner)
-        {
-            inner.color = k_SlotIdleFill;
-            var frame = inner.GetComponent<Outline>();
-            if (frame != null)
-            {
-                frame.effectColor    = k_SlotIdleFrame;
-                frame.effectDistance = new Vector2(2f, -2f);
-            }
-            var em = inner.transform.Find("Emblem");
-            if (em != null) em.gameObject.SetActive(true);
-        }
-
         public override void SetActionSlotsActive(bool active)
         {
-            if (actionSlotContainer == null) return;
+            if (actionSlotContainer == null || _slotsAnimator == null) return;
             if (_slotAnim != null) StopCoroutine(_slotAnim);
-            _slotAnim = StartCoroutine(active ? AnimateSlotExpand() : AnimateSlotShrink());
+            _slotAnim = StartCoroutine(active ? _slotsAnimator.Expand() : _slotsAnimator.Shrink());
 
             // Fade move slots immediately when shrinking — they have no skill animation to trigger their fade.
             if (!active)
                 for (int i = 0; i < _movesThisTurn && i < _activeSlots.Count; i++)
-                    StartCoroutine(FadeOutActionSlot(i));
+                    StartCoroutine(_slotsAnimator.FadeOutSlot(i));
         }
 
         public override void NotifyActionAnimationComplete(int actionIndex)
@@ -1070,134 +741,12 @@ namespace Runefall.Presentation.Combat
             int slotIndex = actionIndex + _movesThisTurn;
             if (slotIndex < 0 || slotIndex >= _activeSlots.Count) return;
             if (_activeSlots[slotIndex] == null) return;
-            StartCoroutine(FadeOutActionSlot(slotIndex));
-        }
-
-        private IEnumerator FadeOutActionSlot(int actionIndex)
-        {
-            var slot = _activeSlots[actionIndex];
-
-            // Fade
-            var cg = slot.GetComponent<CanvasGroup>();
-            if (cg == null) { slot.gameObject.SetActive(false); yield break; }
-            for (float t = 0f; t < 1f; t += Time.deltaTime / 0.2f)
-            {
-                if (slot == null) yield break;
-                cg.alpha = 1f - Mathf.Clamp01(t);
-                yield return null;
-            }
-            if (slot == null) yield break;
-            cg.alpha = 0f;
-
-            // Snapshot world positions of slots to the right BEFORE deactivating
-            var remaining = new List<(Transform t, Vector3 from)>();
-            for (int i = actionIndex + 1; i < _activeSlots.Count; i++)
-            {
-                var s = _activeSlots[i];
-                if (s != null && s.gameObject.activeSelf)
-                    remaining.Add((s, s.position));
-            }
-
-            slot.gameObject.SetActive(false);
-
-            if (remaining.Count == 0) yield break;
-
-            // Force HLG to compute new positions, then snapshot targets
-            var crt = actionSlotContainer as RectTransform;
-            if (crt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(crt);
-
-            var to = new Vector3[remaining.Count];
-            for (int i = 0; i < remaining.Count; i++)
-                to[i] = remaining[i].t.position;
-
-            // Slide: disable HLG, restore old pos, animate, re-enable
-            var hlg = actionSlotContainer != null
-                ? actionSlotContainer.GetComponent<HorizontalLayoutGroup>()
-                : null;
-
-            if (hlg != null) hlg.enabled = false;
-            for (int i = 0; i < remaining.Count; i++)
-                remaining[i].t.position = remaining[i].from;
-
-            for (float t = 0f; t < 1f; t += Time.deltaTime / 0.2f)
-            {
-                float s = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
-                for (int i = 0; i < remaining.Count; i++)
-                {
-                    if (remaining[i].t == null) continue;
-                    remaining[i].t.position = Vector3.Lerp(remaining[i].from, to[i], s);
-                }
-                yield return null;
-            }
-            for (int i = 0; i < remaining.Count; i++)
-            {
-                if (remaining[i].t != null) remaining[i].t.position = to[i];
-            }
-
-            if (hlg != null) hlg.enabled = true;
-        }
-
-        private IEnumerator AnimateSlotShrink()
-        {
-            var rt       = actionSlotContainer as RectTransform;
-            var parentRt = rt != null ? rt.parent as RectTransform : null;
-
-            Vector3 targetPos;
-            if (rt != null && parentRt != null)
-            {
-                float halfW  = parentRt.rect.width  * 0.5f;
-                float halfH  = parentRt.rect.height * 0.5f;
-                float scaledW = rt.rect.width  * slotMiniScale;
-                float scaledH = rt.rect.height * slotMiniScale;
-                targetPos = new Vector3(
-                    -halfW + slotMiniMargin.x + scaledW * rt.pivot.x,
-                    -halfH + slotMiniMargin.y + scaledH * rt.pivot.y,
-                    0f);
-            }
-            else
-            {
-                targetPos = actionSlotContainer.localPosition;
-            }
-
-            yield return StartCoroutine(AnimateSlotTo(targetPos, _slotOrigScale * slotMiniScale));
-        }
-
-        private IEnumerator AnimateSlotExpand() =>
-            AnimateSlotTo(_slotOrigLocalPos, _slotOrigScale);
-
-        private IEnumerator AnimateSlotTo(Vector3 targetPos, Vector3 targetScale)
-        {
-            Vector3 startPos   = actionSlotContainer.localPosition;
-            Vector3 startScale = actionSlotContainer.localScale;
-            float   elapsed    = 0f;
-
-            while (elapsed < slotAnimDuration)
-            {
-                elapsed += Time.deltaTime;
-                float st = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / slotAnimDuration));
-                actionSlotContainer.localPosition = Vector3.Lerp(startPos,   targetPos,   st);
-                actionSlotContainer.localScale    = Vector3.Lerp(startScale,  targetScale, st);
-                yield return null;
-            }
-
-            actionSlotContainer.localPosition = targetPos;
-            actionSlotContainer.localScale    = targetScale;
+            if (_slotsAnimator != null) StartCoroutine(_slotsAnimator.FadeOutSlot(slotIndex));
         }
 
         // ── Log ──────────────────────────────────────────────────────────────
 
-        private void Log(string line)
-        {
-            _log.AppendLine(line);
-            var lines = _log.ToString().Split('\n');
-            if (lines.Length > 22)
-            {
-                _log.Clear();
-                for (int i = lines.Length - 21; i < lines.Length; i++)
-                    _log.AppendLine(lines[i]);
-            }
-            if (logText != null) logText.text = _log.ToString();
-        }
+        private void Log(string line) => _logView?.Append(line);
 
         // ── Helpers ──────────────────────────────────────────────────────────
 
