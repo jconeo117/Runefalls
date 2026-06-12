@@ -15,5 +15,9 @@ namespace Runefall.Combat
         public StatModifier     StatMod;            // non-null: added/removed from CharacterModel on apply/expire
         public ICombatActor     LinkedActor;        // arrebato: the paired actor
         public string           GroupId;            // arrebato: shared id — removing one removes both
+
+        // While active on an actor, these conditionally modify that actor's OUTGOING damage
+        // (gathered by DamageEffectDef). Null = none. E.g. Monarca del Hielo: x2 vs frozen.
+        public ConditionalDamageModifier[] OutgoingDamageModifiers;
     }
 }

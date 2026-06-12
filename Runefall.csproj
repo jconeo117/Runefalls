@@ -114,6 +114,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ImpactTriggers\AnimEventTriggerData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatVFXPlayer.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Domain\BossAgent.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ConditionalDamageModifier.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterState.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ActiveEffect.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DoTEffectDef.cs" />
@@ -121,6 +122,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTimeDilationManager.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\BillboardCanvas.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\EnemyEncounterTrigger.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\TargetHasEffectCondition.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatOutroTimelineBinder.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CharacterSlot.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\ScriptableObjects\Enemies\BossEnemyData.cs" />
@@ -144,6 +146,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\CameraSequenceData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\CombatContext.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\SkillVFXConfig.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\OutgoingModifierEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\CardPool.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\CombatFormulas.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\LifestealEffectDef.cs" />
@@ -179,6 +182,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\IPawnMover.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\RarityType.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\CharacterModel.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\TargetHasBehaviorCondition.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IImpactTrigger.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\PlayerActor.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\DominioGlacialBehavior.cs" />

@@ -9,20 +9,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0bbea7f9528ef7549a17a4006325d071, type: 3}
+  m_Script: {fileID: 11500000, guid: b9f5488dfd14650469d437d6d6be4390, type: 3}
   m_Name: MonarcaDelHielo
   m_EditorClassIdentifier: 
   effectName: Monarca del Hielo
-  description: "Aumenta el ataque 50% y x2 da\xF1o a enemigos congelados."
+  description: "Aumenta el ataque 50% y x2 de da\xF1o a enemigos congelados."
   icon: {fileID: 0}
   tag: 1
   behavior: 0
   stackBySource: 1
   stackable: 0
   effectTarget: 1
-  stat: 0
-  valueByRank:
-  - 0.5
-  - 0.5
-  - 0.5
   durationByRank: 010000000100000001000000
+  applyStat: 1
+  stat: 0
+  statValue: 0.5
+  modifiers:
+  - condition: {fileID: 11400000, guid: 168217de3f3b73e41907bc58aa7d929d, type: 2}
+    kind: 0
+    value: 2

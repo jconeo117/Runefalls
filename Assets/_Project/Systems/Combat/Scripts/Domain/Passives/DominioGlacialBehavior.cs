@@ -24,8 +24,9 @@ namespace Runefall.Combat
         public HipotermiaEffectDef hipotermia;
         [Tooltip("MarkerEffectDef con behavior = SkipTurn (Congelado).")]
         public MarkerEffectDef congelado;
-        [Tooltip("StatModEffectDef con stat = Ataque, value = +0.50, effectTarget = Caster (Monarca del Hielo).")]
-        public StatModEffectDef monarcaDelHielo;
+        [Tooltip("Monarca del Hielo: OutgoingModifierEffectDef con +50% ATK (applyStat) y un modifier " +
+                 "x2 daño condicionado a TargetHasBehavior(SkipTurn). El x2 lo resuelve el pipeline.")]
+        public EffectDefinition monarcaDelHielo;
 
         [Header("Tuning — aura por Hipotermia")]
         [Tooltip("ATK del héroe por cada Hipotermia en campo. 0.15 = +15% c/u.")]
@@ -79,15 +80,6 @@ namespace Runefall.Combat
                 });
             }
 
-            bool MonarcaActive()
-            {
-                if (monarcaDelHielo == null) return false;
-                var fx = ctx.Owner.Effects.ActiveEffects;
-                for (int i = 0; i < fx.Count; i++)
-                    if (fx[i].Source == monarcaDelHielo) return true;
-                return false;
-            }
-
             void FreezeHipotermiaEnemiesAndApplyMonarca()
             {
                 var enemies = ctx.Ctx.Enemies;
@@ -131,15 +123,8 @@ namespace Runefall.Combat
                     RecomputeHeroAura();   // por si el conteo cambió tras congelar
                 }
 
-                // (4) Monarca activo → x2 daño a enemigos congelados que ataca el héroe
-                if (MonarcaActive()
-                    && result.Caster == ctx.Owner
-                    && result.DamageDealt > 0f
-                    && result.Target != null && result.Target.IsAlive
-                    && result.Target.Effects.HasBehavior(EffectBehavior.SkipTurn))
-                {
-                    result.Target.Model.TakeDamage(result.DamageDealt);
-                }
+                // (4) El x2 a congelados (Monarca del Hielo) lo resuelve el pipeline de daño vía el
+                //     OutgoingModifierEffectDef de Monarca — no hace falta lógica post-hoc acá.
             });
         }
     }

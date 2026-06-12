@@ -79,6 +79,29 @@ namespace Runefall.Combat
                 }
             }
 
+            // Conditional outgoing modifiers contributed by the caster's active effects (passives/buffs
+            // like Monarca del Hielo: x2 vs frozen). Deterministic — folded in before the formula runs.
+            var casterFx = ctx.Caster.Effects.ActiveEffects;
+            for (int i = 0; i < casterFx.Count; i++)
+            {
+                var outMods = casterFx[i].OutgoingDamageModifiers;
+                if (outMods == null) continue;
+                for (int j = 0; j < outMods.Length; j++)
+                {
+                    var m = outMods[j];
+                    if (m == null) continue;
+                    if (m.condition != null && !m.condition.Matches(ctx.Caster, ctx.Target)) continue;
+                    switch (m.kind)
+                    {
+                        case DamageModKind.MultiplyDamage:     damageMult     *= m.value; break;
+                        case DamageModKind.AddFlatDamage:      flatBonus      += m.value; break;
+                        case DamageModKind.IgnoreDefense:      ignoreDefense   = true;    break;
+                        case DamageModKind.MultiplyCritDamage: critDamageMult *= m.value; break;
+                        case DamageModKind.MultiplyCritChance: critChanceMult *= m.value; break;
+                    }
+                }
+            }
+
             // Override ataque in a cloned stat block so the formula uses the scaled value
             var modifiedAttacker          = castStats.Clone();
             float baseStat = statSource switch
