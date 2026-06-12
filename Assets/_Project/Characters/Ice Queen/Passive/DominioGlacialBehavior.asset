@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cc4279ad0c53ba40b2075102ffdf50e, type: 3}
+  m_Name: DominioGlacialBehavior
+  m_EditorClassIdentifier: 
+  note: Orquestador de Dominio Glacial.
+  hipotermia: {fileID: 11400000, guid: 0982d1c6ac93bff4892c18410518a28f, type: 2}
+  congelado: {fileID: 11400000, guid: 7fe5ad43783cbb94bb4a43f52a24e762, type: 2}
+  monarcaDelHielo: {fileID: 11400000, guid: 3998e1612ccb8fb4b8470d9ccd8a5a30, type: 2}
+  atkPerHipotermia: 0.15
+  dmgReductionPerHipotermia: 0.2
+  lowHpThreshold: 0.3

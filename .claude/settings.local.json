@@ -76,7 +76,10 @@
       "mcp__UnityMCP__manage_texture",
       "Bash(grep -iE '\\\\.prefab$')",
       "Bash(Select-String -Pattern \"PlayTimelineSkillCoroutine|SkillCameraRoutine|GetSkillIntroDelay|_useSkillCamera|camOrbit|BindSkillTimelineTracks|CreateSkillVcams\" -Context 0,0)",
-      "Bash(python -)"
+      "Bash(python -)",
+      "Bash(ls -1 \"Assets/_Project/Systems/Combat/Scripts/Domain/Passives/DominioGlacialPassive.cs\"*)",
+      "Bash(ls -1 \"Assets/_Project/Systems/Combat/Scripts/Domain/Effects/HipotermiaEffectDef.cs\"*)",
+      "Bash(find Assets -iname \"*hipotermia*\" -o -iname \"*congelado*\" -o -iname \"*dominio*glacial*\" -o -iname \"*dominio*hielo*\" -o -iname \"IceQueen_Passive*\")"
     ]
   },
   "hooks": {

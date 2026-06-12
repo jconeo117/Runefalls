@@ -97,6 +97,7 @@
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\CharacterStats.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatBootstrapper.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\StanceEffectDef.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\ComposablePassive.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\UltimateData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ArrebatoEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatHUDPresenter.cs" />
@@ -109,7 +110,6 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatCameraController.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Presentation\Enemies\EnemyController.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatAnimationDriver.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\DominioGlacialPassive.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Presentation\Player\CharacterAnimationController.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ImpactTriggers\AnimEventTriggerData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatVFXPlayer.cs" />
@@ -117,6 +117,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterState.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ActiveEffect.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DoTEffectDef.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\PassiveBehavior.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTimeDilationManager.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\BillboardCanvas.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\EnemyEncounterTrigger.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ShieldEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\IFeedbackPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatIntroSequencer.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\PassiveContext.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IEnemyTurnHandler.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\PawnMovementChoreographer.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\SkillUsedEvent.cs" />
@@ -179,6 +181,7 @@
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\CharacterModel.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IImpactTrigger.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\PlayerActor.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\DominioGlacialBehavior.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\HipotermiaEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\HealEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\RoomVolume.cs" />

@@ -9,20 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0bbea7f9528ef7549a17a4006325d071, type: 3}
-  m_Name: DominioDelHielo
+  m_Script: {fileID: 11500000, guid: e60dc98b4639ca940b990e098157f1ce, type: 3}
+  m_Name: Congelado
   m_EditorClassIdentifier: 
-  effectName: Dominio del Hielo
-  description: "+15% ATK. Da\xF1o doble a enemigos Congelados."
+  effectName: Congelado
+  description: "El enemigo no act\xFAa en su turno."
   icon: {fileID: 0}
-  tag: 1
-  behavior: 0
+  tag: 2
+  behavior: 1
   stackBySource: 1
   stackable: 0
-  effectTarget: 1
-  stat: 0
-  valueByRank:
-  - 0.15
-  - 0.15
-  - 0.15
+  effectTarget: 0
   durationByRank: ffffffffffffffffffffffff
