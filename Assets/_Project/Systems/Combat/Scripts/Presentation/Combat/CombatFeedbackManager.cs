@@ -24,7 +24,14 @@ namespace Runefall.Presentation.Combat
                 1.8f + Random.Range(0f, 0.35f),
                 Random.Range(-0.15f, 0.15f));
 
-            var go = Object.Instantiate(_damageNumberPrefab, targetPawn.position + offset, Quaternion.identity);
+            // Pull the number toward the camera so the target's world-space HP bar (sitting at the pawn)
+            // doesn't occlude it — otherwise the player's own bar covers the damage taken.
+            Vector3 spawnPos = targetPawn.position + offset;
+            var cam = Camera.main;
+            if (cam != null)
+                spawnPos += (cam.transform.position - targetPawn.position).normalized * 0.7f;
+
+            var go = Object.Instantiate(_damageNumberPrefab, spawnPos, Quaternion.identity);
             var dmg = go.GetComponent<DamageNumber>();
 
             string text = $"{damage:F0}";

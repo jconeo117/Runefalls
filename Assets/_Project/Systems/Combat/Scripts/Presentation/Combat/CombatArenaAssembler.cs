@@ -88,10 +88,21 @@ namespace Runefall.Presentation.Combat
                 return;
             }
 
-            // MVP: always 1 player slot, 1-3 enemies of the same type
+            // MVP: always 1 player slot, 1-3 enemies of the same type.
+            // Lock the rolled count in EncounterState so Retry rebuilds the SAME arena (same enemy count)
+            // instead of re-rolling — a player who lost vs 3 enemies retries vs 3, not a cheaper 1.
             var party       = state.ResolvedParty;
             int playerCount = 1;
-            int enemyCount  = UnityEngine.Random.Range(1, 4);
+            int enemyCount;
+            if (state.LockedEnemyCount >= 1)
+            {
+                enemyCount = state.LockedEnemyCount;
+            }
+            else
+            {
+                enemyCount = UnityEngine.Random.Range(1, 4);
+                state.LockedEnemyCount = enemyCount;
+            }
 
             if (PendingRoom != null)
             {

@@ -14,6 +14,14 @@ namespace Runefall.Core
         public WeaponData      EquippedWeapon     { get; set; }
         public List<RuneData>  EquippedRunes      { get; set; } = new List<RuneData>();
 
+        /// <summary>
+        /// Enemy count rolled on the FIRST arena assembly of this encounter, kept so Retry rebuilds the
+        /// exact same arena (same number of enemies) instead of re-rolling the difficulty. -1 = not rolled
+        /// yet. A brand-new encounter gets a fresh EncounterState (default -1) → fresh roll; Retry reuses
+        /// the same EncounterState instance → same count.
+        /// </summary>
+        public int LockedEnemyCount { get; set; } = -1;
+
         // Resolves the party array: prefers PlayerParty, falls back to SelectedCharacter.
         public CharacterData[] ResolvedParty =>
             PlayerParty is { Length: > 0 }

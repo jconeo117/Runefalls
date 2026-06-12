@@ -22,10 +22,13 @@ namespace Runefall.Presentation.Combat
         private readonly float _breathePeriod;
         private readonly float _breatheScale;
         private readonly float _scrimAlpha;
+        private readonly float _defeatBounceDuration;
+        private readonly float _defeatBounceStartScale;
 
         private GameObject _activeInstance;
         private Coroutine _breatheRoutine;
         private bool _isVictory;
+        private bool _winSequencePlayed;   // guards the win entrance animation against double-fire
 
         // UI references
         private Canvas _canvas;
@@ -61,7 +64,9 @@ namespace Runefall.Presentation.Combat
             float buttonDuration,
             float breathePeriod,
             float breatheScale,
-            float scrimAlpha)
+            float scrimAlpha,
+            float defeatBounceDuration,
+            float defeatBounceStartScale)
         {
             _runner = runner;
             _winScreenPrefab = winScreenPrefab;
@@ -74,6 +79,23 @@ namespace Runefall.Presentation.Combat
             _breathePeriod = breathePeriod;
             _breatheScale = breatheScale;
             _scrimAlpha = scrimAlpha;
+            _defeatBounceDuration = defeatBounceDuration;
+            _defeatBounceStartScale = defeatBounceStartScale;
+        }
+
+        /// <summary>Instantiates + wires the win screen but leaves it hidden and un-animated, so the
+        /// outro timeline can bind to the instance. The actual reveal happens later via ShowWinScreen.</summary>
+        public GameObject PrepareWinScreen(Action onContinue)
+        {
+            _isVictory = true;
+            if (_activeInstance == null && _winScreenPrefab != null)
+            {
+                _activeInstance = UnityEngine.Object.Instantiate(_winScreenPrefab, _runner.transform);
+                WireRefsFromInstance(_activeInstance, onContinue, null);
+            }
+            if (_activeInstance != null) _activeInstance.SetActive(false);
+            _winSequencePlayed = false;
+            return _activeInstance;
         }
 
         public void ShowWinScreen(Action onContinue)
@@ -95,6 +117,10 @@ namespace Runefall.Presentation.Combat
             }
 
             _activeInstance.SetActive(true);
+            // Reveal + animate ONCE. Multiple outro paths (beat, timeline-stopped) call this; the guard
+            // stops the entrance animation from re-playing and the screen from appearing to "fire twice".
+            if (_winSequencePlayed) return;
+            _winSequencePlayed = true;
             _runner.StartCoroutine(VictorySequenceRoutine(onContinue));
         }
 
@@ -114,21 +140,55 @@ namespace Runefall.Presentation.Combat
             }
 
             _activeInstance.SetActive(true);
+            _runner.StartCoroutine(LoseSequenceRoutine());
+        }
 
-            // "En Seco": set all elements fully active immediately
+        private IEnumerator LoseSequenceRoutine()
+        {
+            // Start hidden + shrunk so the screen bounces in instead of popping from nowhere.
+            SetAlpha(_fondoImg, 0f);
+            SetAlpha(_scrimImg, 0f);
+            SetAlpha(_textoImg, 0f);
+            SetAlpha(_botonContinuarImg, 0f);
+            SetAlpha(_botonReintentarImg, 0f);
+            if (_textoRT != null) _textoRT.anchoredPosition = _textoRestPos;
+            if (_botonContinuarRT != null) _botonContinuarRT.anchoredPosition = _botonContinuarRestPos;
+            if (_botonReintentarRT != null) _botonReintentarRT.anchoredPosition = _botonReintentarRestPos;
+            if (_containerRT != null) _containerRT.localScale = _containerRestScale * _defeatBounceStartScale;
+
+            // Unlock cursor so player can click buttons immediately.
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            // Bounce in: container scales up with an overshoot (EaseOutBack), elements fade in together.
+            float dur = Mathf.Max(0.01f, _defeatBounceDuration);
+            float t = 0f;
+            while (t < dur)
+            {
+                t += Time.unscaledDeltaTime;
+                float n = Mathf.Clamp01(t / dur);
+                float fade = EaseOut(n);
+                if (_containerRT != null)
+                    _containerRT.localScale = Vector3.LerpUnclamped(
+                        _containerRestScale * _defeatBounceStartScale, _containerRestScale, EaseOutBack(n));
+                SetAlpha(_fondoImg, fade);
+                SetAlpha(_scrimImg, fade * _scrimAlpha);
+                SetAlpha(_textoImg, Mathf.Min(1f, n * 2f));
+                SetAlpha(_botonContinuarImg, Mathf.Min(1f, n * 2f));
+                SetAlpha(_botonReintentarImg, Mathf.Min(1f, n * 2f));
+                yield return null;
+            }
+
+            if (_containerRT != null) _containerRT.localScale = _containerRestScale;
             SetAlpha(_fondoImg, 1f);
             SetAlpha(_scrimImg, _scrimAlpha);
             SetAlpha(_textoImg, 1f);
             SetAlpha(_botonContinuarImg, 1f);
             SetAlpha(_botonReintentarImg, 1f);
 
-            if (_containerRT != null) _containerRT.localScale = _containerRestScale;
-            if (_textoRT != null) _textoRT.anchoredPosition = _textoRestPos;
-            if (_botonContinuarRT != null) _botonContinuarRT.anchoredPosition = _botonContinuarRestPos;
-            if (_botonReintentarRT != null) _botonReintentarRT.anchoredPosition = _botonReintentarRestPos;
-
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            // Idle breath while waiting for input.
+            if (_breatheRoutine != null) _runner.StopCoroutine(_breatheRoutine);
+            _breatheRoutine = _runner.StartCoroutine(BreatheLoop());
         }
 
         public void Hide()
@@ -143,6 +203,7 @@ namespace Runefall.Presentation.Combat
                 UnityEngine.Object.Destroy(_activeInstance);
                 _activeInstance = null;
             }
+            _winSequencePlayed = false;
         }
 
         private void WireRefsFromInstance(GameObject instance, Action onContinue, Action onRetry)

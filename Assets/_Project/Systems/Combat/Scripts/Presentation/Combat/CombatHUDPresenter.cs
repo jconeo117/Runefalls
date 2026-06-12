@@ -58,6 +58,7 @@ namespace Runefall.Presentation.Combat
         protected Image[]     _slotImages = Array.Empty<Image>();
         private readonly List<Image> _orbImages = new();
         private int           _movesThisTurn = 0;
+        private bool          _isExecutingQueue = false;   // true while plays commit one-by-one (gauge fills in real time)
         private StringBuilder _log           = new();
 
         private static readonly Color _orbFull = new Color(0.72f, 0.32f, 1f,  1f);
@@ -133,6 +134,7 @@ namespace Runefall.Presentation.Combat
         {
             _pending.Clear();
             _movesThisTurn  = 0;
+            _isExecutingQueue = false;
             _selectedTarget = null;
             RebuildActionSlots();
             ClearSlots();
@@ -191,6 +193,7 @@ namespace Runefall.Presentation.Combat
 
         protected virtual void QueueCard(CardView cv)
         {
+            if (_isExecutingQueue) return;   // ignore clicks while the queue is committing
             int slotIndex = _pending.Count + _movesThisTurn;
             if (slotIndex >= _activeSlots.Count) return;
 
@@ -230,8 +233,18 @@ namespace Runefall.Presentation.Combat
                 RefreshCardHand();
         }
 
+        private const float _queueStepDelay = 0.15f;   // gap between committed plays so the gauge fills section-by-section
+
         private void ExecuteQueue()
         {
+            if (_isExecutingQueue) return;
+            StartCoroutine(ExecuteQueueRoutine());
+        }
+
+        private System.Collections.IEnumerator ExecuteQueueRoutine()
+        {
+            _isExecutingQueue = true;
+
             var indices = new List<int>(_pending.Count);
             var targets = new List<ICombatActor>(_pending.Count);
             foreach (var p in _pending) { indices.Add(p.index); targets.Add(p.target); }
@@ -241,17 +254,23 @@ namespace Runefall.Presentation.Combat
             {
                 int adjIdx     = indices[i];
                 int sizeBefore = _tm.Hand.Slots.Count;
-                _tm.SubmitSkill(adjIdx, targets[i]);
+                _tm.SubmitSkill(adjIdx, targets[i]);   // each commit fills one gauge section → bar updates in real time
                 int netRemoved = sizeBefore - _tm.Hand.Slots.Count;
                 for (int j = i + 1; j < indices.Count; j++)
                     if (indices[j] > adjIdx) indices[j] -= netRemoved;
+
+                if (i < indices.Count - 1)
+                    yield return new WaitForSeconds(_queueStepDelay);
             }
+
+            _isExecutingQueue = false;
         }
 
         // ── Drag → reorder ───────────────────────────────────────────────────
 
         private void ReorderCard(CardView cv)
         {
+            if (_isExecutingQueue) return;   // ignore moves while the queue is committing
             if (cardHandContainer == null) return;
 
             int fromDomain = cv.HandIndex;

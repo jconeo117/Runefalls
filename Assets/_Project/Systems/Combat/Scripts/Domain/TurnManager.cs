@@ -63,7 +63,7 @@ namespace Runefall.Combat
         protected Random       _rng;
 
         protected readonly Dictionary<ICombatActor, int> _ultimateGauge = new();
-        protected const int UltimateGaugeMax = 7;
+        public const int UltimateGaugeMax = 7;   // 7 sections: +1 per card played, moved, or merged
 
         /// <param name="phaseAnimator">
         /// Presentation MonoBehaviour that animates enemy turns.
@@ -135,7 +135,10 @@ namespace Runefall.Combat
             if (!Hand.TryUse(cardIndex, out var slot, out _)) return false;
 
             var caster = ResolveCaster(slot);
-            FillGauge(caster);                   // +1 gauge for using a card
+            if (slot.IsUltimate)
+                ResetGauge(caster);              // ultimate consumed → gauge empties, cycle repeats
+            else
+                FillGauge(caster);               // +1 gauge for using a regular card
 
             var targetType = slot.IsUltimate
                 ? (slot.Ultimate?.targetType ?? TargetType.SingleEnemy)
@@ -282,7 +285,9 @@ namespace Runefall.Combat
                 if (actor.IsAlive) actor.Model.ApplyRegen();
             }
 
-            Hand.Refill();
+            int handBefore = Hand.Slots.Count;
+            CheckUltimateInsertion();
+            Hand.Refill(handBefore);
 
             if (Context.IsOver) { FinishCombat(); return; }
 
@@ -290,7 +295,6 @@ namespace Runefall.Combat
             Phase              = CombatPhase.PlayerTurn;
             Context.TurnNumber = round;
             Hand.ResetActions();
-            CheckUltimateInsertion();
 
             OnPlayerTurnBegin?.Invoke(Round);
 
@@ -333,7 +337,7 @@ namespace Runefall.Combat
             Phase              = CombatPhase.PlayerTurn;
             Context.TurnNumber = Round;
             Hand.ResetActions();
-            CheckUltimateInsertion();
+            // Ultimate insertion happens in EndOfRound (before the refill) so it completes the hand.
 
             OnPlayerTurnBegin?.Invoke(Round);   // immediate: camera starts moving
 
@@ -383,7 +387,11 @@ namespace Runefall.Combat
             // card pool may be empty (no field characters left) — refilling there throws.
             if (Context.IsOver) { FinishCombat(); return; }
 
-            Hand.Refill();
+            // Insert the ultimate FIRST (if the gauge is full), then refill the rest: the ultimate is the
+            // next drawn card and COMPLETES the hand to HandSize — not an extra card on top of a full hand.
+            int handBefore = Hand.Slots.Count;
+            CheckUltimateInsertion();
+            Hand.Refill(handBefore);
             BeginPlayerTurn();
         }
 
@@ -395,13 +403,23 @@ namespace Runefall.Combat
 
         // ── ultimate gauge ────────────────────────────────────────────────────────
 
+        /// <summary>Empties a player's ultimate gauge — called when the ultimate card is USED.</summary>
+        private void ResetGauge(ICombatActor actor)
+        {
+            if (actor == null) return;
+            _ultimateGauge[actor] = 0;
+            OnGaugeChanged?.Invoke(actor, 0);
+        }
+
         private void FillGauge(ICombatActor actor, int amount = 1)
         {
             if (actor == null || !actor.IsAlive) return;
             if (!_ultimateGauge.ContainsKey(actor)) _ultimateGauge[actor] = 0;
             _ultimateGauge[actor] = Math.Min(_ultimateGauge[actor] + amount, UltimateGaugeMax);
             OnGaugeChanged?.Invoke(actor, _ultimateGauge[actor]);
-            CheckUltimateInsertion();
+            // Do NOT insert the ultimate mid-turn. A full gauge only means "ready"; the ultimate is DRAWN
+            // into the hand at the next player turn (CheckUltimateInsertion runs in BeginPlayerTurn, with the
+            // refill). Inserting here shifted hand indices and corrupted the queued play actions.
         }
 
         private void CheckUltimateInsertion()
@@ -419,10 +437,9 @@ namespace Runefall.Combat
                     if (Hand.Slots[j].IsUltimate) { alreadyPresent = true; break; }
                 if (alreadyPresent) continue;
 
-                _ultimateOwner      = player;   // ResolveCaster uses this for ultimate cards
-                _ultimateGauge[player] = 0;
-                OnGaugeChanged?.Invoke(player, 0);
+                _ultimateOwner = player;   // ResolveCaster uses this for ultimate cards
                 Hand.InsertUltimate(cd.ultimate);
+                // Gauge stays FULL while the ultimate sits in hand; it empties only when the ultimate is USED.
             }
         }
 

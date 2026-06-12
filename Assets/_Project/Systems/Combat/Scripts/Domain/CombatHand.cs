@@ -9,7 +9,7 @@ namespace Runefall.Combat
     ///
     /// Hand layout:
     ///   HandSize = 3 + fieldCount + (hasBench ? 1 : 0)
-    ///   ActionsPerTurn = fieldCount
+    ///   ActionsPerTurn = 3 (fixed — one action per card PLAYED or card MOVED)
     ///
     /// Turn 1 deal: guaranteed 2 skills per field character in order, then random fills.
     /// Subsequent refills: random draws from pool until hand is full.
@@ -40,7 +40,7 @@ namespace Runefall.Combat
 
             _pool            = pool;
             HandSize         = 3 + fieldCount + (hasBench ? 1 : 0);
-            ActionsPerTurn   = Math.Max(3, fieldCount);
+            ActionsPerTurn   = 3;   // fixed: 3 actions per turn (play a card OR move a card), always
             ActionsRemaining = ActionsPerTurn;
             _slots           = new List<BattleCard>(HandSize);
         }
@@ -88,9 +88,11 @@ namespace Runefall.Combat
         /// Draw from pool until hand reaches HandSize. Keeps existing cards.
         /// Checks merges after each draw so adjacencies resolve in real time.
         /// </summary>
-        public void Refill()
+        public void Refill(int countBefore = -1)
         {
-            int before = _slots.Count;
+            // countBefore lets the caller count cards added just before Refill (e.g. an ultimate inserted
+            // first) as part of NewCardsThisRefill, so the ultimate animates in as one of the drawn cards.
+            int before = countBefore >= 0 ? countBefore : _slots.Count;
             int safety = HandSize * 4; // guard against degenerate all-rank-3 pools
             while (_slots.Count < HandSize && safety-- > 0)
             {
@@ -183,12 +185,13 @@ namespace Runefall.Combat
 
         public void ResetActions() => ActionsRemaining = ActionsPerTurn;
 
-        /// <summary>Insert ultimate card into hand at atIndex. Caller must verify gauge is full before calling.</summary>
-        public void InsertUltimate(UltimateData ultimate, int atIndex = 0)
+        /// <summary>Add the ultimate as a freshly DRAWN card (appended, like a pool draw) and count it as a
+        /// new card so it animates in with the turn-start refill — never injected mid-turn at index 0.
+        /// Caller must verify the gauge is full before calling.</summary>
+        public void InsertUltimate(UltimateData ultimate)
         {
             if (ultimate == null) return;
-            int idx = Math.Max(0, Math.Min(atIndex, _slots.Count));
-            _slots.Insert(idx, new BattleCard(ultimate));
+            _slots.Add(new BattleCard(ultimate));
         }
 
         /// <summary>

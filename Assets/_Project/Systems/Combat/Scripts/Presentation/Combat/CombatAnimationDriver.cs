@@ -65,8 +65,17 @@ namespace Runefall.Presentation.Combat
         [SerializeField] private float _silverReturnDur = 0.5f;
         [Tooltip("Gold: seconds the face close-up holds before the orbit starts.")]
         [SerializeField] private float _goldFaceHold = 0.4f;
-        [Tooltip("Gold: orbit speed around the caster/target midpoint (radians per second).")]
+        [Tooltip("Gold: orbit speed (legacy orbit — unused by the whip+settle path).")]
         [SerializeField] private float _goldOrbitSpeed = 0.7f;
+        [Header("Gold — whip + settle")]
+        [Tooltip("Settle shot: distance behind the caster (over-the-shoulder framing the impact).")]
+        [SerializeField] private float _goldEndBack = 2.8f;
+        [Tooltip("Settle shot: offset to the caster's right shoulder.")]
+        [SerializeField] private float _goldEndRight = 1.2f;
+        [Tooltip("Settle shot: height above the caster's feet.")]
+        [SerializeField] private float _goldEndHeight = 1.9f;
+        [Tooltip("Minimum sweep (degrees) so the camera WHIPS around the caster instead of a small turn.")]
+        [SerializeField] private float _goldWhipMinArc = 210f;
         [Tooltip("Pause (seconds) between consecutive abilities so the camera settles and doesn't disorient the player.")]
         [SerializeField] private float _betweenSkillsDelay = 0.6f;
 
@@ -159,7 +168,11 @@ namespace Runefall.Presentation.Combat
                 silverFaceHold = _silverFaceHold,
                 silverReturnDur = _silverReturnDur,
                 goldFaceHold = _goldFaceHold,
-                goldOrbitSpeed = _goldOrbitSpeed
+                goldOrbitSpeed = _goldOrbitSpeed,
+                goldEndBack = _goldEndBack,
+                goldEndRight = _goldEndRight,
+                goldEndHeight = _goldEndHeight,
+                goldWhipMinArc = _goldWhipMinArc
             };
             _cameraDirector = new SkillCameraDirector(cameraConfig, () => _climaxDirector != null && _climaxDirector.HasTriggeredOutroClimax);
 
@@ -250,6 +263,17 @@ namespace Runefall.Presentation.Combat
             _visualManager?.InitPawnAnimators(_actorPawns, _actorCharData, _actorEnemyData);
         }
 
+        /// <summary>Toggles an actor's world-space HP bar. Hidden while the skill camera frames a close-up
+        /// (the caster's own bar billboards into frame), restored when the gameplay camera resumes.</summary>
+        private void SetActorHPBarVisible(ICombatActor actor, bool visible)
+        {
+            if (actor != null && _actorHPBars.TryGetValue(actor, out var bar) && bar != null)
+            {
+                if (visible) bar.Show();   // fade in so it doesn't pop back from nothing
+                else         bar.Hide();
+            }
+        }
+
         // ── action group ──────────────────────────────────────────────────────────
 
         private IEnumerator PlayActionGroup(PendingAction pending)
@@ -336,6 +360,7 @@ namespace Runefall.Presentation.Combat
             Coroutine camOrbit = null;
             if (_useSkillCamera)
             {
+                SetActorHPBarVisible(pending.Caster, false);   // hide caster's bar during the skill camera
                 camOrbit = StartCoroutine(_cameraDirector.SkillCameraRoutine(pending.Rank, casterPawn, targetPos, SumClipDurations(clips, 0, clips.Length - 1)));
             }
 
@@ -450,6 +475,9 @@ namespace Runefall.Presentation.Combat
                 {
                     StopCoroutine(camOrbit);
                 }
+                // Restore unless the killing blow just ended combat (the outro hides all UI + HP bars).
+                if (_useSkillCamera && (_ctx == null || !_ctx.IsOver))
+                    SetActorHPBarVisible(pending.Caster, true);
             }
 
             onComplete?.Invoke();
@@ -565,7 +593,10 @@ namespace Runefall.Presentation.Combat
             // Shared per-rank skill camera (bronze: over-shoulder; silver/gold: face close-up first,
             // then move). It poses Camera.main directly and self-restores the gameplay camera when done.
             if (_useSkillCamera && cp != null)
+            {
+                SetActorHPBarVisible(caster, false);   // hide caster's bar during the skill camera
                 StartCoroutine(_cameraDirector.SkillCameraRoutine(rank, cp, targetPos, duration));
+            }
 
             // Silver/gold open on a face close-up: hold the timeline content (anim + VFX + damage)
             // until the close-up ends so the choreography plays WHILE the camera travels (bronze = 0).
@@ -599,6 +630,11 @@ namespace Runefall.Presentation.Combat
             // Safety net: if no Skill_Damage emitter fired, resolve damage once so combat still progresses.
             if (!_skillDamageFiredThisPlay)
                 RaiseImpactHit(pending, 0, Mathf.Max(1, skill.hitCount));
+
+            // Restore the caster's bar as gameplay resumes — but NOT if this was the killing blow:
+            // combat is over and the victory/defeat outro already hid all combat UI + HP bars.
+            if (_useSkillCamera && cp != null && (_ctx == null || !_ctx.IsOver))
+                SetActorHPBarVisible(caster, true);
 
             onComplete?.Invoke();
         }

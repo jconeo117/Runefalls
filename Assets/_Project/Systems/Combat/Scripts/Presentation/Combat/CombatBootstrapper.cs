@@ -241,7 +241,13 @@ namespace Runefall.Presentation.Combat
             };
             _tm.OnMergeOccurred     += (name, rank) => _presenter?.OnCardMerged(name, rank);
 
-            _tm.OnGaugeChanged += (actor, orbs) => _presenter?.OnGaugeChanged(actor, orbs);
+            _tm.OnGaugeChanged += (actor, orbs) =>
+            {
+                _presenter?.OnGaugeChanged(actor, orbs);
+                // Gold bar on the actor's HP bar = ultimate gauge (0..7 → 0..1 fill).
+                if (_actorHPBars.TryGetValue(actor, out var gaugeBar) && gaugeBar != null)
+                    gaugeBar.SetSecondary(orbs / (float)TurnManager.UltimateGaugeMax);
+            };
 
             _tm.OnPlayerActionsExhausted += () =>
             {

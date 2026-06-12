@@ -121,20 +121,52 @@ namespace Runefall.Presentation.Combat
                 yield return null; 
             }
 
-            Vector3 center = (casterPos + targetPos) * 0.5f + Vector3.up * _config.faceHeight;
-            Vector3 off = _camera.transform.position - center;
-            float radius = new Vector2(off.x, off.z).magnitude;
-            if (radius < 0.5f) radius = 2.5f;
-            float ang = Mathf.Atan2(off.z, off.x);
-            float ot = 0f;
-            while (ot < duration && !_hasTriggeredOutroClimax())
+            if (_camera == null) yield break;
+
+            // Fast whip around the caster, braking (hard ease-out) into an over-the-shoulder shot
+            // framed on the target impact.
+            Vector3 fwd = targetPos - casterPos; fwd.y = 0f;
+            if (fwd.sqrMagnitude < 0.0001f) fwd = _camera.transform.forward;
+            fwd.Normalize();
+            Vector3 right = Vector3.Cross(Vector3.up, fwd);
+
+            Vector3 pivot      = casterPos + Vector3.up * _config.faceHeight;
+            Vector3 impactLook = targetPos + Vector3.up * _config.faceHeight;
+
+            // Start from where the face close-up sits (current camera), orbiting the caster.
+            Vector3 startOff    = _camera.transform.position - pivot;
+            float   startRadius = new Vector2(startOff.x, startOff.z).magnitude;
+            if (startRadius < 0.3f) startRadius = _config.faceDist;
+            float   startAng    = Mathf.Atan2(startOff.z, startOff.x) * Mathf.Rad2Deg;
+
+            // Settle: behind the caster's right shoulder, looking at the target.
+            Vector3 endPos    = pivot - fwd * _config.goldEndBack + right * _config.goldEndRight
+                                + Vector3.up * (_config.goldEndHeight - _config.faceHeight);
+            Vector3 endOff    = endPos - pivot;
+            float   endRadius = new Vector2(endOff.x, endOff.z).magnitude;
+            float   endAng    = Mathf.Atan2(endOff.z, endOff.x) * Mathf.Rad2Deg;
+
+            // Force the long way around so it whips, not a small turn.
+            while (endAng - startAng < _config.goldWhipMinArc) endAng += 360f;
+
+            float dur = Mathf.Max(0.05f, duration);
+            float ot  = 0f;
+            while (ot < dur && !_hasTriggeredOutroClimax())
             {
                 ot += Time.deltaTime;
-                ang += Time.deltaTime * _config.goldOrbitSpeed;
-                _camera.transform.position = center + new Vector3(Mathf.Cos(ang) * radius, 0f, Mathf.Sin(ang) * radius);
-                _camera.transform.LookAt(center);
+                float k = Mathf.Clamp01(ot / dur);
+                float e = 1f - Mathf.Pow(1f - k, 4f);   // hard ease-out: very fast start, sharp brake
+                float ang    = Mathf.Lerp(startAng, endAng, e) * Mathf.Deg2Rad;
+                float radius = Mathf.Lerp(startRadius, endRadius, e);
+                float height = Mathf.Lerp(startOff.y, endOff.y, e);
+                Vector3 pos  = pivot + new Vector3(Mathf.Cos(ang) * radius, height, Mathf.Sin(ang) * radius);
+                _camera.transform.position = pos;
+                Vector3 look = Vector3.Lerp(pivot, impactLook, e);   // pan from caster to the impact
+                Vector3 ld   = look - pos;
+                if (ld.sqrMagnitude > 0.0001f) _camera.transform.rotation = Quaternion.LookRotation(ld);
                 yield return null;
             }
+            ApplyCam(endPos, impactLook);
         }
 
         private void ApplyCam(Vector3 pos, Vector3 look)

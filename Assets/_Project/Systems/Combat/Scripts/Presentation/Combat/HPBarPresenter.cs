@@ -17,6 +17,8 @@ namespace Runefall.Presentation.Combat
         private Transform     _followTarget;
         private Vector3       _worldOffset;
         private RectTransform _iconRow;
+        private CanvasGroup   _canvasGroup;
+        private Coroutine     _fadeRoutine;
 
         private static readonly Color k_AdvantageColor    = new Color(0.25f, 0.55f, 1.00f);
         private static readonly Color k_DisadvantageColor = new Color(1.00f, 0.25f, 0.25f);
@@ -32,7 +34,7 @@ namespace Runefall.Presentation.Combat
             actor.Effects.OnEffectsChanged += RebuildEffectIcons;
             actor.Effects.OnEffectApplied  += OnEffectApplied;
 
-            SetSecondary(1f);
+            SetSecondary(0f);   // ultimate gauge starts empty; fills via OnGaugeChanged
             Refresh();
         }
 
@@ -48,6 +50,44 @@ namespace Runefall.Presentation.Combat
         {
             _followTarget = target;
             _worldOffset  = worldOffset;
+        }
+
+        /// <summary>Fade the bar in (used when the gameplay camera resumes after a skill close-up,
+        /// so it doesn't pop back from nothing).</summary>
+        public void Show(float duration = 0.3f)
+        {
+            EnsureCanvasGroup();
+            gameObject.SetActive(true);
+            if (_fadeRoutine != null) StopCoroutine(_fadeRoutine);
+            if (_canvasGroup != null) _canvasGroup.alpha = 0f;
+            _fadeRoutine = StartCoroutine(FadeIn(duration));
+        }
+
+        /// <summary>Hide the bar instantly (while the skill camera frames a close-up).</summary>
+        public void Hide()
+        {
+            if (_fadeRoutine != null) { StopCoroutine(_fadeRoutine); _fadeRoutine = null; }
+            gameObject.SetActive(false);
+        }
+
+        private void EnsureCanvasGroup()
+        {
+            if (_canvasGroup != null) return;
+            if (!TryGetComponent(out _canvasGroup))
+                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+
+        private IEnumerator FadeIn(float duration)
+        {
+            float t = 0f;
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                if (_canvasGroup != null) _canvasGroup.alpha = Mathf.Clamp01(t / duration);
+                yield return null;
+            }
+            if (_canvasGroup != null) _canvasGroup.alpha = 1f;
+            _fadeRoutine = null;
         }
 
         /// <summary>Sets the secondary bar fill fraction (0..1). Wire to a shield/charge/etc.</summary>

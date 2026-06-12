@@ -63,6 +63,12 @@ namespace Runefall.Presentation.Combat
         [SerializeField] private float _breathePeriod = 3.00f;
         [SerializeField] private float _breatheScale = 0.015f;
 
+        [Header("Defeat UI animation")]
+        [Tooltip("Seconds the Lose screen bounces in (scale overshoot).")]
+        [SerializeField] private float _defeatBounceDuration = 0.55f;
+        [Tooltip("Container scale the Lose screen starts at before bouncing up to full size.")]
+        [SerializeField] private float _defeatBounceStartScale = 0.6f;
+
         [Header("Scrim")]
         [SerializeField] private float _scrimAlpha = 0.78f;
 
@@ -87,7 +93,8 @@ namespace Runefall.Presentation.Combat
             _uiPresenter = new CombatUIOutroPresenter(
                 this, _winScreenPrefab, _loseScreenPrefab,
                 _fondoDuration, _textDelay, _textDuration, _buttonDelay, _buttonDuration,
-                _breathePeriod, _breatheScale, _scrimAlpha);
+                _breathePeriod, _breatheScale, _scrimAlpha,
+                _defeatBounceDuration, _defeatBounceStartScale);
             _cameraDolly = new CinematicCameraDolly(
                 this, _outroPlayerFaceHeight, _outroStartCamHeight, _outroStartCamDistance,
                 _outroEndCamHeight, _outroEndCamDistance, _outroTravelDuration, _outroCamFov,
@@ -111,13 +118,12 @@ namespace Runefall.Presentation.Combat
 
         public void PlayOutro(bool won, Action onContinue, Action onRetry = null)
         {
-            _onContinue = onContinue;
-            _onRetry = onRetry ?? FallbackRetryAction;
             _isVictory = won;
 
-            if (_isVictory) PlayVictoryOutro(onContinue, onRetry);
+            if (won) PlayVictoryOutro(onContinue, onRetry);
             else
             {
+                SetOutroCallbacks(onContinue, onRetry);
                 _vfxPlayer.HideAllCombatUI(HudPresenter);
                 _uiPresenter.ShowLoseScreen(_onContinue, _onRetry);
             }
@@ -125,10 +131,35 @@ namespace Runefall.Presentation.Combat
 
         public void PlayVictoryOutro(Action onContinue, Action onRetry = null)
         {
-            _onContinue = onContinue;
-            _onRetry = onRetry ?? FallbackRetryAction;
+            SetOutroCallbacks(onContinue, onRetry);
             _isVictory = true;
             StartCoroutine(PlayVictoryOutroTimelineCoroutine());
+        }
+
+        /// <summary>
+        /// Wraps Continue/Retry so dismissing a result screen first tears down the WHOLE outro: stops
+        /// pending beat coroutines + the victory timeline and resets time scale. Without this, a still-
+        /// pending Outro_VictoryScreen beat re-instantiates the victory screen after the player already
+        /// continued, and a stale freeze beat leaves the game frozen.
+        /// </summary>
+        private void SetOutroCallbacks(Action onContinue, Action onRetry)
+        {
+            Action realContinue = onContinue;
+            Action realRetry    = onRetry ?? FallbackRetryAction;
+            _onContinue = () => { CleanupOutro(); realContinue?.Invoke(); };
+            _onRetry    = () => { CleanupOutro(); realRetry?.Invoke(); };
+        }
+
+        private void CleanupOutro()
+        {
+            StopAllCoroutines();   // kills pending FireOutroBeat + the victory outro coroutine
+            if (_victoryTimelineDirector != null)
+            {
+                _victoryTimelineDirector.stopped -= OnVictoryTimelineStopped;
+                if (_victoryTimelineDirector.state == PlayState.Playing) _victoryTimelineDirector.Stop();
+            }
+            _timeManager.ResetTimeScale();
+            Hide();
         }
 
         public IEnumerator PlayVictoryOutroTimelineCoroutine()
@@ -142,8 +173,7 @@ namespace Runefall.Presentation.Combat
 
             Transform playerPawn = FindWinningPlayerPawn();
 
-            _uiPresenter.ShowWinScreen(_onContinue);
-            if (_uiPresenter.ActiveInstance != null) _uiPresenter.ActiveInstance.SetActive(false);
+            _uiPresenter.PrepareWinScreen(_onContinue);   // create + wire, hidden + un-animated (no double reveal)
 
             _vfxPlayer.CreateFlashOverlay();
             CreateDynamicVirtualCameras(playerPawn);
@@ -204,7 +234,13 @@ namespace Runefall.Presentation.Combat
         public void EmitOutroVictoryScreen()
         {
             _timeManager.ResetTimeScale();
-            if (_victoryTimelineDirector != null && _victoryTimelineDirector.state == PlayState.Playing) _victoryTimelineDirector.Stop();
+            if (_victoryTimelineDirector != null)
+            {
+                // Unsubscribe BEFORE Stop: Stop() fires `stopped` synchronously, and OnVictoryTimelineStopped
+                // would call ShowWinScreen a second time right before we do below.
+                _victoryTimelineDirector.stopped -= OnVictoryTimelineStopped;
+                if (_victoryTimelineDirector.state == PlayState.Playing) _victoryTimelineDirector.Stop();
+            }
             _uiPresenter.ShowWinScreen(_onContinue);
             Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
         }
