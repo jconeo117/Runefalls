@@ -79,7 +79,8 @@
       "Bash(python -)",
       "Bash(ls -1 \"Assets/_Project/Systems/Combat/Scripts/Domain/Passives/DominioGlacialPassive.cs\"*)",
       "Bash(ls -1 \"Assets/_Project/Systems/Combat/Scripts/Domain/Effects/HipotermiaEffectDef.cs\"*)",
-      "Bash(find Assets -iname \"*hipotermia*\" -o -iname \"*congelado*\" -o -iname \"*dominio*glacial*\" -o -iname \"*dominio*hielo*\" -o -iname \"IceQueen_Passive*\")"
+      "Bash(find Assets -iname \"*hipotermia*\" -o -iname \"*congelado*\" -o -iname \"*dominio*glacial*\" -o -iname \"*dominio*hielo*\" -o -iname \"IceQueen_Passive*\")",
+      "PowerShell(Get-ChildItem *)"
     ]
   },
   "hooks": {

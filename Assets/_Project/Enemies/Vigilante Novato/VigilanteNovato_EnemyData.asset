@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50d01381d32719440aca900f6cf07ed1, type: 3}
+  m_Name: VigilanteNovato_EnemyData
+  m_EditorClassIdentifier:
+  enemyName: Vigilante Novato
+  prefab: {fileID: 0}
+  portrait: {fileID: 0}
+  element: 0
+  stats:
+    ofensivas:
+      ataque: 1700
+      perforacion: 0.3
+      critChance: 0.25
+      "critDa\xF1o": 1.35
+    defensivas:
+      defensa: 1500
+      resistencia: 0.4
+      defensaCrit: 0.35
+      resistenciaCrit: 0.45
+    vitales:
+      ps: 16000
+      roboDeVida: 0.12
+      tasaRegen: 0.15
+      tasaRecuperacion: 0.18
+  maxMP: 0
+  combatClass: 8095
+  detectionRange: 8
+  encounterRange: 1.8
+  patrolRadius: 4
+  respawnsOnRoomExit: 1
+  skill1: {fileID: 0}
+  skill2: {fileID: 0}
+  ultimate: {fileID: 0}
+  animatorController: {fileID: 0}
+  animApproach: {fileID: 0}
+  animGetHit: {fileID: 0}
+  animDeath: {fileID: 0}
+  behaviorTree: 0
+  dropReward:
+    goldMin: 0
+    goldMax: 0
+    possibleRunes: []
+    runeDropChance: 0

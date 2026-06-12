@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50d01381d32719440aca900f6cf07ed1, type: 3}
+  m_Name: GranVerdugo_EnemyData
+  m_EditorClassIdentifier:
+  enemyName: Gran Verdugo
+  prefab: {fileID: 0}
+  portrait: {fileID: 0}
+  element: 0
+  stats:
+    ofensivas:
+      ataque: 2550
+      perforacion: 0.45
+      critChance: 0.375
+      "critDa\xF1o": 1.525
+    defensivas:
+      defensa: 2250
+      resistencia: 0.6
+      defensaCrit: 0.525
+      resistenciaCrit: 0.675
+    vitales:
+      ps: 24000
+      roboDeVida: 0.18
+      tasaRegen: 0.225
+      tasaRecuperacion: 0.27
+  maxMP: 0
+  combatClass: 12143
+  detectionRange: 8
+  encounterRange: 1.8
+  patrolRadius: 4
+  respawnsOnRoomExit: 1
+  skill1: {fileID: 0}
+  skill2: {fileID: 0}
+  ultimate: {fileID: 0}
+  animatorController: {fileID: 0}
+  animApproach: {fileID: 0}
+  animGetHit: {fileID: 0}
+  animDeath: {fileID: 0}
+  behaviorTree: 0
+  dropReward:
+    goldMin: 0
+    goldMax: 0
+    possibleRunes: []
+    runeDropChance: 0
