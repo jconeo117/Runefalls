@@ -92,11 +92,13 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\PendingAction.cs" />
     <Compile Include="Assets\_Project\Core\Scripts\GameEvent.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\VisualGuideCleaner.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\ICharacterStatsProvider.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Presentation\RPGCharacterAnimatorEvents.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\DefaultSkillData.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\CharacterStats.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatBootstrapper.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\StanceEffectDef.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\CombatActorStatsProvider.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\ComposablePassive.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\UltimateData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ArrebatoEffectDef.cs" />
@@ -169,6 +171,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\UltimateGaugeView.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\SkillData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IEnemyPhaseAnimator.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\CharacterStatsOverlay.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Presentation\Player\ExplorationPlayer.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\RoomRegistry.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\UI\EncounterPromptPresenter.cs" />
@@ -183,6 +186,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTransitionScreen.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\ArenaData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\IPawnMover.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\CombatantStatsSource.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\RarityType.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\CharacterModel.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\TargetHasBehaviorCondition.cs" />

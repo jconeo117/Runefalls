@@ -90,6 +90,8 @@ namespace Runefall.Presentation.Combat
         protected readonly Dictionary<ICombatActor, CharacterData>   _actorCharData  = new();
         protected readonly Dictionary<ICombatActor, EnemyData>       _actorEnemyData = new();
 
+        protected CharacterStatsOverlay _statsOverlay;   // hold-a-pawn inspection (player turn)
+
         // ── lifecycle ─────────────────────────────────────────────────────────────
 
         /// <summary>
@@ -174,6 +176,8 @@ namespace Runefall.Presentation.Combat
 
             BindHPBars();
             SetHPBarsVisible(false); // hidden during the intro; revealed with the combat UI in StartLoop
+
+            WireStatOverlay();
 
             animationDriver?.Init(
                 _ctx, _tm, _actorPawns, _actorCharData, _actorEnemyData, _actorHPBars, _presenter,
@@ -549,6 +553,32 @@ namespace Runefall.Presentation.Combat
         {
             for (int i = 0; i < _hpBars.Count; i++)
                 if (_hpBars[i] != null) _hpBars[i].gameObject.SetActive(visible);
+        }
+
+        // ── character-stats overlay ─────────────────────────────────────────────────
+
+        /// <summary>
+        /// Make each player pawn inspectable (hold during the player turn) and (re)initialize
+        /// the overlay controller. Agnostic by construction: any pawn that gets a
+        /// CombatantStatsSource + provider becomes inspectable — enemies later, unchanged code.
+        /// </summary>
+        private void WireStatOverlay()
+        {
+            _statsOverlay = GetComponent<CharacterStatsOverlay>()
+                         ?? gameObject.AddComponent<CharacterStatsOverlay>();
+            _statsOverlay.Initialize(
+                _tm, cameraController, presenter as CombatPresenterBase,
+                (presenter as CombatHUDPresenter)?.cardPrefab);
+
+            foreach (var actor in _ctx.Players)
+            {
+                if (!_actorPawns.TryGetValue(actor, out var pawn) || pawn == null) continue;
+                if (!_actorCharData.TryGetValue(actor, out var data) || data == null) continue;
+
+                var src = pawn.GetComponent<CombatantStatsSource>()
+                       ?? pawn.gameObject.AddComponent<CombatantStatsSource>();
+                src.Bind(new CombatActorStatsProvider(actor, data, pawn));
+            }
         }
 
         private HPBarPresenter AttachHPBar(
