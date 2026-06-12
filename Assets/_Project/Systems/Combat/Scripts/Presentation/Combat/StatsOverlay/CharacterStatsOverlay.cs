@@ -296,48 +296,51 @@ namespace Runefall.Presentation.Combat
             return panel.gameObject;
         }
 
+        // Skills live along the BOTTOM: skill1 (3) · skill2 (3) · ultimate, in a horizontal row.
         private void BuildSkillPanel(Transform root, ICharacterStatsProvider p)
         {
             var panel = Panel(root, "SkillPanel",
-                new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), Vector2.zero, Vector2.zero,
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, Vector2.zero,
                 new Color(0.06f, 0.08f, 0.11f, 0.86f));
             var prt = panel.rectTransform;
-            prt.pivot = new Vector2(1f, 0.5f);
-            prt.sizeDelta = new Vector2(340f, 660f);
-            prt.anchoredPosition = new Vector2(-60f, 0f);
+            prt.pivot = new Vector2(0.5f, 0f);
+            prt.sizeDelta = new Vector2(1180f, 232f);
+            prt.anchoredPosition = new Vector2(0f, 40f);
             Frame(panel, ElementColor(p.Element));
 
-            SkillLabel(prt, "HABILIDAD 1", 296f);
-            SkillRow(prt, p.Skill1, p.Element, 222f);
-            SkillLabel(prt, "HABILIDAD 2", 120f);
-            SkillRow(prt, p.Skill2, p.Element, 46f);
-            SkillLabel(prt, "ULTIMATE", -64f);
-            UltCard(prt, p.Ultimate, -150f);
+            const float labelY = 186f;
+            const float cardY  = 96f;
+            SkillLabel(prt, "HABILIDAD 1", -430f, labelY);
+            SkillRow(prt, p.Skill1, -430f, cardY);
+            SkillLabel(prt, "HABILIDAD 2", -40f, labelY);
+            SkillRow(prt, p.Skill2, -40f, cardY);
+            SkillLabel(prt, "ULTIMATE", 320f, labelY);
+            UltCard(prt, p.Ultimate, 320f, cardY);
         }
 
-        private void SkillLabel(RectTransform parent, string text, float y)
+        private void SkillLabel(RectTransform parent, string text, float x, float y)
         {
             var t = Text(parent, text + "_lbl", text, 22, TextAnchor.MiddleCenter,
                 new Color(0.72f, 0.82f, 0.88f), FontStyle.Bold);
             var rt = t.rectTransform;
             rt.anchorMin = new Vector2(0.5f, 0.5f); rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f); rt.sizeDelta = new Vector2(320f, 32f);
-            rt.anchoredPosition = new Vector2(0f, y);
+            rt.anchoredPosition = new Vector2(x, y);
         }
 
-        private void SkillRow(RectTransform parent, SkillData skill, ElementType element, float y)
+        private void SkillRow(RectTransform parent, SkillData skill, float centerX, float y)
         {
             if (skill == null) return;
-            float[] xs = { -96f, 0f, 96f };
+            float[] dx = { -96f, 0f, 96f };
             for (int rank = 1; rank <= 3; rank++)
                 PlaceCard(parent, new BattleCard(skill, rank), ElementColor(skill.element),
-                    new Vector2(xs[rank - 1], y));
+                    new Vector2(centerX + dx[rank - 1], y));
         }
 
-        private void UltCard(RectTransform parent, UltimateData ult, float y)
+        private void UltCard(RectTransform parent, UltimateData ult, float x, float y)
         {
             if (ult == null) return;
-            PlaceCard(parent, new BattleCard(ult), ElementColor(ult.element), new Vector2(0f, y));
+            PlaceCard(parent, new BattleCard(ult), ElementColor(ult.element), new Vector2(x, y));
         }
 
         private void PlaceCard(RectTransform parent, BattleCard card, Color color, Vector2 pos)
@@ -374,13 +377,14 @@ namespace Runefall.Presentation.Combat
         {
             if (p.Passive == null) return;
 
+            // Passive panel sits on the RIGHT (the old skill location): chip + name on top, description below.
             var panel = Panel(root, "PassivePanel",
-                new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, Vector2.zero,
+                new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), Vector2.zero, Vector2.zero,
                 new Color(0.06f, 0.08f, 0.11f, 0.86f));
             var prt = panel.rectTransform;
-            prt.pivot = new Vector2(0f, 0f);
-            prt.sizeDelta = new Vector2(820f, 170f);
-            prt.anchoredPosition = new Vector2(70f, 64f);
+            prt.pivot = new Vector2(1f, 0.5f);
+            prt.sizeDelta = new Vector2(380f, 440f);
+            prt.anchoredPosition = new Vector2(-60f, 0f);
             Frame(panel, ElementColor(p.Element));
 
             // Procedural placeholder chip (swap for the final sprite later).
@@ -388,27 +392,27 @@ namespace Runefall.Presentation.Combat
                 Vector2.zero, Vector2.zero, ElementColor(p.Element));
             var chrt = chip.rectTransform;
             chrt.pivot = new Vector2(0f, 1f);
-            chrt.sizeDelta = new Vector2(58f, 58f);
-            chrt.anchoredPosition = new Vector2(20f, -16f);
+            chrt.sizeDelta = new Vector2(62f, 62f);
+            chrt.anchoredPosition = new Vector2(20f, -18f);
             Frame(chip, new Color(0f, 0f, 0f, 0.5f));
             var glyph = Text(chip.transform, "g",
                 string.IsNullOrEmpty(p.Passive.passiveName) ? "★" : p.Passive.passiveName.Substring(0, 1).ToUpperInvariant(),
-                26, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold);
+                28, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold);
             glyph.rectTransform.anchorMin = Vector2.zero; glyph.rectTransform.anchorMax = Vector2.one;
             glyph.rectTransform.offsetMin = glyph.rectTransform.offsetMax = Vector2.zero;
 
             var nameT = Text(panel.transform, "PassiveName", p.Passive.passiveName ?? "Pasiva",
-                26, TextAnchor.UpperLeft, new Color(0.95f, 0.9f, 0.6f), FontStyle.Bold);
+                24, TextAnchor.MiddleLeft, new Color(0.95f, 0.9f, 0.6f), FontStyle.Bold);
             var nrt = nameT.rectTransform;
             nrt.anchorMin = new Vector2(0f, 1f); nrt.anchorMax = new Vector2(1f, 1f);
             nrt.pivot = new Vector2(0f, 1f);
-            nrt.offsetMin = new Vector2(92f, -52f); nrt.offsetMax = new Vector2(-16f, -14f);
+            nrt.offsetMin = new Vector2(94f, -78f); nrt.offsetMax = new Vector2(-14f, -18f);
 
             var descT = Text(panel.transform, "PassiveDesc", p.Passive.description ?? "",
                 20, TextAnchor.UpperLeft, new Color(0.85f, 0.9f, 0.94f), FontStyle.Normal);
             var drt = descT.rectTransform;
             drt.anchorMin = new Vector2(0f, 0f); drt.anchorMax = new Vector2(1f, 1f);
-            drt.offsetMin = new Vector2(20f, 14f); drt.offsetMax = new Vector2(-16f, -64f);
+            drt.offsetMin = new Vector2(20f, 16f); drt.offsetMax = new Vector2(-16f, -92f);
         }
 
         private void BuildCloseButton(Transform root)
