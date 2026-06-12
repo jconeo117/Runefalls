@@ -297,42 +297,47 @@ namespace Runefall.Presentation.Combat
             return panel.gameObject;
         }
 
-        // Skills live along the BOTTOM: skill1 (3) · skill2 (3) · ultimate, in a horizontal row.
+        // Skills float along the BOTTOM (no background panel): two tight groups of 3 + the ultimate,
+        // cards overlapping ~20% like the combat hand, with the group label BELOW each group.
         private void BuildSkillPanel(Transform root, ICharacterStatsProvider p)
         {
-            var panel = Panel(root, "SkillPanel",
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, Vector2.zero,
-                new Color(0.06f, 0.08f, 0.11f, 0.86f));
-            var prt = panel.rectTransform;
-            prt.pivot = new Vector2(0.5f, 0f);
-            prt.sizeDelta = new Vector2(1180f, 232f);
-            prt.anchoredPosition = new Vector2(0f, 40f);
-            Frame(panel, ElementColor(p.Element));
+            var go  = new GameObject("SkillStrip");
+            go.transform.SetParent(root, false);
+            var prt = go.AddComponent<RectTransform>();
+            prt.anchorMin = new Vector2(0.5f, 0f);
+            prt.anchorMax = new Vector2(0.5f, 0f);
+            prt.pivot     = new Vector2(0.5f, 0f);
+            prt.sizeDelta = new Vector2(820f, 214f);
+            prt.anchoredPosition = new Vector2(0f, 28f);
 
-            const float labelY = 186f;
-            const float cardY  = 96f;
-            SkillLabel(prt, "HABILIDAD 1", -430f, labelY);
-            SkillRow(prt, p.Skill1, -430f, cardY);
-            SkillLabel(prt, "HABILIDAD 2", -40f, labelY);
-            SkillRow(prt, p.Skill2, -40f, cardY);
-            SkillLabel(prt, "ULTIMATE", 320f, labelY);
-            UltCard(prt, p.Ultimate, 320f, cardY);
+            const float cardY = 118f;
+            const float lblY  = 34f;
+            const float g1 = -219f, g2 = 58f, gu = 292f;
+
+            SkillRow(prt, p.Skill1, g1, cardY);
+            SkillLabel(prt, "Habilidad 1", g1, lblY);
+            SkillRow(prt, p.Skill2, g2, cardY);
+            SkillLabel(prt, "Habilidad 2", g2, lblY);
+            UltCard(prt, p.Ultimate, gu, cardY);
+            SkillLabel(prt, "Movimiento definitivo", gu, lblY);
         }
 
         private void SkillLabel(RectTransform parent, string text, float x, float y)
         {
             var t = Text(parent, text + "_lbl", text, 22, TextAnchor.MiddleCenter,
-                new Color(0.72f, 0.82f, 0.88f), FontStyle.Bold);
+                new Color(0.86f, 0.90f, 0.94f), FontStyle.Bold);
             var rt = t.rectTransform;
             rt.anchorMin = new Vector2(0.5f, 0.5f); rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f); rt.sizeDelta = new Vector2(320f, 32f);
+            rt.pivot = new Vector2(0.5f, 0.5f); rt.sizeDelta = new Vector2(380f, 32f);
             rt.anchoredPosition = new Vector2(x, y);
+            AddShadow(t.gameObject);   // readable now that there's no panel behind it
         }
 
         private void SkillRow(RectTransform parent, SkillData skill, float centerX, float y)
         {
             if (skill == null) return;
-            float[] dx = { -96f, 0f, 96f };
+            const float step = 73f;   // ~20% overlap, matching the combat hand's card padding
+            float[] dx = { -step, 0f, step };
             for (int rank = 1; rank <= 3; rank++)
                 PlaceCard(parent, new BattleCard(skill, rank), ElementColor(skill.element),
                     new Vector2(centerX + dx[rank - 1], y));
@@ -358,7 +363,7 @@ namespace Runefall.Presentation.Combat
                 rt.pivot = new Vector2(0.5f, 0.5f);
                 rt.sizeDelta = new Vector2(130f, 170f);
                 rt.anchoredPosition = pos;
-                cv.transform.localScale = Vector3.one * 0.55f;
+                cv.transform.localScale = Vector3.one * 0.7f;
                 return;
             }
 
