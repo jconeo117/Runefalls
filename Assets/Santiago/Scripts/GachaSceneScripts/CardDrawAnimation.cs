@@ -21,6 +21,16 @@ public class CardDrawAnimation : MonoBehaviour
     [Header("Nombres de los personajes (mismo orden: izq, medio, der)")]
     public string[] characterNames = { "Guerrero", "Mago", "Arquero" };
 
+    [Header("=== FONDOS POR PERSONAJE (mismo orden: izq=0, medio=1, der=2) ===")]
+    public GameObject KaelBackground;   // se activa si gana la carta 0 (izquierda)
+    public GameObject LyraBackground;   // se activa si gana la carta 1 (medio)
+    public GameObject VornBackground;   // se activa si gana la carta 2 (derecha)
+
+    [Header("=== OBJETOS QUE SE DESACTIVAN DURANTE EL FADE ===")]
+    public GameObject Deactivate1;
+    public GameObject Deactivate2;
+    public GameObject Deactivate3;
+
     [Header("=== SONIDOS ===")]
     public AudioSource sfxSource;       // para clicks y reveal (one-shot)
     public AudioSource loopSource;      // para el shuffling (loop)
@@ -34,6 +44,13 @@ public class CardDrawAnimation : MonoBehaviour
     public Image fadeOverlay;           // Image negro que cubre toda la pantalla
     public float fadeInDuration = 0.8f;   // al cargar la escena
     public float fadeOutDuration = 0.8f;  // al tocar continue
+
+    [Header("=== FADE AL REVELAR EL FONDO DEL PERSONAJE ===")]
+    public float revealFadeInDuration = 0.88f;   // pantalla se va a negro
+    public float revealFadeOutDuration = 0.88f;  // pantalla revela el fondo nuevo
+
+    [Header("=== BOTÓN READY (aparece después de activar el background) ===")]
+    public float delayBeforeReadyButton = 2.22f; // segundos desde que se activa el background
 
     [Header("Configuración de la animación")]
     public int totalSteps = 16;
@@ -187,7 +204,8 @@ public class CardDrawAnimation : MonoBehaviour
         SelectedCharacterName = characterNames[winnerIdx];
         Debug.Log("Personaje elegido: " + SelectedCharacterName);
 
-        yield return StartCoroutine(ShowContinueButton());
+        // 🎬 en vez de activar el botón Continue, hacemos el fade y activamos el fondo del personaje
+        yield return StartCoroutine(RevealCharacterBackground(winnerIdx));
 
         isRunning = false;
     }
@@ -296,6 +314,82 @@ public class CardDrawAnimation : MonoBehaviour
             yield return null;
         }
         card.localScale = to;
+    }
+
+    // 🎬 Fade in (a negro) -> activa el fondo del personaje -> fade out (revela)
+    IEnumerator RevealCharacterBackground(int winnerIdx)
+    {
+        GameObject bg = GetBackgroundForIndex(winnerIdx);
+
+        // fade in: la pantalla se va a negro
+        if (fadeOverlay != null)
+        {
+            yield return StartCoroutine(FadeOverlay(0f, 1f, revealFadeInDuration, true));
+        }
+
+        // con la pantalla en negro activamos el fondo correspondiente
+        if (bg != null)
+            bg.SetActive(true);
+        else
+            Debug.LogWarning("CardDrawAnimation: no asignaste el fondo para el índice " + winnerIdx);
+
+        // y desactivamos los objetos que ya no queremos ver
+        if (Deactivate1 != null) Deactivate1.SetActive(false);
+        if (Deactivate2 != null) Deactivate2.SetActive(false);
+        if (Deactivate3 != null) Deactivate3.SetActive(false);
+
+        // ⏱️ arrancamos el contador para mostrar el botón ready (cuenta desde ahora)
+        StartCoroutine(ShowReadyButtonAfterDelay(delayBeforeReadyButton));
+
+        // fade out: revelamos el fondo nuevo
+        if (fadeOverlay != null)
+        {
+            yield return StartCoroutine(FadeOverlay(1f, 0f, revealFadeOutDuration, false));
+        }
+    }
+
+    GameObject GetBackgroundForIndex(int idx)
+    {
+        switch (idx)
+        {
+            case 0: return KaelBackground;
+            case 1: return LyraBackground;
+            case 2: return VornBackground;
+            default: return null;
+        }
+    }
+
+    // ⏱️ Espera el delay desde la activación del background y muestra el botón ready
+    IEnumerator ShowReadyButtonAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (continueButton == null)
+        {
+            Debug.LogWarning("CardDrawAnimation: no asignaste el botón ready (continueButton).");
+            yield break;
+        }
+
+        continueButton.gameObject.SetActive(true);
+
+        CanvasGroup cg = continueButton.GetComponent<CanvasGroup>();
+        if (cg == null) cg = continueButton.gameObject.AddComponent<CanvasGroup>();
+
+        cg.alpha = 0f;
+        cg.interactable = false;
+        cg.blocksRaycasts = false;
+
+        float elapsed = 0f;
+        while (elapsed < continueButtonFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            cg.alpha = Mathf.Clamp01(elapsed / continueButtonFadeDuration);
+            yield return null;
+        }
+
+        cg.alpha = 1f;
+        cg.interactable = true;
+        cg.blocksRaycasts = true;
     }
 
     IEnumerator ShowContinueButton()

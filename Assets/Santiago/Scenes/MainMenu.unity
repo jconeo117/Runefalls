@@ -719,8 +719,9 @@ GameObject:
   - component: {fileID: 1604079536}
   - component: {fileID: 1604079535}
   - component: {fileID: 1604079534}
+  - component: {fileID: 1604079537}
   m_Layer: 5
-  m_Name: Button
+  m_Name: ButtonStart
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -840,6 +841,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1604079532}
   m_CullTransparentMesh: 1
+--- !u!114 &1604079537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1604079532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d19889e611440544855b74b7a7614b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1604079533}
+  hoverScale: 1.1
+  lerpSpeed: 12
+  useUnscaledTime: 1
 --- !u!1 &1674791865
 GameObject:
   m_ObjectHideFlags: 0

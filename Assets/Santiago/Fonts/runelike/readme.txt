@@ -1,0 +1,1 @@
+Please visit https://virstag.gumroad.com/ if you need a commercial license of my font.
