@@ -193,6 +193,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IImpactTrigger.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\PlayerActor.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\DominioGlacialBehavior.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ProceduralSprites.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\HipotermiaEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\HealEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\RoomVolume.cs" />

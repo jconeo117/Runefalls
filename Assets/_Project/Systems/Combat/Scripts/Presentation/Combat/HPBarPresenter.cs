@@ -207,7 +207,7 @@ namespace Runefall.Presentation.Combat
             else
             {
                 // No custom sprite → styled procedural chip: rounded fill + darker outline + initial glyph.
-                img.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+                img.sprite = ProceduralSprites.RoundedRect();
                 img.type   = Image.Type.Sliced;
                 img.color  = tint;
 

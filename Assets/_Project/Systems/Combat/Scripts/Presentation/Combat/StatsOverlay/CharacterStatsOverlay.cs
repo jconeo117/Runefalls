@@ -442,7 +442,7 @@ namespace Runefall.Presentation.Combat
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var img = go.AddComponent<Image>();
-            img.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            img.sprite = ProceduralSprites.RoundedRect();
             img.type   = Image.Type.Sliced;
             img.color  = color;
             var rt = img.rectTransform;

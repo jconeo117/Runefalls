@@ -17,8 +17,8 @@ namespace Runefall.Presentation.Combat
         public static readonly Color MoveFill  = new(0.16f, 0.55f, 0.82f, 0.92f);
         public static readonly Color MoveGlow  = new(0.45f, 0.88f, 1.00f, 1.00f);
 
-        private static Sprite Rounded() => Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
-        private static Sprite Disc()    => Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
+        private static Sprite Rounded() => ProceduralSprites.RoundedRect();
+        private static Sprite Disc()    => ProceduralSprites.Disc();
 
         /// <summary>Empty slot = rounded slate-teal card back: dark fill + teal frame + faint central emblem.</summary>
         public static void ApplyIdle(Image inner)
