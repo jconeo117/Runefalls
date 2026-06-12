@@ -307,12 +307,13 @@ namespace Runefall.Presentation.Combat
             prt.anchorMin = new Vector2(0.5f, 0f);
             prt.anchorMax = new Vector2(0.5f, 0f);
             prt.pivot     = new Vector2(0.5f, 0f);
-            prt.sizeDelta = new Vector2(820f, 214f);
-            prt.anchoredPosition = new Vector2(0f, 28f);
+            prt.sizeDelta = new Vector2(1000f, 200f);
+            prt.anchoredPosition = new Vector2(0f, 8f);   // sit on the bottom edge
 
-            const float cardY = 118f;
-            const float lblY  = 34f;
-            const float g1 = -219f, g2 = 58f, gu = 292f;
+            // Children anchor to the strip's CENTRE: card just above it, label just below.
+            const float cardY =  20f;
+            const float lblY  = -78f;
+            const float g1 = -285f, g2 = 75f, gu = 380f;   // group centres (×1.3 of the previous tuning)
 
             SkillRow(prt, p.Skill1, g1, cardY);
             SkillLabel(prt, "Habilidad 1", g1, lblY);
@@ -336,7 +337,7 @@ namespace Runefall.Presentation.Combat
         private void SkillRow(RectTransform parent, SkillData skill, float centerX, float y)
         {
             if (skill == null) return;
-            const float step = 73f;   // ~20% overlap, matching the combat hand's card padding
+            const float step = 95f;   // ~20% overlap, matching the combat hand's card padding
             float[] dx = { -step, 0f, step };
             for (int rank = 1; rank <= 3; rank++)
                 PlaceCard(parent, new BattleCard(skill, rank), ElementColor(skill.element),
@@ -363,7 +364,7 @@ namespace Runefall.Presentation.Combat
                 rt.pivot = new Vector2(0.5f, 0.5f);
                 rt.sizeDelta = new Vector2(130f, 170f);
                 rt.anchoredPosition = pos;
-                cv.transform.localScale = Vector3.one * 0.7f;
+                cv.transform.localScale = Vector3.one * 0.91f;
                 return;
             }
 
