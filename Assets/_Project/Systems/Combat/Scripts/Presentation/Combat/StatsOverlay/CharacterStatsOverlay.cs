@@ -268,29 +268,30 @@ namespace Runefall.Presentation.Combat
                 new Color(0.04f, 0.06f, 0.09f, 0.94f));
             var rt = panel.rectTransform;
             rt.pivot = new Vector2(0f, 0.5f);
-            rt.sizeDelta = new Vector2(360f, 340f);
-            rt.anchoredPosition = new Vector2(70f + 460f + 16f, 0f);   // right of the stat block
+            rt.sizeDelta = new Vector2(440f, 480f);
+            rt.anchoredPosition = new Vector2(70f + 460f + 20f, 0f);   // right of the stat block
             Frame(panel, new Color(0.3f, 0.45f, 0.5f, 0.8f));
 
             var sb = new System.Text.StringBuilder();
             if (es != null)
             {
-                sb.AppendLine($"Perforación      {es.ofensivas.perforacion:F1}");
+                sb.AppendLine($"Perforación      {es.ofensivas.perforacion * 100f:F0}%");
                 sb.AppendLine($"Prob. crítico    {es.ofensivas.critChance * 100f:F0}%");
                 sb.AppendLine($"Daño crítico     {es.ofensivas.critDaño * 100f:F0}%");
-                sb.AppendLine($"Resistencia      {es.defensivas.resistencia:F1}");
-                sb.AppendLine($"Def. crítica     {es.defensivas.defensaCrit:F1}");
-                sb.AppendLine($"Res. crítica     {es.defensivas.resistenciaCrit:F1}");
+                sb.AppendLine($"Resistencia      {es.defensivas.resistencia * 100f:F0}%");
+                sb.AppendLine($"Def. crítica     {es.defensivas.defensaCrit * 100f:F0}%");
+                sb.AppendLine($"Res. crítica     {es.defensivas.resistenciaCrit * 100f:F0}%");
                 sb.AppendLine($"Robo de vida     {es.vitales.roboDeVida * 100f:F0}%");
                 sb.AppendLine($"Regeneración     {es.vitales.tasaRegen * 100f:F0}%");
                 sb.AppendLine($"Recuperación     {es.vitales.tasaRecuperacion * 100f:F0}%");
             }
 
-            var t = Text(panel.transform, "List", sb.ToString(), 22, TextAnchor.UpperLeft,
+            var t = Text(panel.transform, "List", sb.ToString(), 27, TextAnchor.UpperLeft,
                 new Color(0.86f, 0.92f, 0.96f), FontStyle.Normal);
+            t.lineSpacing = 1.3f;
             var trt = t.rectTransform;
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
-            trt.offsetMin = new Vector2(20f, 16f); trt.offsetMax = new Vector2(-16f, -16f);
+            trt.offsetMin = new Vector2(26f, 20f); trt.offsetMax = new Vector2(-18f, -20f);
 
             panel.gameObject.SetActive(false);
             return panel.gameObject;
