@@ -70,8 +70,8 @@ namespace Runefall.Combat
 
                 ctx.Owner.Effects.Apply(new ActiveEffect
                 {
-                    Source              = null,   // aura interna (no UI)
-                    Tag                 = EffectTag.Advantage,
+                    Source              = null,   // aura interna: sin UI y sin contar como ventaja
+                    Tag                 = EffectTag.Neutral,
                     TurnsRemaining      = -1,     // gestionada por recálculo, no por Tick
                     Stacks              = 1,
                     StatMod             = new StatModifier { ataqueBonus = atkPerHipotermia * count },

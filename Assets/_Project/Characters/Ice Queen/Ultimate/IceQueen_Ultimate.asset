@@ -17,7 +17,8 @@ MonoBehaviour:
   element: 2
   targetType: 0
   effect:
-    effects: []
+    effects:
+    - {fileID: 11400000, guid: b44c347fc2edddd4cb3639cff631db1f, type: 2}
     damageMultiplier: 1
     healPercent: 0
     animationTrigger: 

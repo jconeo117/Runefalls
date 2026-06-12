@@ -190,7 +190,7 @@ namespace Runefall.Presentation.Combat
 
         private void SpawnIcon(float localX, Color tint, ActiveEffect e)
         {
-            const float size = 18f;
+            const float size = 20f;
 
             var iconGO = new GameObject("EffectIcon");
             iconGO.transform.SetParent(_iconRow, false);
@@ -206,23 +206,56 @@ namespace Runefall.Presentation.Combat
             }
             else
             {
-                img.color = tint;
+                // No custom sprite → styled procedural chip: rounded fill + darker outline + initial glyph.
+                img.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+                img.type   = Image.Type.Sliced;
+                img.color  = tint;
+
+                var outline = iconGO.AddComponent<Outline>();
+                outline.effectColor    = new Color(tint.r * 0.4f, tint.g * 0.4f, tint.b * 0.4f, 1f);
+                outline.effectDistance = new Vector2(1.4f, -1.4f);
+
+                string glyph = !string.IsNullOrEmpty(e.Source?.effectName)
+                    ? e.Source.effectName.Substring(0, 1).ToUpperInvariant()
+                    : "+";
+
+                var glyphGO = new GameObject("Glyph");
+                glyphGO.transform.SetParent(iconGO.transform, false);
+                var glyphRT       = glyphGO.AddComponent<RectTransform>();
+                glyphRT.anchorMin = Vector2.zero;
+                glyphRT.anchorMax = Vector2.one;
+                glyphRT.offsetMin = glyphRT.offsetMax = Vector2.zero;
+
+                var sh = glyphGO.AddComponent<Shadow>();
+                sh.effectColor    = new Color(0f, 0f, 0f, 0.55f);
+                sh.effectDistance = new Vector2(1f, -1f);
+
+                var glyphTxt      = glyphGO.AddComponent<Text>();
+                glyphTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                glyphTxt.text      = glyph;
+                glyphTxt.fontSize  = 12;
+                glyphTxt.fontStyle = FontStyle.Bold;
+                glyphTxt.color     = Color.white;
+                glyphTxt.alignment = TextAnchor.MiddleCenter;
             }
 
-            // Stack count — bottom-right corner, always visible
-            var stackGO = new GameObject("Stacks");
-            stackGO.transform.SetParent(iconGO.transform, false);
-            var stackRT       = stackGO.AddComponent<RectTransform>();
-            stackRT.anchorMin = new Vector2(0.45f, 0f);
-            stackRT.anchorMax = new Vector2(1f, 0.55f);
-            stackRT.offsetMin = stackRT.offsetMax = Vector2.zero;
-            var stackTxt      = stackGO.AddComponent<Text>();
-            stackTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            stackTxt.text      = e.Stacks.ToString();
-            stackTxt.fontSize  = 9;
-            stackTxt.fontStyle = FontStyle.Bold;
-            stackTxt.color     = Color.white;
-            stackTxt.alignment = TextAnchor.LowerRight;
+            // Stack count — bottom-right corner, only when actually stacked
+            if (e.Stacks > 1)
+            {
+                var stackGO = new GameObject("Stacks");
+                stackGO.transform.SetParent(iconGO.transform, false);
+                var stackRT       = stackGO.AddComponent<RectTransform>();
+                stackRT.anchorMin = new Vector2(0.45f, 0f);
+                stackRT.anchorMax = new Vector2(1f, 0.55f);
+                stackRT.offsetMin = stackRT.offsetMax = Vector2.zero;
+                var stackTxt      = stackGO.AddComponent<Text>();
+                stackTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                stackTxt.text      = e.Stacks.ToString();
+                stackTxt.fontSize  = 9;
+                stackTxt.fontStyle = FontStyle.Bold;
+                stackTxt.color     = Color.white;
+                stackTxt.alignment = TextAnchor.LowerRight;
+            }
         }
 
         // ── effect popup ──────────────────────────────────────────────────────────

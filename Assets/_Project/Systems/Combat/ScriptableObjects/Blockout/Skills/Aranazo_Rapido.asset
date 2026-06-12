@@ -28,17 +28,20 @@ MonoBehaviour:
   - {fileID: 7400000, guid: 216bf759b6d8a7246b151807db8c61de, type: 3}
   - {fileID: 7400000, guid: cb140d8df12930e40bbb2bd5b2a74557, type: 3}
   effectsByRank:
-  - effects: []
+  - effects:
+    - {fileID: 11400000, guid: e766c5c402ab29742ada2f88c13b2a00, type: 2}
     damageMultiplier: 1
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  - effects: []
+  - effects:
+    - {fileID: 11400000, guid: e766c5c402ab29742ada2f88c13b2a00, type: 2}
     damageMultiplier: 1.5
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  - effects: []
+  - effects:
+    - {fileID: 11400000, guid: e766c5c402ab29742ada2f88c13b2a00, type: 2}
     damageMultiplier: 2.2
     healPercent: 0
     animationTrigger: 

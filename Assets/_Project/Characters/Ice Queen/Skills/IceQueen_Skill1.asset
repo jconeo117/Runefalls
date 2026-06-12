@@ -20,17 +20,20 @@ MonoBehaviour:
   isRanged: 1
   ultimateChargeAmount: 15
   effectsByRank:
-  - effects: []
+  - effects:
+    - {fileID: 11400000, guid: 64746bc4355c3af4c9b9eb385dbf578d, type: 2}
     damageMultiplier: 1.5
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  - effects: []
+  - effects:
+    - {fileID: 11400000, guid: 64746bc4355c3af4c9b9eb385dbf578d, type: 2}
     damageMultiplier: 2.2
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  - effects: []
+  - effects:
+    - {fileID: 11400000, guid: 64746bc4355c3af4c9b9eb385dbf578d, type: 2}
     damageMultiplier: 3.7
     healPercent: 0
     animationTrigger: 

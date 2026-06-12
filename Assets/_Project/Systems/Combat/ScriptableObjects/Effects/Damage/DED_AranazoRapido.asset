@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08f10f37a50e1e44da43701acba1f36a, type: 3}
+  m_Name: DED_AranazoRapido
+  m_EditorClassIdentifier: 
+  effectName: 
+  description: 
+  icon: {fileID: 0}
+  tag: 0
+  behavior: 0
+  stackBySource: 0
+  stackable: 1
+  statSource: 0
+  multiplierByRank:
+  - 1
+  - 1.5
+  - 2.2
+  modifiers: []
