@@ -384,13 +384,24 @@ namespace Runefall.Presentation.Combat
         {
             if (p.Passive == null) return;
 
-            // Passive panel sits on the RIGHT (the old skill location): chip + name on top, description below.
+            const float panelW   = 380f;
+            const float padX     = 20f, padR = 16f, padBot = 18f;
+            const float chipTop  = 14f, chipH = 62f;
+            const float descTop  = chipTop + chipH + 14f;   // header band, then the description
+            const int   descFont = 20;
+
+            // Description with effect names highlighted; panel grows to fit it (no overflow).
+            string descStr = ColorizeEffects(p.Passive.description ?? "");
+            float  descH   = MeasureTextHeight(descStr, panelW - padX - padR, descFont, FontStyle.Normal);
+            float  panelH  = Mathf.Clamp(descTop + descH + padBot, 200f, 840f);
+
+            // Passive panel on the RIGHT (the old skill location).
             var panel = Panel(root, "PassivePanel",
                 new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), Vector2.zero, Vector2.zero,
                 new Color(0.06f, 0.08f, 0.11f, 0.86f));
             var prt = panel.rectTransform;
             prt.pivot = new Vector2(1f, 0.5f);
-            prt.sizeDelta = new Vector2(380f, 440f);
+            prt.sizeDelta = new Vector2(panelW, panelH);
             prt.anchoredPosition = new Vector2(-60f, 0f);
             Frame(panel, ElementColor(p.Element));
 
@@ -399,8 +410,8 @@ namespace Runefall.Presentation.Combat
                 Vector2.zero, Vector2.zero, ElementColor(p.Element));
             var chrt = chip.rectTransform;
             chrt.pivot = new Vector2(0f, 1f);
-            chrt.sizeDelta = new Vector2(62f, 62f);
-            chrt.anchoredPosition = new Vector2(20f, -18f);
+            chrt.sizeDelta = new Vector2(chipH, chipH);
+            chrt.anchoredPosition = new Vector2(20f, -chipTop);
             Frame(chip, new Color(0f, 0f, 0f, 0.5f));
             var glyph = Text(chip.transform, "g",
                 string.IsNullOrEmpty(p.Passive.passiveName) ? "★" : p.Passive.passiveName.Substring(0, 1).ToUpperInvariant(),
@@ -413,13 +424,64 @@ namespace Runefall.Presentation.Combat
             var nrt = nameT.rectTransform;
             nrt.anchorMin = new Vector2(0f, 1f); nrt.anchorMax = new Vector2(1f, 1f);
             nrt.pivot = new Vector2(0f, 1f);
-            nrt.offsetMin = new Vector2(94f, -78f); nrt.offsetMax = new Vector2(-14f, -18f);
+            nrt.offsetMin = new Vector2(94f, -(chipTop + chipH)); nrt.offsetMax = new Vector2(-14f, -chipTop);
 
-            var descT = Text(panel.transform, "PassiveDesc", p.Passive.description ?? "",
-                20, TextAnchor.UpperLeft, new Color(0.85f, 0.9f, 0.94f), FontStyle.Normal);
+            var descT = Text(panel.transform, "PassiveDesc", descStr,
+                descFont, TextAnchor.UpperLeft, new Color(0.85f, 0.9f, 0.94f), FontStyle.Normal);
             var drt = descT.rectTransform;
-            drt.anchorMin = new Vector2(0f, 0f); drt.anchorMax = new Vector2(1f, 1f);
-            drt.offsetMin = new Vector2(20f, 16f); drt.offsetMax = new Vector2(-16f, -92f);
+            drt.anchorMin = new Vector2(0f, 1f); drt.anchorMax = new Vector2(1f, 1f);
+            drt.pivot = new Vector2(0.5f, 1f);
+            drt.sizeDelta = new Vector2(-(padX + padR), descH);
+            drt.anchoredPosition = new Vector2((padX - padR) * 0.5f, -descTop);
+        }
+
+        // ── effect-name highlighting + text measuring ────────────────────────
+
+        /// <summary>
+        /// Colour the effect names inside a passive description. Names are detected
+        /// data-drivenly as the terms the description itself defines as "Name:" — so any
+        /// passive that introduces its effects that way highlights them, with no hard-coded list.
+        /// </summary>
+        private static string ColorizeEffects(string desc)
+        {
+            if (string.IsNullOrEmpty(desc)) return desc;
+
+            var names = new System.Collections.Generic.List<string>();
+            foreach (System.Text.RegularExpressions.Match m in
+                     System.Text.RegularExpressions.Regex.Matches(desc,
+                         @"(?:^|[.\n]|[""“”'])\s*([A-ZÁÉÍÓÚÑ][\p{L} ]{1,28}?)\s*:"))
+            {
+                string n = m.Groups[1].Value.Trim();
+                if (n.Length > 0 && !names.Contains(n)) names.Add(n);
+            }
+            if (names.Count == 0) return desc;
+
+            // Longest first so "Monarca del hielo" wins over "Monarca"; single pass = no nested tags.
+            names.Sort((a, b) => b.Length.CompareTo(a.Length));
+            string pattern = string.Join("|", names.ConvertAll(System.Text.RegularExpressions.Regex.Escape));
+
+            return System.Text.RegularExpressions.Regex.Replace(desc, pattern,
+                mm => $"<color=#79DFFF>{mm.Value}</color>");
+        }
+
+        /// <summary>Wrapped pixel height of <paramref name="text"/> at <paramref name="width"/>, for sizing a panel.</summary>
+        private static float MeasureTextHeight(string text, float width, int fontSize, FontStyle style)
+        {
+            var go = new GameObject("measure") { hideFlags = HideFlags.HideAndDontSave };
+            var t  = go.AddComponent<Text>();
+            t.font               = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.fontSize           = fontSize;
+            t.fontStyle          = style;
+            t.supportRichText    = true;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.verticalOverflow   = VerticalWrapMode.Overflow;
+            t.text               = text;
+
+            var settings = t.GetGenerationSettings(new Vector2(width, 0f));
+            float h = t.cachedTextGeneratorForLayout.GetPreferredHeight(text, settings) / t.pixelsPerUnit;
+
+            Object.Destroy(go);
+            return h;
         }
 
         private void BuildCloseButton(Transform root)
