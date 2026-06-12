@@ -67,15 +67,21 @@ namespace Runefall.Presentation.Combat
         [SerializeField] private float _goldFaceHold = 0.4f;
         [Tooltip("Gold: orbit speed (legacy orbit — unused by the whip+settle path).")]
         [SerializeField] private float _goldOrbitSpeed = 0.7f;
-        [Header("Gold — whip + settle")]
-        [Tooltip("Settle shot: distance behind the caster (over-the-shoulder framing the impact).")]
-        [SerializeField] private float _goldEndBack = 2.8f;
-        [Tooltip("Settle shot: offset to the caster's right shoulder.")]
-        [SerializeField] private float _goldEndRight = 1.2f;
-        [Tooltip("Settle shot: height above the caster's feet.")]
-        [SerializeField] private float _goldEndHeight = 1.9f;
-        [Tooltip("Minimum sweep (degrees) so the camera WHIPS around the caster instead of a small turn.")]
+        [Header("Gold — cut sequence (cinematic)")]
+        [Tooltip("Impact shot: distance pulled back from the action center (caster<->target). Higher = wider/panoramic.")]
+        [SerializeField] private float _goldEndBack = 4.0f;
+        [Tooltip("Impact shot: lateral offset.")]
+        [SerializeField] private float _goldEndRight = 1.8f;
+        [Tooltip("Impact shot: height above the action center.")]
+        [SerializeField] private float _goldEndHeight = 2.2f;
+        [Tooltip("(Legacy, unused by the cut sequence.)")]
         [SerializeField] private float _goldWhipMinArc = 210f;
+        [Tooltip("Seconds the low-hero anticipation cut holds.")]
+        [SerializeField] private float _goldCut1Hold = 0.40f;
+        [Tooltip("Seconds the wind-up close-up cut holds.")]
+        [SerializeField] private float _goldCut2Hold = 0.35f;
+        [Tooltip("Camera shake magnitude on the impact cut.")]
+        [SerializeField] private float _goldShakeMagnitude = 0.12f;
         [Tooltip("Pause (seconds) between consecutive abilities so the camera settles and doesn't disorient the player.")]
         [SerializeField] private float _betweenSkillsDelay = 0.6f;
 
@@ -172,7 +178,10 @@ namespace Runefall.Presentation.Combat
                 goldEndBack = _goldEndBack,
                 goldEndRight = _goldEndRight,
                 goldEndHeight = _goldEndHeight,
-                goldWhipMinArc = _goldWhipMinArc
+                goldWhipMinArc = _goldWhipMinArc,
+                goldCut1Hold = _goldCut1Hold,
+                goldCut2Hold = _goldCut2Hold,
+                goldShakeMagnitude = _goldShakeMagnitude
             };
             _cameraDirector = new SkillCameraDirector(cameraConfig, () => _climaxDirector != null && _climaxDirector.HasTriggeredOutroClimax);
 

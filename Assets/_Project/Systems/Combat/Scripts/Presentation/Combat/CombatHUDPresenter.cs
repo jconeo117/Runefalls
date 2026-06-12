@@ -319,8 +319,20 @@ namespace Runefall.Presentation.Combat
         {
             if (slotIndex < 0 || slotIndex >= _activeSlots.Count) return;
 
+            // Slot lights up cyan with a glowing frame; the idle emblem hides under the move glyph.
             if (slotIndex < _slotImages.Length && _slotImages[slotIndex] != null)
-                _slotImages[slotIndex].color = new Color(0.15f, 0.30f, 0.50f, 0.85f);
+            {
+                var inner = _slotImages[slotIndex];
+                inner.color = k_SlotMoveFill;
+                var frame = inner.GetComponent<Outline>();
+                if (frame != null)
+                {
+                    frame.effectColor    = k_SlotMoveGlow;
+                    frame.effectDistance = new Vector2(3f, -3f);
+                }
+                var em = inner.transform.Find("Emblem");
+                if (em != null) em.gameObject.SetActive(false);
+            }
 
             var slot = _activeSlots[slotIndex];
             var lbl  = slot.Find("MoveLabel");
@@ -332,17 +344,25 @@ namespace Runefall.Presentation.Combat
                 labelRt.anchorMin = Vector2.zero;
                 labelRt.anchorMax = Vector2.one;
                 labelRt.offsetMin = labelRt.offsetMax = Vector2.zero;
+
+                // Glow halo around the glyph.
+                var glow = lblGO.AddComponent<Outline>();
+                glow.effectColor    = new Color(0.6f, 0.95f, 1f, 0.9f);
+                glow.effectDistance = new Vector2(1.5f, -1.5f);
+
                 var txt       = lblGO.AddComponent<Text>();
                 txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                txt.fontSize  = 20;
+                txt.fontSize  = 30;
                 txt.fontStyle = FontStyle.Bold;
                 txt.alignment = TextAnchor.MiddleCenter;
-                txt.color     = new Color(0.55f, 0.80f, 1f);
-                txt.text      = "MOVE";
+                txt.color     = Color.white;
+                txt.text      = "→";   // → move-into-slot glyph
+                txt.raycastTarget = false;
             }
             else
             {
-                lbl.GetComponent<Text>().text = "MOVE";
+                lbl.gameObject.SetActive(true);
+                lbl.GetComponent<Text>().text = "→";
             }
         }
 
@@ -889,9 +909,50 @@ namespace Runefall.Presentation.Combat
             {
                 var inner = _activeSlots[i].Find("Inner");
                 _slotImages[i] = inner?.GetComponent<Image>();
-                // Inner stays visible — dark color = empty slot, blue = MOVE state.
                 if (_slotImages[i] != null)
-                    _slotImages[i].color = new Color(0.06f, 0.06f, 0.10f, 0.92f);
+                    StyleIdleSlot(_slotImages[i]);   // rounded frame + emblem (no sprites needed)
+            }
+        }
+
+        // ── procedural action-slot styling (no custom sprites) ─────────────────────
+        private static readonly Color k_SlotIdleFill  = new Color(0.08f, 0.11f, 0.14f, 0.95f);
+        private static readonly Color k_SlotIdleFrame = new Color(0.34f, 0.55f, 0.60f, 0.70f);
+        private static readonly Color k_SlotEmblem    = new Color(0.42f, 0.64f, 0.68f, 0.28f);
+        private static readonly Color k_SlotMoveFill  = new Color(0.16f, 0.55f, 0.82f, 0.92f);
+        private static readonly Color k_SlotMoveGlow  = new Color(0.45f, 0.88f, 1.00f, 1.00f);
+
+        private static Sprite Rounded() => Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+        private static Sprite Disc()    => Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
+
+        /// <summary>Empty slot = rounded slate-teal card back: dark fill + teal frame + faint central emblem.</summary>
+        private void StyleIdleSlot(Image inner)
+        {
+            inner.sprite = Rounded();
+            inner.type   = Image.Type.Sliced;
+            inner.color  = k_SlotIdleFill;
+
+            var frame = inner.GetComponent<Outline>() ?? inner.gameObject.AddComponent<Outline>();
+            frame.effectColor    = k_SlotIdleFrame;
+            frame.effectDistance = new Vector2(2f, -2f);
+
+            // Central emblem: a faint disc with its own ring outline — suggests a rune sigil.
+            var emT = inner.transform.Find("Emblem");
+            if (emT == null)
+            {
+                var emGO = new GameObject("Emblem");
+                emGO.transform.SetParent(inner.transform, false);
+                var emRT = emGO.AddComponent<RectTransform>();
+                emRT.anchorMin = new Vector2(0.5f, 0.5f);
+                emRT.anchorMax = new Vector2(0.5f, 0.5f);
+                emRT.sizeDelta = new Vector2(34f, 34f);
+                emRT.anchoredPosition = Vector2.zero;
+                var emImg = emGO.AddComponent<Image>();
+                emImg.sprite = Disc();
+                emImg.color  = k_SlotEmblem;
+                emImg.raycastTarget = false;
+                var emRing = emGO.AddComponent<Outline>();
+                emRing.effectColor    = new Color(k_SlotIdleFrame.r, k_SlotIdleFrame.g, k_SlotIdleFrame.b, 0.5f);
+                emRing.effectDistance = new Vector2(1.5f, -1.5f);
             }
         }
 
@@ -971,9 +1032,23 @@ namespace Runefall.Presentation.Combat
                 if (i < _slotImages.Length && _slotImages[i] != null)
                 {
                     _slotImages[i].gameObject.SetActive(true);
-                    _slotImages[i].color = new Color(0.06f, 0.06f, 0.10f, 0.92f);
+                    RestoreIdleSlot(_slotImages[i]);
                 }
             }
+        }
+
+        /// <summary>Reset a slot's dynamic look back to the idle card-back (after a move/skill cleared it).</summary>
+        private void RestoreIdleSlot(Image inner)
+        {
+            inner.color = k_SlotIdleFill;
+            var frame = inner.GetComponent<Outline>();
+            if (frame != null)
+            {
+                frame.effectColor    = k_SlotIdleFrame;
+                frame.effectDistance = new Vector2(2f, -2f);
+            }
+            var em = inner.transform.Find("Emblem");
+            if (em != null) em.gameObject.SetActive(true);
         }
 
         public override void SetActionSlotsActive(bool active)

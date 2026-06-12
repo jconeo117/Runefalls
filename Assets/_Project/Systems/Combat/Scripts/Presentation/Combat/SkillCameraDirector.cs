@@ -110,63 +110,68 @@ namespace Runefall.Presentation.Combat
             }
         }
 
+        // Cinematic CUT sequence: 3 hard cuts (no panning) — low-hero anticipation on the caster,
+        // tight wind-up close-up, then the impact shot with a push-in and a decaying shake.
         private IEnumerator GoldCam(Vector3 casterPos, Vector3 targetPos, Vector3 facePos, Vector3 faceLook, float duration)
         {
-            ApplyCam(facePos, faceLook);
-            float t = 0f;
-            while (t < _config.goldFaceHold && !_hasTriggeredOutroClimax()) 
-            { 
-                t += Time.deltaTime; 
-                ApplyCam(facePos, faceLook); 
-                yield return null; 
-            }
-
             if (_camera == null) yield break;
 
-            // Fast whip around the caster, braking (hard ease-out) into an over-the-shoulder shot
-            // framed on the target impact.
             Vector3 fwd = targetPos - casterPos; fwd.y = 0f;
             if (fwd.sqrMagnitude < 0.0001f) fwd = _camera.transform.forward;
             fwd.Normalize();
             Vector3 right = Vector3.Cross(Vector3.up, fwd);
 
-            Vector3 pivot      = casterPos + Vector3.up * _config.faceHeight;
-            Vector3 impactLook = targetPos + Vector3.up * _config.faceHeight;
+            Vector3 casterHead = casterPos + Vector3.up * _config.faceHeight;
 
-            // Start from where the face close-up sits (current camera), orbiting the caster.
-            Vector3 startOff    = _camera.transform.position - pivot;
-            float   startRadius = new Vector2(startOff.x, startOff.z).magnitude;
-            if (startRadius < 0.3f) startRadius = _config.faceDist;
-            float   startAng    = Mathf.Atan2(startOff.z, startOff.x) * Mathf.Rad2Deg;
+            // CUT 1 — low hero angle on the caster (anticipation).
+            Vector3 c1pos  = casterPos + fwd * (_config.faceDist * 1.3f) + right * 0.5f + Vector3.up * 0.45f;
+            Vector3 c1look = casterHead + Vector3.up * 0.25f;
+            yield return HoldCut(c1pos, c1look, _config.goldCut1Hold);
 
-            // Settle: behind the caster's right shoulder, looking at the target.
-            Vector3 endPos    = pivot - fwd * _config.goldEndBack + right * _config.goldEndRight
-                                + Vector3.up * (_config.goldEndHeight - _config.faceHeight);
-            Vector3 endOff    = endPos - pivot;
-            float   endRadius = new Vector2(endOff.x, endOff.z).magnitude;
-            float   endAng    = Mathf.Atan2(endOff.z, endOff.x) * Mathf.Rad2Deg;
+            // CUT 2 — tight wind-up: close on the caster's chest/hands, slight side.
+            Vector3 c2pos  = casterPos + fwd * (_config.faceDist * 0.7f) + right * (_config.bronzeRight + 0.35f)
+                             + Vector3.up * (_config.faceHeight * 0.78f);
+            Vector3 c2look = casterPos + Vector3.up * (_config.faceHeight * 0.72f) + fwd * 0.4f;
+            yield return HoldCut(c2pos, c2look, _config.goldCut2Hold);
 
-            // Force the long way around so it whips, not a small turn.
-            while (endAng - startAng < _config.goldWhipMinArc) endAng += 360f;
+            // CUT 3 — WIDE impact shot: pull back from the action center (caster<->target) and frame the
+            // whole clash, not a tight zoom on the enemy. Gentle push-in + decaying shake.
+            Vector3 actionCenter = (casterPos + targetPos) * 0.5f + Vector3.up * (_config.faceHeight * 0.9f);
+            Vector3 c3pos = actionCenter - fwd * _config.goldEndBack + right * _config.goldEndRight
+                            + Vector3.up * _config.goldEndHeight;
+            ApplyCam(c3pos, actionCenter);
 
-            float dur = Mathf.Max(0.05f, duration);
-            float ot  = 0f;
-            while (ot < dur && !_hasTriggeredOutroClimax())
+            float   rest    = Mathf.Max(0.1f, duration - _config.goldCut1Hold - _config.goldCut2Hold);
+            Vector3 pushDir = actionCenter - c3pos; pushDir.y *= 0.4f;
+            if (pushDir.sqrMagnitude > 0.0001f) pushDir.Normalize();
+
+            float ot = 0f;
+            while (ot < rest && !_hasTriggeredOutroClimax())
             {
                 ot += Time.deltaTime;
-                float k = Mathf.Clamp01(ot / dur);
-                float e = 1f - Mathf.Pow(1f - k, 4f);   // hard ease-out: very fast start, sharp brake
-                float ang    = Mathf.Lerp(startAng, endAng, e) * Mathf.Deg2Rad;
-                float radius = Mathf.Lerp(startRadius, endRadius, e);
-                float height = Mathf.Lerp(startOff.y, endOff.y, e);
-                Vector3 pos  = pivot + new Vector3(Mathf.Cos(ang) * radius, height, Mathf.Sin(ang) * radius);
-                _camera.transform.position = pos;
-                Vector3 look = Vector3.Lerp(pivot, impactLook, e);   // pan from caster to the impact
-                Vector3 ld   = look - pos;
+                float k = Mathf.Clamp01(ot / rest);
+                Vector3 basePos = c3pos + pushDir * (k * 0.4f);   // gentle push — stays wide/panoramic
+                Vector3 shake   = UnityEngine.Random.insideUnitSphere * (_config.goldShakeMagnitude * (1f - k));
+                shake.z *= 0.5f;
+                _camera.transform.position = basePos + shake;
+                Vector3 ld = actionCenter - basePos;
                 if (ld.sqrMagnitude > 0.0001f) _camera.transform.rotation = Quaternion.LookRotation(ld);
                 yield return null;
             }
-            ApplyCam(endPos, impactLook);
+            ApplyCam(c3pos + pushDir * 0.4f, actionCenter);
+        }
+
+        /// <summary>Hard cut to a static pose and hold it for `hold` seconds (no drift).</summary>
+        private IEnumerator HoldCut(Vector3 pos, Vector3 look, float hold)
+        {
+            ApplyCam(pos, look);
+            float t = 0f;
+            while (t < hold && !_hasTriggeredOutroClimax())
+            {
+                t += Time.deltaTime;
+                ApplyCam(pos, look);
+                yield return null;
+            }
         }
 
         private void ApplyCam(Vector3 pos, Vector3 look)

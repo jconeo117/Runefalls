@@ -20,10 +20,14 @@ namespace Runefall.Presentation.Combat
         public float goldFaceHold;
         public float goldOrbitSpeed;
         // Gold "whip + settle": fast arc around the caster braking into an over-the-shoulder impact shot.
-        public float goldEndBack;     // settle distance behind the caster
-        public float goldEndRight;    // settle offset to the caster's right shoulder
-        public float goldEndHeight;   // settle height above the caster's feet
-        public float goldWhipMinArc;  // minimum sweep in degrees (forces a real whip, not a small turn)
+        public float goldEndBack;     // impact shot: distance toward the caster side from the impact point
+        public float goldEndRight;    // impact shot: lateral offset
+        public float goldEndHeight;   // impact shot: height
+        public float goldWhipMinArc;  // (legacy, unused by the cut sequence)
+        // Gold "cut sequence" (cinematic hard cuts: low hero -> wind-up -> impact + shake).
+        public float goldCut1Hold;      // seconds the low-hero anticipation cut holds
+        public float goldCut2Hold;      // seconds the wind-up close-up cut holds
+        public float goldShakeMagnitude;// camera shake on the impact cut
     }
 
     public interface ICameraDirector

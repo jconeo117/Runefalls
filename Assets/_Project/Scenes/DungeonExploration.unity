@@ -8131,6 +8131,13 @@ MonoBehaviour:
   _silverReturnDur: 0.5
   _goldFaceHold: 0.4
   _goldOrbitSpeed: 0.7
+  _goldEndBack: 4
+  _goldEndRight: 1.8
+  _goldEndHeight: 2.2
+  _goldWhipMinArc: 210
+  _goldCut1Hold: 0.4
+  _goldCut2Hold: 0.35
+  _goldShakeMagnitude: 0.12
   _betweenSkillsDelay: 0.6
   _damageNumberPrefab: {fileID: 6785173245420640681, guid: e2ce764f0f11ed446b015c9dfac0d77b, type: 3}
   _postPlayerTurnDelay: 0.8
@@ -17799,6 +17806,8 @@ MonoBehaviour:
   _buttonDuration: 0.45
   _breathePeriod: 3
   _breatheScale: 0.015
+  _defeatBounceDuration: 0.55
+  _defeatBounceStartScale: 0.6
   _scrimAlpha: 0.78
 --- !u!320 &1150280225
 PlayableDirector:
