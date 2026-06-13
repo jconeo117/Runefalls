@@ -11,9 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 50d01381d32719440aca900f6cf07ed1, type: 3}
   m_Name: GranVerdugo_EnemyData
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   enemyName: Gran Verdugo
-  prefab: {fileID: 0}
+  prefab: {fileID: 6378829892336177269, guid: 0eeef40b5349f714e94128cc65c65cf5, type: 3}
   portrait: {fileID: 0}
   element: 0
   stats:

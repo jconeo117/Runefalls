@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Fire Knight
   portrait: {fileID: 0}
-  prefab: {fileID: 0}
+  prefab: {fileID: 8470696167494107974, guid: 86abe4d9553883149a63781f8dc87a30, type: 3}
   rarity: 0
   element: 1
   baseStats:
@@ -41,4 +41,5 @@ MonoBehaviour:
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}
+  hpBarFrame: {fileID: 0}
   baseDropRate: 0
