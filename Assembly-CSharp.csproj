@@ -69,10 +69,12 @@
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterInputSystemController.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousTranslateMove.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousRotateObject.cs" />
+    <Compile Include="Assets\Santiago\Scripts\GachaSceneScripts\ButtonEffect.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\HandlerTypes.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\HitType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Extensions\CollectionExtensions.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\CrosshairSystem.cs" />
+    <Compile Include="Assets\Santiago\Scripts\PlayerScripts\ThirdPersonController.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\ColorExtensions.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\CharacterState.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\AttackCast.cs" />
@@ -111,6 +113,7 @@
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\EmptyContext.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Knockdown.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Roll.cs" />
+    <Compile Include="Assets\Santiago\Scripts\GachaSceneScripts\CardDrawAnimation.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Weapon\Relax.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\AnimationParameters.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\SimpleActionHandler.cs" />
@@ -135,6 +138,7 @@
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TalkType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Movement\Swim.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\EmoteType.cs" />
+    <Compile Include="Assets\Santiago\Scripts\PlayerScripts\TopDownCameraController.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Actions\Character\Dodge.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DaggerAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\TwoHandedCrossbowAttack.cs" />
@@ -172,6 +176,7 @@
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterWeaponController.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonInteractable.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\RPGCharacterNavigationController.cs" />
+    <Compile Include="Assets\Santiago\Scripts\MainMenuScripts\TextScroller.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\RollType.cs" />
     <Compile Include="Assets\ExplosiveLLC\RPG Character Mecanim Animation Pack\Code\Lookups\Animations\DualAttack.cs" />
     <Compile Include="Assets\ExplosiveLLC\SuperCharacterController\Code\Core\IgnoredCollider.cs" />
@@ -203,10 +208,13 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
     <None Include="Assets\SpecialSkillsEffectsPack\Shader_ForEffects\Shader_Decal.shader" />
+    <None Include="Assets\Santiago\JMO Assets\Cartoon FX Remaster\CFXR Assets\Shaders\CFXR_SETTINGS.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
+    <None Include="Assets\Santiago\JMO Assets\Cartoon FX Remaster\CFXR Assets\Shaders\CFXR.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+    <None Include="Assets\Santiago\Fonts\runelike\readme.txt" />
     <None Include="Assets\SpecialSkillsEffectsPack\Shader_ForEffects\Shader_DistortionEffect.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
@@ -217,11 +225,15 @@
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
+    <None Include="Assets\Santiago\JMO Assets\Cartoon FX Remaster\CFXR Prefabs\Texts\_Make your own text effect.txt" />
+    <None Include="Assets\Santiago\JMO Assets\Cartoon FX Remaster\CFXR Assets\Shaders\CFXR_PASSES.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+    <None Include="Assets\Santiago\Fonts\runelike\EULA.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\SpecialSkillsEffectsPack\Shader_ForEffects\Shader_IntegratedEffect.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
+    <None Include="Assets\Santiago\JMO Assets\Cartoon FX Remaster\CFXR Assets\Shaders\CFXR_URP.cginc" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
     <None Include="Assets\ExplosiveLLC\SuperCharacterController\Code\README.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
@@ -1409,6 +1421,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.Services.Multiplayer.Editor.Shared.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.2D.Sprite.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Sprite.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.AI.Navigation.Editor.ConversionSystem">
       <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.ConversionSystem.dll</HintPath>
       <Private>False</Private>
@@ -1679,6 +1695,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="CFXREditor.csproj">
+      <Project>{362B1022-073A-4029-7859-438306D36303}</Project>
+      <Name>CFXREditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="CFXRDemo.csproj">
+      <Project>{687B87D4-9CE5-CC69-66A4-A8BF1BE07B91}</Project>
+      <Name>CFXRDemo</Name>
+    </ProjectReference>
+    <ProjectReference Include="CFXR.WelcomeScreen.csproj">
+      <Project>{AA34CFB5-1460-2669-D8E8-62683146BFD0}</Project>
+      <Name>CFXR.WelcomeScreen</Name>
+    </ProjectReference>
+    <ProjectReference Include="KinoBloom.Runtime.csproj">
+      <Project>{819D29F8-8F17-A120-9D6B-B5A468457E76}</Project>
+      <Name>KinoBloom.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="ToonyColorsPro.Demo.Editor.csproj">
+      <Project>{454C7652-64B3-D1F7-4B9E-5CA87817A466}</Project>
+      <Name>ToonyColorsPro.Demo.Editor</Name>
+    </ProjectReference>
     <ProjectReference Include="Runefall.Multiplayer.csproj">
       <Project>{F5874BB0-55BD-D373-E943-C122406F51EF}</Project>
       <Name>Runefall.Multiplayer</Name>
@@ -1686,6 +1722,10 @@
     <ProjectReference Include="Runefall.csproj">
       <Project>{A9FE3BE2-9BD8-EAF8-EAC1-A80B36BD6D07}</Project>
       <Name>Runefall</Name>
+    </ProjectReference>
+    <ProjectReference Include="CFXRRuntime.csproj">
+      <Project>{F09A638B-F1B6-C232-25D2-C6BC1328F681}</Project>
+      <Name>CFXRRuntime</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
