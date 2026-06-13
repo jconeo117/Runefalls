@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Santiago/Scenes/MainMenu.unity
     guid: 6680eedc812f1cd4fa887fe81f6a939e
   - enabled: 1
+    path: Assets/Santiago/Scenes/Story.unity
+    guid: 01bd5f4929e309947a2da1f3e5d1ca44
+  - enabled: 1
     path: Assets/Santiago/Scenes/WorldExploration.unity
     guid: e94ef51652263a9448964a2286ff8dfa
   - enabled: 1
@@ -17,6 +20,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Multiplayer_BossFight.unity
     guid: 735fd352671323d40ae383b884ca5eca
+  - enabled: 1
+    path: Assets/Santiago/Scenes/PreGachaScene.unity
+    guid: de67fda5652c6d840aadbbfab07a41be
+  - enabled: 1
+    path: Assets/Santiago/Scenes/Gacha.unity
+    guid: 92b3fade78ffc8343acac98784ffc5c7
+  - enabled: 1
+    path: Assets/Santiago/Scenes/BeforeDungeon.unity
+    guid: 207435c55b771984a99e2e30da9fff19
+  - enabled: 1
+    path: Assets/Santiago/Scenes/Dungeon.unity
+    guid: 632130486dfe24f4fb44b449674bdb17
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 78df0b335753a7243bb89a731de2cc51, type: 3}
   m_UseUCBPForAssetBundles: 0
