@@ -6,13 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Santiago/Scenes/MainMenu.unity
+    path: Assets/Santiago/Scenes/USANDO-ESTAS/MainMenu.unity
     guid: 6680eedc812f1cd4fa887fe81f6a939e
   - enabled: 1
-    path: Assets/Santiago/Scenes/Story.unity
+    path: Assets/Santiago/Scenes/USANDO-ESTAS/Story.unity
     guid: 01bd5f4929e309947a2da1f3e5d1ca44
   - enabled: 1
-    path: Assets/Santiago/Scenes/WorldExploration.unity
+    path: Assets/Santiago/Scenes/USANDO-ESTAS/WorldExploration.unity
     guid: e94ef51652263a9448964a2286ff8dfa
   - enabled: 1
     path: Assets/_Project/Scenes/Multiplayer_Lobby.unity
@@ -21,15 +21,21 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/Multiplayer_BossFight.unity
     guid: 735fd352671323d40ae383b884ca5eca
   - enabled: 1
-    path: Assets/Santiago/Scenes/PreGachaScene.unity
+    path: Assets/Santiago/Scenes/USANDO-ESTAS/PreGachaScene.unity
     guid: de67fda5652c6d840aadbbfab07a41be
   - enabled: 1
-    path: Assets/Santiago/Scenes/Gacha.unity
+    path: Assets/Santiago/Scenes/USANDO-ESTAS/Gacha.unity
     guid: 92b3fade78ffc8343acac98784ffc5c7
   - enabled: 1
+    path: Assets/Santiago/Scenes/USANDO-ESTAS/SantiagoLevelBlocking.unity
+    guid: ff73c6b002b4ae14bb3ddc3e1534d9d4
+  - enabled: 0
+    path: Assets/Santiago/Scenes/SantiagoDungeonExploration.unity
+    guid: a3648061d88bff144a271c0afe42adf5
+  - enabled: 0
     path: Assets/Santiago/Scenes/BeforeDungeon.unity
     guid: 207435c55b771984a99e2e30da9fff19
-  - enabled: 1
+  - enabled: 0
     path: Assets/Santiago/Scenes/Dungeon.unity
     guid: 632130486dfe24f4fb44b449674bdb17
   m_configObjects:
