@@ -31,8 +31,14 @@ namespace Runefall.Presentation.Combat
         [Header("Last Hit Drama (signal 1: Outro_LastHitDrama)")]
         [Tooltip("Time scale at the instant of the kill (hit-stop / freeze frame).")]
         [SerializeField] private float _lastHitFreezeScale = 0.06f;
-        [Tooltip("FOV reduction applied to the gameplay camera.")]
-        [SerializeField] private float _lastHitZoomFovDelta = 20f;
+        [Tooltip("Fallback FOV reduction used only when no enemy pawns are found.")]
+        [SerializeField] private float _lastHitZoomFovDelta = 12f;
+        [Tooltip("Tightest FOV the dynamic framing is allowed to reach (single enemy). Higher = less aggressive zoom.")]
+        [SerializeField] private float _lastHitZoomMinFov = 24f;
+        [Tooltip("Widest FOV the dynamic framing may open to so several spread enemies all fit on screen.")]
+        [SerializeField] private float _lastHitZoomMaxFov = 55f;
+        [Tooltip("Extra metres of breathing room added around the enemy group when fitting the FOV.")]
+        [SerializeField] private float _lastHitFramingPadding = 1.5f;
         [Tooltip("How long the hard hit-stop freeze holds.")]
         [SerializeField] private float _freezeHoldDuration = 0.30f;
 
@@ -267,23 +273,81 @@ namespace Runefall.Presentation.Combat
         {
             var cam = Camera.main;
             if (cam == null) return;
-            Vector3 focus = GetEnemyFocusPoint();
+
+            var enemies = GetEnemyPawnPositions();
+            if (enemies.Count == 0)
+            {
+                // No pawns located — degrade to the old fixed-delta zoom on the fallback focus.
+                Vector3 fb = GetEnemyFocusPoint();
+                AimCameraAt(cam, fb);
+                cam.fieldOfView = Mathf.Clamp(cam.fieldOfView - _lastHitZoomFovDelta, _lastHitZoomMinFov, _lastHitZoomMaxFov);
+                return;
+            }
+
+            // Focus = centroid of every enemy pawn, raised to chest height.
+            Vector3 centroid = Vector3.zero;
+            for (int i = 0; i < enemies.Count; i++) centroid += enemies[i];
+            centroid /= enemies.Count;
+            Vector3 focus = centroid + Vector3.up * 1.2f;
+
+            // Aim first so the fit distance is measured along the final view direction.
+            AimCameraAt(cam, focus);
+
+            // Bounding radius over the whole group (feet + head height so tall/spread pawns fit).
+            float radius = 0f;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                radius = Mathf.Max(radius, Vector3.Distance(focus, enemies[i]));
+                radius = Mathf.Max(radius, Vector3.Distance(focus, enemies[i] + Vector3.up * 1.8f));
+            }
+            radius += _lastHitFramingPadding;
+
+            float dist = Vector3.Distance(cam.transform.position, focus);
+            if (dist < 0.01f) dist = 0.01f;
+
+            // Vertical FOV that fits the bounding sphere. Aspect makes the horizontal FOV wider, so
+            // the vertical axis is the binding constraint — fit it and everything fits.
+            float requiredFov = 2f * Mathf.Atan(radius / dist) * Mathf.Rad2Deg;
+            cam.fieldOfView = Mathf.Clamp(requiredFov, _lastHitZoomMinFov, _lastHitZoomMaxFov);
+        }
+
+        private static void AimCameraAt(Camera cam, Vector3 focus)
+        {
             Vector3 dir = focus - cam.transform.position;
             if (dir.sqrMagnitude > 0.0001f) cam.transform.rotation = Quaternion.LookRotation(dir);
-            cam.fieldOfView = Mathf.Max(10f, cam.fieldOfView - _lastHitZoomFovDelta);
+        }
+
+        /// <summary>All enemy pawn world positions still on the field (slots preferred, team fallback).</summary>
+        private List<Vector3> GetEnemyPawnPositions()
+        {
+            var list = new List<Vector3>();
+            var b = Bootstrapper;
+            if (b == null) return list;
+
+            if (b.arenaAssembler != null && b.arenaAssembler.IsReady)
+            {
+                foreach (var slot in b.arenaAssembler.EnemySlots)
+                    if (slot != null && slot.childCount > 0)
+                        list.Add(slot.GetChild(0).position);
+                if (list.Count > 0) return list;
+            }
+
+            if (b.enemyTeam != null)
+                for (int i = 0; i < b.enemyTeam.childCount; i++)
+                    list.Add(b.enemyTeam.GetChild(i).position);
+
+            return list;
         }
 
         private Vector3 GetEnemyFocusPoint()
         {
-            var b = Bootstrapper;
-            if (b != null && b.enemyTeam != null && b.enemyTeam.childCount > 0)
+            var positions = GetEnemyPawnPositions();
+            if (positions.Count > 0)
             {
                 Vector3 sum = Vector3.zero;
-                for (int i = 0; i < b.enemyTeam.childCount; i++) sum += b.enemyTeam.GetChild(i).position;
-                return sum / b.enemyTeam.childCount + Vector3.up * 1.2f;
+                for (int i = 0; i < positions.Count; i++) sum += positions[i];
+                return sum / positions.Count + Vector3.up * 1.2f;
             }
-            var enemy = FindDefeatedEnemyPawn();
-            if (enemy != null) return enemy.position + Vector3.up * 1.2f;
             var c = Camera.main;
             return c != null ? c.transform.position + c.transform.forward * 5f : Vector3.zero;
         }

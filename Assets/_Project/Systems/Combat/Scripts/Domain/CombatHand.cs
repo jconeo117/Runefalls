@@ -18,6 +18,7 @@ namespace Runefall.Combat
     {
         private readonly List<BattleCard> _slots;
         private readonly CardPool         _pool;
+        private readonly HashSet<int>     _reserved = new();   // card Ids queued by the player — excluded from merges
 
         public int  HandSize           { get; private set; }
         public int  ActionsPerTurn     { get; private set; }
@@ -120,6 +121,7 @@ namespace Runefall.Combat
                     var b = _slots[i + 1];
 
                     if (a.IsUltimate || b.IsUltimate) continue;
+                    if (_reserved.Contains(a.Id) || _reserved.Contains(b.Id)) continue;   // queued card — never auto-merge it
                     if (a.Skill != b.Skill || a.Rank != b.Rank || a.Rank >= 3) continue;
 
                     _slots[i] = a.WithRank(a.Rank + 1);
@@ -183,7 +185,17 @@ namespace Runefall.Combat
             ActionsRemaining = count;
         }
 
-        public void ResetActions() => ActionsRemaining = ActionsPerTurn;
+        public void ResetActions()
+        {
+            ActionsRemaining = ActionsPerTurn;
+            _reserved.Clear();   // queued cards never survive into a new turn
+        }
+
+        /// <summary>Mark a queued card so a card MOVE never merges it with a twin while it waits in the
+        /// action queue. Presentation reserves on queue and frees it on commit / turn start.</summary>
+        public void Reserve(int cardId)   => _reserved.Add(cardId);
+        public void Unreserve(int cardId) => _reserved.Remove(cardId);
+        public void ClearReservations()   => _reserved.Clear();
 
         /// <summary>Add the ultimate as a freshly DRAWN card (appended, like a pool draw) and count it as a
         /// new card so it animates in with the turn-start refill — never injected mid-turn at index 0.

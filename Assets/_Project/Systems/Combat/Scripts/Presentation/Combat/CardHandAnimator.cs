@@ -166,7 +166,7 @@ namespace Runefall.Presentation.Combat
             Vector3 startPos  = new Vector3(targetPos.x - 400f, targetPos.y, 0f); // start 400 units to the left
 
             cv.transform.localPosition = startPos;
-            cv.transform.localScale = Vector3.one * _cardScale * 0.5f; // start smaller for a nice pop-in effect
+            cv.transform.localScale = cv.RestScale(_cardScale, 0.5f); // start smaller for a nice pop-in effect
             var cg = cv.GetComponent<CanvasGroup>() ?? cv.gameObject.AddComponent<CanvasGroup>();
             cg.alpha = 0f;
 
@@ -189,7 +189,7 @@ namespace Runefall.Presentation.Combat
                 }
 
                 cv.transform.localPosition = Vector3.Lerp(startPos, targetPos, t);
-                cv.transform.localScale = Vector3.Lerp(Vector3.one * _cardScale * 0.5f, Vector3.one * _cardScale, t);
+                cv.transform.localScale = Vector3.Lerp(cv.RestScale(_cardScale, 0.5f), cv.RestScale(_cardScale), t);
                 cg.alpha = norm;
 
                 yield return null;
@@ -200,7 +200,7 @@ namespace Runefall.Presentation.Combat
                 visualIdx = _cardViews.IndexOf(cv);
                 if (visualIdx >= 0)
                     cv.transform.localPosition = _cardTargetLocalPos(visualIdx, _cardViews.Count, cardWidth);
-                cv.transform.localScale = Vector3.one * _cardScale;
+                cv.transform.localScale = cv.RestScale(_cardScale);
                 cg.alpha = 1f;
             }
 
@@ -225,7 +225,7 @@ namespace Runefall.Presentation.Combat
                 Vector3 tempStart  = new Vector3(tempTarget.x - 400f, tempTarget.y, 0f);
 
                 tempCv.transform.localPosition = tempStart;
-                tempCv.transform.localScale = Vector3.one * _cardScale * 0.5f;
+                tempCv.transform.localScale = tempCv.RestScale(_cardScale, 0.5f);
 
                 while (tempElapsed < tempDuration)
                 {
@@ -244,7 +244,7 @@ namespace Runefall.Presentation.Combat
                     tempStart = new Vector3(tempTarget.x - 400f, tempTarget.y, 0f);
 
                     tempCv.transform.localPosition = Vector3.Lerp(tempStart, tempTarget, t);
-                    tempCv.transform.localScale = Vector3.Lerp(Vector3.one * _cardScale * 0.5f, Vector3.one * _cardScale, t);
+                    tempCv.transform.localScale = Vector3.Lerp(tempCv.RestScale(_cardScale, 0.5f), tempCv.RestScale(_cardScale), t);
                     tempCg.alpha = norm;
 
                     yield return null;

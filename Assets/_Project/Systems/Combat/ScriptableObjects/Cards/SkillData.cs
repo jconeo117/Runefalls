@@ -28,6 +28,8 @@ namespace Runefall.Data
         public Sprite cardArt;
         public SkillType type;
         public ElementType element;
+        [Tooltip("Optional. Leave empty to auto-generate the base text (daño/elemento/% del ataque/objetivo) in the UI.")]
+        [TextArea] public string description;
 
         [Header("Targeting")]
         public TargetType targetType = TargetType.SingleEnemy;

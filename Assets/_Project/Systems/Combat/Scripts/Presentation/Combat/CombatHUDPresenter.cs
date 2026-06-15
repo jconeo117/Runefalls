@@ -64,7 +64,7 @@ namespace Runefall.Presentation.Combat
         private CanvasGroup      _rootGroup;
 
         private readonly List<CardView>                 _cardViews   = new();
-        private readonly List<(int index, ICombatActor target)> _pending = new();
+        private readonly List<(int cardId, ICombatActor target)> _pending = new();
         protected readonly List<Transform>              _activeSlots = new();
 
         private ICombatActor  _selectedTarget;
@@ -204,7 +204,8 @@ namespace Runefall.Presentation.Combat
             // Stop any in-flight animation before reparenting to the action slot.
             cv.StopAllAnimations();
 
-            int tmIndex = cv.HandIndex;
+            int cardId = cv.Card.Id;
+            _tm.Hand.Reserve(cardId);   // hold this card out of any move-triggered merge while it waits in the queue
 
             _cardViews.Remove(cv);
 
@@ -229,7 +230,7 @@ namespace Runefall.Presentation.Combat
             if (cardHandContainer is RectTransform crt)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(crt);
 
-            _pending.Add((tmIndex, _selectedTarget));
+            _pending.Add((cardId, _selectedTarget));
 
             if (_tm.Hand.ActionsRemaining > 0 && _pending.Count >= _tm.Hand.ActionsRemaining)
                 ExecuteQueue();
@@ -249,23 +250,20 @@ namespace Runefall.Presentation.Combat
         {
             _isExecutingQueue = true;
 
-            var indices = new List<int>(_pending.Count);
-            var targets = new List<ICombatActor>(_pending.Count);
-            foreach (var p in _pending) { indices.Add(p.index); targets.Add(p.target); }
+            var pend = new List<(int cardId, ICombatActor target)>(_pending);
             _pending.Clear();
 
-            for (int i = 0; i < indices.Count; i++)
+            for (int i = 0; i < pend.Count; i++)
             {
-                int adjIdx     = indices[i];
-                int sizeBefore = _tm.Hand.Slots.Count;
-                _tm.SubmitSkill(adjIdx, targets[i]);   // each commit fills one gauge section → bar updates in real time
-                int netRemoved = sizeBefore - _tm.Hand.Slots.Count;
-                for (int j = i + 1; j < indices.Count; j++)
-                    if (indices[j] > adjIdx) indices[j] -= netRemoved;
+                _tm.Hand.Unreserve(pend[i].cardId);        // free this card so it can be played/removed
+                int idx = IndexOfCardId(pend[i].cardId);   // resolve fresh — survives any move/merge of other cards
+                if (idx >= 0)
+                    _tm.SubmitSkill(idx, pend[i].target);  // each commit fills one gauge section → bar updates in real time
 
-                if (i < indices.Count - 1)
+                if (i < pend.Count - 1)
                     yield return new WaitForSeconds(_queueStepDelay);
             }
+            _tm.Hand.ClearReservations();   // safety — drop any stragglers
 
             _isExecutingQueue = false;
         }
@@ -279,23 +277,19 @@ namespace Runefall.Presentation.Combat
 
             int fromDomain = cv.HandIndex;
 
-            // Map the visual X position of drop to visual index
+            // Map the drop X to the destination visible card, then use ITS domain index. Equals the old
+            // reversed-count math when nothing is queued, but stays correct when reserved (hidden) cards
+            // make the visible list shorter than the domain hand.
             int toVisual = GetVirtualVisualIndex(cv.transform.position.x);
-
-            // Convert visual index back to domain index (indices are reversed)
-            int toDomain = _cardViews.Count - 1 - toVisual;
+            toVisual = Mathf.Clamp(toVisual, 0, Mathf.Max(0, _cardViews.Count - 1));
+            var toView = _cardViews.Count > 0 ? _cardViews[toVisual] : null;
+            int toDomain = toView != null ? toView.HandIndex : fromDomain;
             toDomain = Mathf.Clamp(toDomain, 0, _tm.Hand.Slots.Count - 1);
 
             int arBefore = _tm.Hand.ActionsRemaining;
             if (_tm.SubmitMove(fromDomain, toDomain))
             {
-                for (int i = 0; i < _pending.Count; i++)
-                {
-                    int pi = _pending[i].index;
-                    if (fromDomain < pi) pi--;
-                    if (toDomain   <= pi) pi++;
-                    _pending[i] = (pi, _pending[i].target);
-                }
+                // Pending plays are tracked by card Id, so a move never invalidates them — no index fix-up needed.
 
                 if (_tm.Phase == CombatPhase.PlayerTurn
                     && _tm.Hand.ActionsRemaining == arBefore - 1)
@@ -383,7 +377,7 @@ namespace Runefall.Presentation.Combat
                 // Smoothly slide card towards its target slot
                 cv.transform.localPosition = Vector3.Lerp(cv.transform.localPosition, targetLocalPos, Time.deltaTime * slideSpeed);
                 cv.transform.localRotation = Quaternion.Lerp(cv.transform.localRotation, Quaternion.identity, Time.deltaTime * slideSpeed);
-                cv.transform.localScale = Vector3.Lerp(cv.transform.localScale, Vector3.one * cardScale, Time.deltaTime * slideSpeed);
+                cv.transform.localScale = Vector3.Lerp(cv.transform.localScale, cv.RestScale(cardScale), Time.deltaTime * slideSpeed);
             }
         }
 
@@ -456,6 +450,7 @@ namespace Runefall.Presentation.Combat
                     int oldRank = matchedView.Card.Rank;
                     matchedView.targetScale = cardScale;
                     matchedView.Setup(slot.IsUltimate ? slot : slot.WithRank(visRank), elemColor);
+                    matchedView.SetArtScale(1f, 1.15f);   // enlarge card art only
                     matchedView.HandIndex = domIdx;
 
                     var btn = matchedView.GetComponent<Button>();
@@ -484,6 +479,7 @@ namespace Runefall.Presentation.Combat
                     cv.transform.localScale = Vector3.zero;
 
                     cv.Setup(slot.IsUltimate ? slot : slot.WithRank(1), elemColor);
+                    cv.SetArtScale(1f, 1.15f);   // enlarge card art only
                     cv.HandIndex = domIdx;
                     cv.OnReorderRequested = ReorderCard;
 
@@ -580,30 +576,29 @@ namespace Runefall.Presentation.Combat
 
         // ── Virtual hand (pending actions preview) ───────────────────────────
 
+        private int IndexOfCardId(int cardId)
+        {
+            var slots = _tm.Hand.Slots;
+            for (int i = 0; i < slots.Count; i++)
+                if (slots[i].Id == cardId) return i;
+            return -1;
+        }
+
         private List<(int domainIdx, int visRank)> BuildVirtualHand()
         {
             var slots = _tm.Hand.Slots;
+
+            var pendingIds = new HashSet<int>();
+            foreach (var p in _pending) pendingIds.Add(p.cardId);
+
+            // Show every hand slot except the queued (pending) cards, then preview the merges that
+            // resolve once those queued cards leave the hand on commit.
             var vhand = new List<(int, int)>(slots.Count);
             for (int i = 0; i < slots.Count; i++)
-                vhand.Add((i, slots[i].Rank));
+                if (!pendingIds.Contains(slots[i].Id))
+                    vhand.Add((i, slots[i].Rank));
 
-            var indices = new List<int>(_pending.Count);
-            foreach (var p in _pending) indices.Add(p.index);
-
-            for (int i = 0; i < indices.Count; i++)
-            {
-                int adjIdx = indices[i];
-                if (adjIdx < 0 || adjIdx >= vhand.Count) continue;
-
-                int sizeBefore = vhand.Count;
-                vhand.RemoveAt(adjIdx);
-                ApplyVirtualMerges(vhand, slots);
-                int netRemoved = sizeBefore - vhand.Count;
-
-                for (int j = i + 1; j < indices.Count; j++)
-                    if (indices[j] > adjIdx) indices[j] -= netRemoved;
-            }
-
+            ApplyVirtualMerges(vhand, slots);
             return vhand;
         }
 

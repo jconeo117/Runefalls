@@ -76,7 +76,17 @@ namespace Runefall.Presentation.Enemies
 
             ConfigureAgentMovement();
             SetPatrolSpeed();
+            EnsureAgentOnNavMesh();
             AdvanceToNextWaypoint();
+        }
+
+        // Root-motion agents (updatePosition=false) can spawn a hair off the baked surface; snap them on
+        // so SetDestination/remainingDistance are legal. No-op once already on the mesh.
+        private void EnsureAgentOnNavMesh()
+        {
+            if (_agent == null || _agent.isOnNavMesh) return;
+            if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
+                _agent.Warp(hit.position);
         }
 
         private void Update()
@@ -113,6 +123,7 @@ namespace Runefall.Presentation.Enemies
         private void TickPatrol()
         {
             if (_waypoints == null || _waypoints.Length == 0) return;
+            if (_agent == null || !_agent.isOnNavMesh) return;
 
             if (_waiting)
             {
@@ -135,6 +146,7 @@ namespace Runefall.Presentation.Enemies
 
         private void TickChase()
         {
+            if (_agent == null || !_agent.isOnNavMesh) return;
             _agent.SetDestination(_playerTransform.position);
         }
 
@@ -257,6 +269,7 @@ namespace Runefall.Presentation.Enemies
         private void AdvanceToNextWaypoint()
         {
             if (_waypoints == null || _waypoints.Length == 0) return;
+            if (_agent == null || !_agent.isOnNavMesh) return;
             _patrolIndex = (_patrolIndex + 1) % _waypoints.Length;
             _agent.SetDestination(_waypoints[_patrolIndex].position);
         }

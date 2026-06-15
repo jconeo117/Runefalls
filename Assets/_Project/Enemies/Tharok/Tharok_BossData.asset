@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74914a587ebe51447b99da1ba95e222b, type: 3}
+  m_Name: Tharok_BossData
+  m_EditorClassIdentifier: 
+  enemyName: Tharok
+  prefab: {fileID: 6657998494629072559, guid: 29587fce970d2104ca0257504dd0756f, type: 3}
+  portrait: {fileID: 0}
+  element: 0
+  stats:
+    ofensivas:
+      ataque: 2400
+      perforacion: 0.35
+      critChance: 0.25
+      "critDa\xF1o": 1.4
+    defensivas:
+      defensa: 2700
+      resistencia: 0.55
+      defensaCrit: 0.5
+      resistenciaCrit: 0.6
+    vitales:
+      ps: 18000
+      roboDeVida: 0.1
+      tasaRegen: 0.15
+      tasaRecuperacion: 0.18
+  maxMP: 0
+  combatClass: 13000
+  detectionRange: 8
+  encounterRange: 1.8
+  patrolRadius: 4
+  respawnsOnRoomExit: 0
+  skill1: {fileID: 0}
+  skill2: {fileID: 0}
+  ultimate: {fileID: 0}
+  animatorController: {fileID: 0}
+  animApproach: {fileID: 0}
+  animGetHit: {fileID: 0}
+  animDeath: {fileID: 0}
+  behaviorTree: 3
+  dropReward:
+    goldMin: 0
+    goldMax: 0
+    possibleRunes: []
+    runeDropChance: 0
+  phasesPassive: {fileID: 11400000, guid: 1ff4d35f97324a54f837f4c706ce7abd, type: 2}
+  phase1Data: {fileID: 11400000, guid: 0690c9bb04baa1d4b800c9992f85adee, type: 2}
+  phase2Data: {fileID: 11400000, guid: 15638fccfb6fd144986b58b20a2cf52d, type: 2}
+  phase3Data: {fileID: 11400000, guid: 52a952d770f7a0f4dbc740f936dd83f7, type: 2}
+  phase1To2Timeline: {fileID: 0}
+  phase2To3Timeline: {fileID: 0}

@@ -12,10 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24c1d34ab4845334fa5203ed94385b46, type: 3}
   m_Name: IceQueen_Ultimate
   m_EditorClassIdentifier: 
-  ultimateName: Blizzard
-  cardArt: {fileID: 0}
+  skillName: Glacial eterno
+  cardArt: {fileID: 21300000, guid: e772b9c485c684d49aaf3e4759a8fb29, type: 3}
+  type: 0
   element: 2
+  description: 
   targetType: 0
+  isRanged: 0
+  ultimateChargeAmount: 0
+  effectsByRank: []
+  ultimateName: Glacial eterno
   effect:
     effects:
     - {fileID: 11400000, guid: b44c347fc2edddd4cb3639cff631db1f, type: 2}

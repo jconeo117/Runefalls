@@ -80,7 +80,12 @@
       "Bash(ls -1 \"Assets/_Project/Systems/Combat/Scripts/Domain/Passives/DominioGlacialPassive.cs\"*)",
       "Bash(ls -1 \"Assets/_Project/Systems/Combat/Scripts/Domain/Effects/HipotermiaEffectDef.cs\"*)",
       "Bash(find Assets -iname \"*hipotermia*\" -o -iname \"*congelado*\" -o -iname \"*dominio*glacial*\" -o -iname \"*dominio*hielo*\" -o -iname \"IceQueen_Passive*\")",
-      "PowerShell(Get-ChildItem *)"
+      "PowerShell(Get-ChildItem *)",
+      "Bash(ls -la \"Assets/_Project/Enemies/Tharok/Model/\")",
+      "Bash(ls \"Assets/_Project/Shared/Materials/Models/Boss/\")",
+      "mcp__UnityMCP__manage_material",
+      "Bash(ls -la \"Assets/_Project/Enemies/Tharok/Prefab/\")",
+      "Bash(ls \"Assets/_Project/Prefabs/Enemies/boss.prefab\")"
     ]
   },
   "hooks": {

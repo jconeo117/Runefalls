@@ -29,11 +29,16 @@ namespace Runefall.Presentation.Combat
         public int        HandIndex;
         public System.Action<CardView> OnReorderRequested;
         [HideInInspector] public float targetScale = 1f;
+        [HideInInspector] public float restScaleY  = 1f;   // absolute Y scale at rest (taller cards)
 
         private RectTransform _rt;
         private Canvas        _canvas;
         private CanvasGroup   _cg;
         private int           _originSibling;
+
+        // Prefab-authored art rect (the frame's inner window). Cached so skill cards restore it
+        // after an ultimate temporarily forced the art to full-bleed.
+        private Vector2 _artAnchorMin, _artAnchorMax, _artOffsetMin, _artOffsetMax;
 
         void Awake()
         {
@@ -41,6 +46,13 @@ namespace Runefall.Presentation.Combat
             _canvas = GetComponentInParent<Canvas>();
             _cg     = GetComponent<CanvasGroup>();
             if (_cg == null) _cg = gameObject.AddComponent<CanvasGroup>();
+
+            if (artBackground != null)
+            {
+                var a = artBackground.rectTransform;
+                _artAnchorMin = a.anchorMin; _artAnchorMax = a.anchorMax;
+                _artOffsetMin = a.offsetMin; _artOffsetMax = a.offsetMax;
+            }
         }
 
         // ── Display ───────────────────────────────────────────────────────────
@@ -51,16 +63,26 @@ namespace Runefall.Presentation.Combat
             bool isUlt = card.IsUltimate;
 
             if (rankFrame != null)
-                rankFrame.sprite = card.Rank switch
-                {
-                    1 => rankSprite1,
-                    2 => rankSprite2,
-                    _ => rankSprite3
-                };
+            {
+                // Ultimates carry their own per-character frame baked into the card art, so the
+                // generic gold rank frame is hidden for them.
+                rankFrame.enabled = !isUlt;
+                if (!isUlt)
+                    rankFrame.sprite = card.Rank switch
+                    {
+                        1 => rankSprite1,
+                        2 => rankSprite2,
+                        _ => rankSprite3
+                    };
+            }
 
             Sprite art = isUlt ? card.Ultimate?.cardArt : card.Skill?.cardArt;
             if (artBackground != null)
             {
+                // Ult art is a full card (art + frame) → fill the whole card; skill art sits
+                // inside the frame's window.
+                ApplyArtRect(fullBleed: isUlt);
+
                 if (art != null)
                 {
                     artBackground.sprite = art;
@@ -94,12 +116,41 @@ namespace Runefall.Presentation.Combat
                     : (card.Skill?.skillName.Replace("_", " ") ?? "?");
         }
 
+        // Full-bleed art fills the whole card (ultimate sprite = art + frame); otherwise the art
+        // returns to the prefab-authored frame window.
+        private void ApplyArtRect(bool fullBleed)
+        {
+            var a = artBackground.rectTransform;
+            if (fullBleed)
+            {
+                a.anchorMin = Vector2.zero; a.anchorMax = Vector2.one;
+                a.offsetMin = Vector2.zero; a.offsetMax = Vector2.zero;
+            }
+            else
+            {
+                a.anchorMin = _artAnchorMin; a.anchorMax = _artAnchorMax;
+                a.offsetMin = _artOffsetMin; a.offsetMax = _artOffsetMax;
+            }
+        }
+
+        /// <summary>Scale only the art background image (not the whole card transform). Call after Setup().</summary>
+        public void SetArtScale(float x, float y)
+        {
+            if (artBackground != null)
+                artBackground.rectTransform.localScale = new Vector3(x, y, 1f);
+        }
+
         // ── Animation API ─────────────────────────────────────────────────────
+
+        // Resting scale: X/Z uniform, Y stretched independently (restScaleY). factor scales both
+        // for pop-in / punch animations.
+        public Vector3 RestScale(float uniform, float factor = 1f)
+            => new Vector3(uniform * factor, restScaleY * factor, uniform * factor);
 
         public void StopAllAnimations()
         {
             StopAllCoroutines();
-            transform.localScale = Vector3.one * targetScale;
+            transform.localScale = RestScale(targetScale);
             if (_cg != null) _cg.alpha = 1f;
         }
 
@@ -130,7 +181,7 @@ namespace Runefall.Presentation.Combat
                 else
                     scale = Mathf.Lerp(cfg.mergeScaleDip, 1f, (norm - 0.7f) / 0.3f);
 
-                transform.localScale = Vector3.one * targetScale * scale;
+                transform.localScale = RestScale(targetScale, scale);
 
                 // Flash white (blink)
                 if (artBackground != null)
@@ -143,7 +194,7 @@ namespace Runefall.Presentation.Combat
                 yield return null;
             }
 
-            transform.localScale = Vector3.one * targetScale;
+            transform.localScale = RestScale(targetScale);
             if (artBackground != null) artBackground.color = defaultColor;
         }
 

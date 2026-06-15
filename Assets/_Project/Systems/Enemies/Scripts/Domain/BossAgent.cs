@@ -58,11 +58,8 @@ namespace Runefall.Enemies
 
         private PendingAction BuildAttack(ICombatActor target)
         {
-            var skill = _currentPhaseData.skill1;
-            
-            if (CurrentPhase == 2 && _currentPhaseData.skill2 != null)
-                skill = _currentPhaseData.skill2;
-            else if (CurrentPhase == 3 && _currentPhaseData.ultimate != null && UnityEngine.Random.value < 0.5f)
+            // Ultimate has a chance to fire in phase 3.
+            if (CurrentPhase == 3 && _currentPhaseData.ultimate != null && UnityEngine.Random.value < 0.4f)
             {
                 return new PendingAction(
                     caster:     this,
@@ -73,6 +70,13 @@ namespace Runefall.Enemies
                     targetType: _currentPhaseData.ultimate.targetType,
                     isUltimate: true);
             }
+
+            // Otherwise pick randomly among the phase's available skills (each phase has up to 2).
+            var s1 = _currentPhaseData.skill1;
+            var s2 = _currentPhaseData.skill2;
+            SkillData skill = (s1 != null && s2 != null)
+                ? (UnityEngine.Random.value < 0.5f ? s1 : s2)
+                : (s1 != null ? s1 : s2);
 
             return new PendingAction(
                 caster:     this,

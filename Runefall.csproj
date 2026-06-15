@@ -99,6 +99,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatBootstrapper.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\StanceEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\CombatActorStatsProvider.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\EnemyStatsProvider.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\ComposablePassive.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\UltimateData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ArrebatoEffectDef.cs" />
@@ -129,10 +130,10 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CharacterSlot.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\ScriptableObjects\Enemies\BossEnemyData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ICombatPresenter.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\IFeedbackPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\SkillEffect.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterAcceptedEvent.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ShieldEffectDef.cs" />
-    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\IFeedbackPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatIntroSequencer.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\PassiveContext.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IEnemyTurnHandler.cs" />

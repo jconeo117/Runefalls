@@ -304,6 +304,14 @@ namespace Runefall.Presentation.Combat
                 if (cd.passive == null) continue;
                 cd.passive.Activate(_ctx.Players[i], _tm, _ctx);
             }
+
+            // Boss phase passives. EnemyData has no passive; only BossEnemyData carries one.
+            foreach (var enemy in _ctx.Enemies)
+            {
+                if (enemy == null) continue;
+                if (_actorEnemyData.TryGetValue(enemy, out var ed) && ed is BossEnemyData boss && boss.phasesPassive != null)
+                    boss.phasesPassive.Activate(enemy, _tm, _ctx);
+            }
         }
 
         private void DeactivatePassives()
@@ -314,6 +322,12 @@ namespace Runefall.Presentation.Combat
                 var cd = kvp.Value;
                 if (cd.passive == null) continue;
                 cd.passive.Deactivate(kvp.Key, _tm);
+            }
+
+            foreach (var kvp in _actorEnemyData)
+            {
+                if (kvp.Value is BossEnemyData boss && boss.phasesPassive != null)
+                    boss.phasesPassive.Deactivate(kvp.Key, _tm);
             }
         }
 
@@ -365,13 +379,26 @@ namespace Runefall.Presentation.Combat
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
             if (_mainCamera == null) return;
 
-            var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(ray, out RaycastHit hit, 100f)) return;
+            var ray  = _mainCamera.ScreenPointToRay(Input.mousePosition);
+            var hits = Physics.RaycastAll(ray, 100f);
 
-            var marker = hit.collider.GetComponentInParent<EnemyTargetMarker>();
+            // Pick capsules are invisible proxies that overlap on screen — the player's foreground
+            // capsule occludes a background enemy, so the CLOSEST hit (a non-enemy) would swallow the
+            // click. Among every enemy the ray pierces, take the live one whose pawn projects nearest
+            // the cursor: the enemy the user actually clicked.
+            EnemyTargetMarker marker = null;
+            float bestSqr = float.MaxValue;
+            Vector2 cursor = Input.mousePosition;
+            foreach (var h in hits)
+            {
+                var m = h.collider.GetComponentInParent<EnemyTargetMarker>();
+                if (m == null || m.Index >= _ctx.Enemies.Count || !_ctx.Enemies[m.Index].IsAlive) continue;
+                Vector3 sp = _mainCamera.WorldToScreenPoint(h.transform.position + Vector3.up);
+                if (sp.z <= 0f) continue;
+                float d = ((Vector2)sp - cursor).sqrMagnitude;
+                if (d < bestSqr) { bestSqr = d; marker = m; }
+            }
             if (marker == null) return;
-            if (marker.Index >= _ctx.Enemies.Count) return;
-            if (!_ctx.Enemies[marker.Index].IsAlive) return;
 
             if (marker.Index == _selectedIndex)
                 ClearSelection();
@@ -569,6 +596,9 @@ namespace Runefall.Presentation.Combat
             _statsOverlay.Initialize(
                 _tm, cameraController, presenter as CombatPresenterBase,
                 (presenter as CombatHUDPresenter)?.cardPrefab);
+            _statsOverlay.SetHpBarsVisibilityCallback(SetHPBarsVisible);
+
+            var inspectables = new List<CombatantStatsSource>();
 
             foreach (var actor in _ctx.Players)
             {
@@ -578,7 +608,23 @@ namespace Runefall.Presentation.Combat
                 var src = pawn.GetComponent<CombatantStatsSource>()
                        ?? pawn.gameObject.AddComponent<CombatantStatsSource>();
                 src.Bind(new CombatActorStatsProvider(actor, data, pawn));
+                inspectables.Add(src);
             }
+
+            // Enemies are inspectable too — same agnostic path, EnemyStatsProvider over EnemyData.
+            foreach (var actor in _ctx.Enemies)
+            {
+                if (!_actorPawns.TryGetValue(actor, out var pawn) || pawn == null) continue;
+                if (!_actorEnemyData.TryGetValue(actor, out var data) || data == null) continue;
+
+                var src = pawn.GetComponent<CombatantStatsSource>()
+                       ?? pawn.gameObject.AddComponent<CombatantStatsSource>();
+                src.Bind(new EnemyStatsProvider(actor, data, pawn));
+                inspectables.Add(src);
+            }
+
+            // Let the overlay's side arrows cycle through every pawn without closing.
+            _statsOverlay.SetInspectables(inspectables);
         }
 
         private HPBarPresenter AttachHPBar(

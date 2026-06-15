@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -34,6 +35,7 @@ namespace Runefall.Presentation.Combat
         private CombatPresenterBase   _hud;
         private CardView              _cardPrefab;
         private Camera                _cam;
+        private System.Action<bool>  _setHpBarsVisible;   // hides world-space HP bars while open
 
         // open gesture state
         private bool    _pressing;
@@ -48,7 +50,22 @@ namespace Runefall.Presentation.Combat
         private bool         _prevCamControllerEnabled;
         private CinemachineBrain _brain;
 
+        // target cycling (arrows flanking the name)
+        private readonly List<CombatantStatsSource>    _sources      = new();
+        private readonly List<ICharacterStatsProvider> _inspectables = new();
+        private int                                    _currentIndex;
+
         private static readonly Color k_Green = new(0.45f, 0.90f, 0.45f);
+
+        // Shared, fixed-position skill description box (centre gap). Rebuilt with the overlay.
+        private GameObject _skillDescBox;
+        private Text       _skillDescTitle;
+        private Text       _skillDescBody;
+
+        // Box geometry — kept here so build + resize agree.
+        private const float kDescW    = 720f;   // narrower than the centre gap so it clears both side panels
+        private const float kDescPadX = 26f, kDescPadTop = 18f, kDescTitleH = 34f, kDescGap = 10f, kDescPadBot = 18f;
+        private const int   kDescBodyFont = 23;
 
         // ── setup ────────────────────────────────────────────────────────────
 
@@ -62,6 +79,18 @@ namespace Runefall.Presentation.Combat
             _cam           = Camera.main;
             if (_isOpen) Close();   // a re-init (restart) while open → reset cleanly
         }
+
+        /// <summary>Provide every inspectable pawn so the side arrows can cycle targets without
+        /// closing. Called by the bootstrapper after binding all CombatantStatsSources.</summary>
+        public void SetInspectables(List<CombatantStatsSource> sources)
+        {
+            _sources.Clear();
+            if (sources != null) _sources.AddRange(sources);
+        }
+
+        /// <summary>Callback the bootstrapper supplies to show/hide world-space HP bars while the
+        /// overlay is open. Kept as a delegate so the overlay stays decoupled from the bootstrapper.</summary>
+        public void SetHpBarsVisibilityCallback(System.Action<bool> cb) => _setHpBarsVisible = cb;
 
         private void OnDisable() => ForceClose();
 
@@ -103,18 +132,39 @@ namespace Runefall.Presentation.Combat
         private void TryOpen()
         {
             if (_cam == null) return;
-            var ray = _cam.ScreenPointToRay(_downPos);
-            if (!Physics.Raycast(ray, out var hit, 100f)) return;
-            var src = hit.collider.GetComponentInParent<CombatantStatsSource>();
-            if (src?.Provider == null) return;
-            Open(src.Provider);
+            var ray  = _cam.ScreenPointToRay(_downPos);
+            var hits = Physics.RaycastAll(ray, 100f);
+
+            // Pick colliders are invisible proxy capsules that overlap on screen: the player's
+            // foreground capsule (over-the-shoulder cam) sits between the camera and a background
+            // enemy, so the CLOSEST hit is always the player. Instead, among every inspectable the
+            // ray pierces, take the one whose pawn projects nearest the press point — i.e. the pawn
+            // the user actually pressed on.
+            CombatantStatsSource best = null;
+            float bestSqr = float.MaxValue;
+            foreach (var h in hits)
+            {
+                var s = h.collider.GetComponentInParent<CombatantStatsSource>();
+                if (s?.Provider?.FocusTarget == null) continue;
+                Vector3 sp = _cam.WorldToScreenPoint(s.Provider.FocusTarget.position + Vector3.up);
+                if (sp.z <= 0f) continue;   // behind the camera
+                float d = ((Vector2)sp - (Vector2)_downPos).sqrMagnitude;
+                if (d < bestSqr) { bestSqr = d; best = s; }
+            }
+            if (best?.Provider == null) return;
+            Open(best.Provider);
         }
 
         // ── open / close ─────────────────────────────────────────────────────
 
         private void Open(ICharacterStatsProvider p)
         {
+            if (_isOpen) return;
             _isOpen = true;
+
+            // Order every inspectable left→right NOW, while the camera is still at its gameplay pose
+            // (before we dolly), so the side arrows step through pawns the way they're laid out.
+            BuildInspectables(p);
 
             // Take camera control from the combat systems.
             if (_camController != null) { _prevCamControllerEnabled = _camController.enabled; _camController.enabled = false; }
@@ -124,14 +174,9 @@ namespace Runefall.Presentation.Combat
                 if (_brain != null) { _prevBrainEnabled = _brain.enabled; _brain.enabled = false; }
             }
 
-            if (p.FocusTarget != null && _cam != null)
-            {
-                if (_frameRoutine != null) StopCoroutine(_frameRoutine);
-                _frameRoutine = StartCoroutine(FramePawn(p.FocusTarget));
-            }
-
             _hud?.HideAllUI();
-            BuildOverlay(p);
+            _setHpBarsVisible?.Invoke(false);   // world-space HP bars off during inspection
+            RenderCurrent();
         }
 
         private void Close()
@@ -141,11 +186,57 @@ namespace Runefall.Presentation.Combat
             if (_frameRoutine != null) { StopCoroutine(_frameRoutine); _frameRoutine = null; }
             if (_overlayRoot != null) { Destroy(_overlayRoot); _overlayRoot = null; }
 
+            _inspectables.Clear();
+            _currentIndex = 0;
+
             _hud?.ShowAllUI();
+            _setHpBarsVisible?.Invoke(true);   // restore world-space HP bars
 
             // Hand control back; the combat camera resumes its gameplay framing.
             if (_brain != null) _brain.enabled = _prevBrainEnabled;
             if (_camController != null) _camController.enabled = _prevCamControllerEnabled;
+        }
+
+        // ── target cycling ───────────────────────────────────────────────────
+
+        private void BuildInspectables(ICharacterStatsProvider current)
+        {
+            _inspectables.Clear();
+            foreach (var s in _sources)
+                if (s != null && s.Provider != null) _inspectables.Add(s.Provider);
+
+            // Left → right by screen X, so arrow-left goes to the pawn on the left and back.
+            if (_cam != null)
+                _inspectables.Sort((a, b) => ScreenX(a).CompareTo(ScreenX(b)));
+
+            _currentIndex = Mathf.Max(0, _inspectables.IndexOf(current));
+        }
+
+        private float ScreenX(ICharacterStatsProvider p)
+            => p?.FocusTarget != null ? _cam.WorldToScreenPoint(p.FocusTarget.position).x : 0f;
+
+        private void Step(int dir)
+        {
+            if (_inspectables.Count <= 1) return;
+            _currentIndex = (_currentIndex + dir + _inspectables.Count) % _inspectables.Count;
+            RenderCurrent();
+        }
+
+        // Re-frames the current pawn and rebuilds the panels. Camera takeover stays as-is, so
+        // cycling never leaves the overlay.
+        private void RenderCurrent()
+        {
+            if (_inspectables.Count == 0) return;
+            var p = _inspectables[_currentIndex];
+
+            if (p.FocusTarget != null && _cam != null)
+            {
+                if (_frameRoutine != null) StopCoroutine(_frameRoutine);
+                _frameRoutine = StartCoroutine(FramePawn(p.FocusTarget));
+            }
+
+            if (_overlayRoot != null) { Destroy(_overlayRoot); _overlayRoot = null; }
+            BuildOverlay(p);
         }
 
         private IEnumerator FramePawn(Transform focus)
@@ -200,9 +291,11 @@ namespace Runefall.Presentation.Combat
             var root = backdrop.transform;
 
             BuildName(root, p);
+            BuildNavArrows(root);
             BuildStatBlock(root, p);
             BuildSkillPanel(root, p);
             BuildPassivePanel(root, p);
+            BuildSharedSkillDescBox(root);
             BuildCloseButton(root);
         }
 
@@ -215,6 +308,34 @@ namespace Runefall.Presentation.Combat
             rt.pivot = new Vector2(0.5f, 1f); rt.sizeDelta = new Vector2(900f, 70f);
             rt.anchoredPosition = new Vector2(0f, -36f);
             AddShadow(t.gameObject);
+        }
+
+        // ‹ › flanking the name: cycle the inspected pawn without leaving the overlay.
+        private void BuildNavArrows(Transform root)
+        {
+            if (_inspectables.Count <= 1) return;
+            NavArrow(root, "NavPrev", "‹", -1, -1f);
+            NavArrow(root, "NavNext", "›", +1, +1f);
+        }
+
+        private void NavArrow(Transform root, string name, string glyph, int dir, float side)
+        {
+            var img = Panel(root, name, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                Vector2.zero, Vector2.zero, new Color(0.10f, 0.13f, 0.18f, 0.92f));
+            var rt = img.rectTransform;
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.sizeDelta = new Vector2(66f, 66f);
+            rt.anchoredPosition = new Vector2(side * 300f, -39f);   // flank the name
+            Frame(img, new Color(0.55f, 0.68f, 0.85f, 0.85f));
+
+            var t = Text(img.transform, "g", glyph, 46, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold);
+            t.rectTransform.anchorMin = Vector2.zero; t.rectTransform.anchorMax = Vector2.one;
+            t.rectTransform.offsetMin = t.rectTransform.offsetMax = Vector2.zero;
+            t.raycastTarget = false;
+            AddShadow(t.gameObject);
+
+            var btn = img.gameObject.AddComponent<Button>();
+            btn.onClick.AddListener(() => Step(dir));
         }
 
         private void BuildStatBlock(Transform root, ICharacterStatsProvider p)
@@ -364,7 +485,12 @@ namespace Runefall.Presentation.Combat
                 rt.pivot = new Vector2(0.5f, 0.5f);
                 rt.sizeDelta = new Vector2(130f, 170f);
                 rt.anchoredPosition = pos;
-                cv.transform.localScale = Vector3.one * 0.91f;
+                cv.restScaleY = 1.1f;
+                cv.transform.localScale = cv.RestScale(0.91f);
+                cv.SetArtScale(1.15f, 1.25f);   // enlarge card art only
+
+                // Hover the card → fill the shared, fixed description box (centre gap).
+                AddSkillHover(cv.gameObject, card);
                 return;
             }
 
@@ -483,6 +609,174 @@ namespace Runefall.Presentation.Combat
             Object.Destroy(go);
             return h;
         }
+
+        // ── skill description hover box ──────────────────────────────────────
+
+        // One fixed box living in the centre gap (between the stat block on the left and the passive
+        // panel on the right). Hidden until a card is hovered; content swaps per card, position never
+        // moves. Built once per overlay; rebuilt with it.
+        private void BuildSharedSkillDescBox(Transform root)
+        {
+            var panel = Panel(root, "SkillDescBox",
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero,
+                new Color(0.04f, 0.06f, 0.09f, 0.96f));
+            var prt = panel.rectTransform;
+            prt.pivot = new Vector2(0.5f, 0f);                       // bottom-anchored → grows UP, gap above cards fixed
+            prt.sizeDelta = new Vector2(kDescW, 220f);
+            prt.anchoredPosition = new Vector2(40f, -285f);         // centre gap, sitting just above the card strip
+            Frame(panel, new Color(0.55f, 0.68f, 0.85f, 0.85f));
+            panel.raycastTarget = false;                           // never steal hover from the cards
+
+            var titleT = Text(panel.transform, "Title", "", 26, TextAnchor.UpperLeft,
+                new Color(0.95f, 0.9f, 0.6f), FontStyle.Bold);
+            var trt = titleT.rectTransform;
+            trt.anchorMin = new Vector2(0f, 1f); trt.anchorMax = new Vector2(1f, 1f);
+            trt.pivot = new Vector2(0.5f, 1f);
+            trt.offsetMin = new Vector2(kDescPadX, -(kDescPadTop + kDescTitleH));
+            trt.offsetMax = new Vector2(-kDescPadX, -kDescPadTop);
+            titleT.raycastTarget = false;
+            AddShadow(titleT.gameObject);
+
+            var bodyT = Text(panel.transform, "Body", "", kDescBodyFont, TextAnchor.UpperLeft,
+                new Color(0.86f, 0.92f, 0.96f), FontStyle.Normal);
+            bodyT.lineSpacing = 1.15f;
+            var brt = bodyT.rectTransform;
+            brt.anchorMin = Vector2.zero; brt.anchorMax = Vector2.one;   // fill below the title; panel resizes
+            brt.offsetMin = new Vector2(kDescPadX, kDescPadBot);
+            brt.offsetMax = new Vector2(-kDescPadX, -(kDescPadTop + kDescTitleH + kDescGap));
+            bodyT.raycastTarget = false;
+
+            _skillDescBox   = panel.gameObject;
+            _skillDescTitle = titleT;
+            _skillDescBody  = bodyT;
+            panel.gameObject.SetActive(false);
+        }
+
+        private void AddSkillHover(GameObject target, BattleCard card)
+        {
+            var trigger = target.AddComponent<EventTrigger>();
+
+            var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            enter.callback.AddListener(_ => ShowSkillDesc(card));
+            trigger.triggers.Add(enter);
+
+            var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+            exit.callback.AddListener(_ => HideSkillDesc());
+            trigger.triggers.Add(exit);
+        }
+
+        private void ShowSkillDesc(BattleCard card)
+        {
+            if (_skillDescBox == null) return;
+
+            string title = card.IsUltimate
+                ? (card.Ultimate?.ultimateName ?? "Definitivo")
+                : (card.Skill?.skillName?.Replace("_", " ") ?? "Habilidad");
+            string body = ColorizeEffects(BuildSkillDescription(card));
+
+            _skillDescTitle.text = title;
+            _skillDescBody.text  = body;
+
+            // Resize height to the text; width + centre stay fixed (pivot at centre).
+            float bodyH = MeasureTextHeight(body, kDescW - kDescPadX * 2f, kDescBodyFont, FontStyle.Normal);
+            float h     = Mathf.Clamp(kDescPadTop + kDescTitleH + kDescGap + bodyH + kDescPadBot, 140f, 360f);
+            ((RectTransform)_skillDescBox.transform).sizeDelta = new Vector2(kDescW, h);
+
+            _skillDescBox.transform.SetAsLastSibling();
+            _skillDescBox.SetActive(true);
+        }
+
+        private void HideSkillDesc()
+        {
+            if (_skillDescBox != null) _skillDescBox.SetActive(false);
+        }
+
+        // ── description text generation ──────────────────────────────────────
+
+        // Authored description wins; otherwise build the base line from the card's data.
+        private static string BuildSkillDescription(BattleCard card)
+        {
+            if (card.IsUltimate)
+            {
+                var ult = card.Ultimate;
+                if (ult == null) return "";
+                if (!string.IsNullOrWhiteSpace(ult.description)) return ult.description;
+                float upct = ResolveDamagePercentFromEffect(ult.effect, 3, out var usrc);
+                return ComposeDamageLine(ult.element, upct, usrc, ult.targetType);
+            }
+
+            var skill = card.Skill;
+            if (skill == null) return "";
+            if (!string.IsNullOrWhiteSpace(skill.description)) return skill.description;
+
+            int rank = Mathf.Clamp(card.Rank, 1, 3);
+            float pct = ResolveDamagePercent(skill, rank, out var src);
+            return ComposeDamageLine(skill.element, pct, src, skill.targetType);
+        }
+
+        private static string ComposeDamageLine(ElementType element, float pct, StatSource src, TargetType target)
+        {
+            string targetWord = TargetWord(target);
+            if (pct <= 0f) return $"Aplica su efecto a {targetWord}.";
+            return $"Hace daño {ElementWordDamage(element)} equivalente al {pct:F0}% del {StatWord(src)} a {targetWord}.";
+        }
+
+        private static float ResolveDamagePercent(SkillData skill, int rank, out StatSource src)
+        {
+            src = StatSource.Attack;
+            var effs = skill.effectsByRank;
+            if (effs == null || effs.Length == 0) return 0f;
+            int idx = Mathf.Clamp(rank - 1, 0, effs.Length - 1);
+            return ResolveDamagePercentFromEffect(effs[idx], rank, out src);
+        }
+
+        private static float ResolveDamagePercentFromEffect(SkillEffect se, int rank, out StatSource src)
+        {
+            src = StatSource.Attack;
+            if (se == null) return 0f;
+
+            if (se.effects != null)
+            {
+                foreach (var e in se.effects)
+                {
+                    if (e is DamageEffectDef dmg && dmg.multiplierByRank != null && dmg.multiplierByRank.Length > 0)
+                    {
+                        int i = Mathf.Clamp(rank - 1, 0, dmg.multiplierByRank.Length - 1);
+                        src = dmg.statSource;
+                        return dmg.multiplierByRank[i] * 100f;
+                    }
+                }
+            }
+
+            // Legacy fallback (effects[] empty).
+            return se.damageMultiplier > 0f ? se.damageMultiplier * 100f : 0f;
+        }
+
+        private static string ElementWordDamage(ElementType e) => e switch
+        {
+            ElementType.Fire   => "de fuego",
+            ElementType.Ice    => "de hielo",
+            ElementType.Shadow => "de sombra",
+            ElementType.Light  => "de luz",
+            ElementType.Earth  => "de tierra",
+            _                  => "físico",
+        };
+
+        private static string TargetWord(TargetType t) => t switch
+        {
+            TargetType.AllEnemies  => "todos los enemigos",
+            TargetType.RandomEnemy => "un enemigo aleatorio",
+            TargetType.Self        => "sí mismo",
+            TargetType.AllAllies   => "todos los aliados",
+            _                      => "un enemigo",
+        };
+
+        private static string StatWord(StatSource s) => s switch
+        {
+            StatSource.Defense => "defensa",
+            StatSource.HP      => "PS",
+            _                  => "ataque",
+        };
 
         private void BuildCloseButton(Transform root)
         {

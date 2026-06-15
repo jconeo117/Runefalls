@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: IceQueen_Skill1
   m_EditorClassIdentifier: 
   skillName: Cristalizacion
-  cardArt: {fileID: 0}
+  cardArt: {fileID: 21300000, guid: cbf26362aa32783449094f71d10412b1, type: 3}
   type: 0
   element: 2
+  description: 
   targetType: 1
   isRanged: 1
   ultimateChargeAmount: 15
