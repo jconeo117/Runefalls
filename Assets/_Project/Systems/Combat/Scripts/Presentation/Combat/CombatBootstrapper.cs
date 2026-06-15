@@ -41,6 +41,7 @@ namespace Runefall.Presentation.Combat
         public CombatAnimationDriver                    animationDriver;
         public CombatCameraDirector                     cameraDirector;
         public CombatVFXPlayer                          vfxPlayer;
+        public CombatAudioPlayer                        audioPlayer;
 
         [Header("Timing")]
         [Tooltip("Seconds to wait after camera starts moving before firing OnPlayerTurnStarted (passives, UI, cards). Match to camera lerpSpeed settle time.")]
@@ -191,6 +192,10 @@ namespace Runefall.Presentation.Combat
                 (actor, pawn) => _actorPawns[actor] = pawn);
 
             vfxPlayer?.Init(_actorPawns, _actorEnemyData);
+
+            if (audioPlayer == null)
+                audioPlayer = GetComponent<CombatAudioPlayer>();
+            audioPlayer?.Init(_actorPawns, _actorCharData, _actorEnemyData);
 
             if (cameraDirector != null && cameraController != null)
             {

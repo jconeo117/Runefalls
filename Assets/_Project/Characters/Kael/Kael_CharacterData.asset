@@ -19,28 +19,30 @@ MonoBehaviour:
   element: 1
   baseStats:
     ofensivas:
-      ataque: 250
-      perforacion: 0
-      critChance: 0.05
-      "critDa\xF1o": 1.5
+      ataque: 2150
+      perforacion: 0.18
+      critChance: 0.12
+      "critDa\xF1o": 1.4
     defensivas:
-      defensa: 120
-      resistencia: 0.1
-      defensaCrit: 0.1
-      resistenciaCrit: 0.05
+      defensa: 4800
+      resistencia: 0.35
+      defensaCrit: 0.75
+      resistenciaCrit: 0.55
     vitales:
-      ps: 2000
-      roboDeVida: 0.05
-      tasaRegen: 0.04
-      tasaRecuperacion: 0.05
-  skill1: {fileID: 11400000, guid: 9fa8b334e15661f48ba69152f04a9d8b, type: 2}
-  skill2: {fileID: 11400000, guid: e58676f1f2b35db4a9451792a66fd9f8, type: 2}
-  ultimate: {fileID: 11400000, guid: ee692069d3ec8694a8e1d2c7171e69f6, type: 2}
+      ps: 19500
+      roboDeVida: 0.09
+      tasaRegen: 0.07
+      tasaRecuperacion: 0.06
+  skill1: {fileID: 11400000, guid: 33cc33cc33cc33cc33cc33cc33cc3301, type: 2}
+  skill2: {fileID: 11400000, guid: 33cc33cc33cc33cc33cc33cc33cc3302, type: 2}
+  ultimate: {fileID: 11400000, guid: 33cc33cc33cc33cc33cc33cc33cc3303, type: 2}
   passive: {fileID: 0}
   explorationAnimatorController: {fileID: 22100000, guid: 74f4465a377b2a34aa3cc3cd49e98a56, type: 2}
   animatorController: {fileID: 0}
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}
+  voiceSet: {fileID: 11400000, guid: ddc36c5c33815a04ba7f4d66e05f5d19, type: 2}
+  combatScaleMultiplier: 0.65
   hpBarFrame: {fileID: 21300000, guid: 8ae617384cd6bb242ba22aef341a14c1, type: 3}
   baseDropRate: 0

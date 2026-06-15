@@ -52,6 +52,10 @@ namespace Runefall.Data
         public AnimationClip animDeath;
 
 
+        [Header("Audio")]
+        [Tooltip("Banco de voces (ataque/golpe/muerte) reproducido en combate por CombatAudioPlayer.")]
+        public VoiceSetData voiceSet;
+
         [Header("HP Bar")]
         [Tooltip("Frame sprite drawn over the HP bar (difficulty-themed border). Null = plain bar.")]
         public Sprite hpBarFrame;

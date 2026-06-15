@@ -8,4 +8,12 @@ AnimatorOverrideController:
   m_PrefabAsset: {fileID: 0}
   m_Name: GranVerdugo_Override
   m_Controller: {fileID: 9100000, guid: 1c939d5c041b0c84d912aeb95bbb30f7, type: 2}
-  m_Clips: []
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 78ca89ac85d25cb45b7b6a40501e76cc, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: a16cbf1e833a9a245959413aaed82913, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: ac683d7ab8b353f4a9cc76e1694442e9, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: aba51471d6e800946afe92e31cf5521c, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: d910969c350815147a214d3d5910994d, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: e1b93524a1b3a9e418f918ccf831ad3d, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 26ac32858392aeb47892ebdbd3e715c5, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 981c60fc10a7ef04a906ca01105dc245, type: 3}

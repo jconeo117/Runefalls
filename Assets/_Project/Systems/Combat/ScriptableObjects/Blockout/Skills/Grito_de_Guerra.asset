@@ -13,21 +13,13 @@ MonoBehaviour:
   m_Name: Grito_de_Guerra
   m_EditorClassIdentifier: 
   skillName: Grito_de_Guerra
-  cardArt: {fileID: 0}
+  cardArt: {fileID: 21300000, guid: 04c1090bcc146dc40bcb2a6e98504abe, type: 3}
   type: 0
   element: 1
+  description: 
   targetType: 1
   isRanged: 0
-  impactAfterClipIndex: 1
-  returnAtClipIndex: -1
-  impactTrigger: {fileID: 11400000, guid: fc831bd5338593e409e951e43fc23bec, type: 2}
-  vfxConfig: {fileID: 11400000, guid: 348479c9a0912d24e8be6fa62dc1c9cd, type: 2}
   ultimateChargeAmount: 0
-  animSequence:
-  - {fileID: 7400000, guid: 99b323d71d522734aae0dc0e5c4774c9, type: 3}
-  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
-  - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}
-  - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}
   effectsByRank:
   - effects: []
     damageMultiplier: 0.8
@@ -44,3 +36,13 @@ MonoBehaviour:
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
+  impactAfterClipIndex: 1
+  returnAtClipIndex: -1
+  hitCount: 1
+  impactTrigger: {fileID: 11400000, guid: fc831bd5338593e409e951e43fc23bec, type: 2}
+  vfxConfig: {fileID: 11400000, guid: 348479c9a0912d24e8be6fa62dc1c9cd, type: 2}
+  animSequence:
+  - {fileID: 7400000, guid: 99b323d71d522734aae0dc0e5c4774c9, type: 3}
+  - {fileID: 7400000, guid: 6148d5a0d0e796540ac960395fb48d94, type: 3}
+  - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}
+  - {fileID: 7400000, guid: f94c62a8b96f5a7469ce0da8ccac09b3, type: 3}

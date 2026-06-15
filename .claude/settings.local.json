@@ -86,7 +86,9 @@
       "mcp__UnityMCP__manage_material",
       "Bash(ls -la \"Assets/_Project/Enemies/Tharok/Prefab/\")",
       "Bash(ls \"Assets/_Project/Prefabs/Enemies/boss.prefab\")",
-      "Bash(grep -iE \"SantiagoLevelBlocking\\\\.unity$|SantiagoDungeonExploration\\\\.unity$\")"
+      "Bash(grep -iE \"SantiagoLevelBlocking\\\\.unity$|SantiagoDungeonExploration\\\\.unity$\")",
+      "mcp__UnityMCP__set_active_instance",
+      "PowerShell([guid]::NewGuid\\(\\).ToString\\(\"N\"\\))"
     ]
   },
   "hooks": {

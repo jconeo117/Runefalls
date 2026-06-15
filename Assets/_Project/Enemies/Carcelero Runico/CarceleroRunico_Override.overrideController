@@ -8,4 +8,12 @@ AnimatorOverrideController:
   m_PrefabAsset: {fileID: 0}
   m_Name: CarceleroRunico_Override
   m_Controller: {fileID: 9100000, guid: 1c939d5c041b0c84d912aeb95bbb30f7, type: 2}
-  m_Clips: []
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: d910969c350815147a214d3d5910994d, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 77214854f62866c4db0d2b1999fcdf96, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 78ca89ac85d25cb45b7b6a40501e76cc, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 589a11892e95f834dbf23f9e1cc1f090, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: ac683d7ab8b353f4a9cc76e1694442e9, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 8043696a9af6e2947bf6bcbd25ecf2d9, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 26ac32858392aeb47892ebdbd3e715c5, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: d9f443632c38fe343a7060d72ab920df, type: 3}

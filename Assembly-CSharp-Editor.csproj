@@ -65,6 +65,7 @@
     <Compile Include="Assets\TutorialInfo\Scripts\Editor\ReadmeEditor.cs" />
     <Compile Include="Assets\Editor\RunefallCardArtMove.cs" />
     <Compile Include="Assets\Editor\RunefallAddCombatPawnAnimator.cs" />
+    <Compile Include="Assets\Editor\RunefallAudioSetup.cs" />
     <Compile Include="Assets\Editor\RunefallEnemyHpBars.cs" />
     <Compile Include="Assets\Editor\RunefallEnemyOverrideControllers.cs" />
     <Compile Include="Assets\Editor\AnimationTypeBatcher.cs" />

@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2362c503a7359194798143d71fbecd3b, type: 3}
+  m_Name: Voice_Female
+  m_EditorClassIdentifier: 
+  attackClips:
+  - {fileID: 8300000, guid: ac08df1826151a444b6b751ed9fa1465, type: 3}
+  - {fileID: 8300000, guid: d2468d4d8641f6a4ab003d580a1250dd, type: 3}
+  - {fileID: 8300000, guid: 4ca7c20cd5313364881c2a872ccd2b9e, type: 3}
+  - {fileID: 8300000, guid: 6f113afa20d819946a22d10f21b65dd5, type: 3}
+  - {fileID: 8300000, guid: 8d9a29ee7167a3644a346de4013fb0e2, type: 3}
+  - {fileID: 8300000, guid: ab7008f3ec51c764cba9899d183aedd4, type: 3}
+  - {fileID: 8300000, guid: 4424c0ff5e7ea6d4b8f18f8cf85c65a6, type: 3}
+  hitClips:
+  - {fileID: 8300000, guid: dfd7f398929bc0e4d8b94937754f57e7, type: 3}
+  - {fileID: 8300000, guid: c6e13806590c41044b9f5b5831f48a91, type: 3}
+  - {fileID: 8300000, guid: ef49006d3aded4c45aea48fbcdc8458d, type: 3}
+  - {fileID: 8300000, guid: 2fa50008ed36d634bb467273d33e4e4a, type: 3}
+  - {fileID: 8300000, guid: 7e9d93348a641dc4484f23c05d8d2126, type: 3}
+  - {fileID: 8300000, guid: 2958e127476200f4587bd80d0bcfecc3, type: 3}
+  - {fileID: 8300000, guid: 730f3c65913e0104bbac837225d1b19e, type: 3}
+  - {fileID: 8300000, guid: cb69e17d64e15824f9272083901b984e, type: 3}
+  - {fileID: 8300000, guid: 1b7257f5efeebbe40b8cde833471622d, type: 3}
+  - {fileID: 8300000, guid: 39caba41f0d037f4596db0b948274775, type: 3}
+  - {fileID: 8300000, guid: 95f074a7e7e5b344fb30cfe2bc23264a, type: 3}
+  - {fileID: 8300000, guid: 9b487a23f4fc24541800cec2b42c8d2c, type: 3}
+  - {fileID: 8300000, guid: a28087dcac8fb3e4cb70dddd41caac7c, type: 3}
+  - {fileID: 8300000, guid: 5f70899715f980c40acfc82a0d5caec2, type: 3}
+  - {fileID: 8300000, guid: 495a77b01bb89034ebbf43376c91bbad, type: 3}
+  - {fileID: 8300000, guid: 3744527064936f441a971f5c5de64f9d, type: 3}
+  - {fileID: 8300000, guid: 4d3acd271885f984d83772fe239edb47, type: 3}
+  - {fileID: 8300000, guid: ead896b1531b42f4890e11930b1ff9ca, type: 3}
+  - {fileID: 8300000, guid: 0a9541750ab8230458cc1aae3d8a96bf, type: 3}
+  - {fileID: 8300000, guid: 504c7ffc531ed184fba39d5a7479a44e, type: 3}
+  - {fileID: 8300000, guid: 624a3b15942d1624abab536088bd58fe, type: 3}
+  - {fileID: 8300000, guid: 558c5314ac30fb449a3c821db25e2a56, type: 3}
+  deathClips:
+  - {fileID: 8300000, guid: e534f7ed17b864146bfec3bc4e0045d6, type: 3}
+  - {fileID: 8300000, guid: 32e8ec617fe50dc4db940bc288ec3f45, type: 3}
+  volume: 1
+  pitchJitter: 0.08

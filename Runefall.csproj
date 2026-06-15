@@ -69,6 +69,8 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\BattleCard.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\ScriptableObjects\Weapons\WeaponData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IMultiPhaseActor.cs" />
+    <Compile Include="Assets\_Project\Systems\Audio\Scripts\Presentation\AudioManager.cs" />
+    <Compile Include="Assets\_Project\Systems\Audio\Scripts\Presentation\IAudioService.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\EffectExecutionContext.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\BossTransitionPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\HPBarPresenter.cs" />
@@ -120,6 +122,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ConditionalDamageModifier.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\EncounterState.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ActiveEffect.cs" />
+    <Compile Include="Assets\_Project\Systems\Audio\Scripts\Presentation\CombatAudioPlayer.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DoTEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\PassiveBehavior.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTimeDilationManager.cs" />
@@ -198,6 +201,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\HipotermiaEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\HealEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\RoomVolume.cs" />
+    <Compile Include="Assets\_Project\Systems\Audio\ScriptableObjects\VoiceSetData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\PassiveDefinition.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\ActorEffects.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatUIOutroPresenter.cs" />

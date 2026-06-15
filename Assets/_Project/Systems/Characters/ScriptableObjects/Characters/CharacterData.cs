@@ -34,6 +34,14 @@ namespace Runefall.Data
         public AnimationClip animGetHit;
         public AnimationClip animDeath;
 
+        [Header("Audio")]
+        [Tooltip("Banco de voces (ataque/golpe/muerte) reproducido en combate por CombatAudioPlayer.")]
+        public VoiceSetData voiceSet;
+
+        [Header("Combat Scale")]
+        [Tooltip("Multiplicador extra sobre la escala normalizada del pawn en combate (1 = altura objetivo estándar; <1 = más pequeño). Afecta también su HP bar (hija del pawn).")]
+        public float combatScaleMultiplier = 1f;
+
         [Header("HP Bar")]
         [Tooltip("Frame sprite drawn over the HP bar (the character's themed border). Null = plain bar.")]
         public Sprite hpBarFrame;

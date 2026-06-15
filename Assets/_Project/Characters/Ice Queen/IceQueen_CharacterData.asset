@@ -42,5 +42,6 @@ MonoBehaviour:
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}
+  voiceSet: {fileID: 11400000, guid: 273fe98d0d9317c448589c87829364d0, type: 2}
   hpBarFrame: {fileID: 21300000, guid: 14098a23ffcfb564bb1e9b796747e269, type: 3}
   baseDropRate: 0

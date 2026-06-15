@@ -122,6 +122,10 @@ namespace Runefall.Presentation.Combat
                 pawn.transform.localPosition = Vector3.zero;
                 pawn.transform.localRotation = Quaternion.identity;
                 ScalePawnToHeight(pawn);
+                // Per-character size tweak (e.g. oversized models). HP bar is a child of the
+                // pawn, so it shrinks with it. 1 = no change.
+                if (solo.combatScaleMultiplier > 0f && !Mathf.Approximately(solo.combatScaleMultiplier, 1f))
+                    pawn.transform.localScale *= solo.combatScaleMultiplier;
                 if (solo.animatorController != null)
                 {
                     var anim = pawn.GetComponentInChildren<Animator>();
