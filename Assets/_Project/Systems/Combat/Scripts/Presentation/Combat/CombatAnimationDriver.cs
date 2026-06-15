@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+using Runefall.Audio;
 using Runefall.Combat;
 using Runefall.Data;
 using Runefall.Enemies;
@@ -493,7 +494,7 @@ namespace Runefall.Presentation.Combat
         }
 
         public void PlayTimelineSkill(
-            TimelineSkillData skill,
+            SkillData skill,
             ICombatActor caster,
             ICombatActor target,
             int rank,
@@ -503,18 +504,19 @@ namespace Runefall.Presentation.Combat
         }
 
         private IEnumerator PlayTimelineSkillCoroutine(
-            TimelineSkillData skill,
+            SkillData skill,
             ICombatActor caster,
             ICombatActor target,
             int rank,
             System.Action onComplete)
         {
-            if (skill == null || skill.skillTimeline == null)
+            var timelineSkill = skill as ITimelineSkill;
+            if (skill == null || timelineSkill?.SkillTimeline == null)
             {
                 onComplete?.Invoke();
                 yield break;
             }
-            var timeline = skill.skillTimeline as TimelineAsset;
+            var timeline = timelineSkill.SkillTimeline as TimelineAsset;
             if (timeline == null)
             {
                 onComplete?.Invoke();
@@ -638,7 +640,7 @@ namespace Runefall.Presentation.Combat
 
             // Safety net: if no Skill_Damage emitter fired, resolve damage once so combat still progresses.
             if (!_skillDamageFiredThisPlay)
-                RaiseImpactHit(pending, 0, Mathf.Max(1, skill.hitCount));
+                RaiseImpactHit(pending, 0, Mathf.Max(1, skill.HitCount));
 
             // Restore the caster's bar as gameplay resumes — but NOT if this was the killing blow:
             // combat is over and the victory/defeat outro already hid all combat UI + HP bars.
@@ -974,7 +976,7 @@ namespace Runefall.Presentation.Combat
 
         private void ScheduleSkillSignals(
             PlayableDirector director,
-            TimelineSkillData skill,
+            SkillData skill,
             PendingAction pending,
             Transform casterPawn,
             Vector3 targetPos)
@@ -983,7 +985,7 @@ namespace Runefall.Presentation.Combat
             _skillHitIndex = 0;
 
             if (!(director.playableAsset is TimelineAsset timeline)) return;
-            int hits = Mathf.Max(1, skill.hitCount);
+            int hits = Mathf.Max(1, skill.HitCount);
 
             foreach (var track in timeline.GetOutputTracks())
             {
@@ -1007,13 +1009,18 @@ namespace Runefall.Presentation.Combat
                     {
                         StartCoroutine(FireSkillBeat(t, () =>
                         {
-                            if (skill.vfxConfig != null)
-                                _feedbackManager.PlayOnStartVFX(skill.vfxConfig, casterPawn, targetPos);
+                            var startVfx = skill.VfxConfig;
+                            if (startVfx != null)
+                                _feedbackManager.PlayOnStartVFX(startVfx, casterPawn, targetPos);
                         }));
                     }
                     else if (TryParseVfxCueIndex(name, out int cueIdx))
                     {
                         StartCoroutine(FireSkillBeat(t, () => SpawnSkillVFXCue(skill, cueIdx, casterPawn, targetPos)));
+                    }
+                    else if (TryParseSfxCueIndex(name, out int sfxIdx))
+                    {
+                        StartCoroutine(FireSkillBeat(t, () => PlaySkillSFXCue(skill, sfxIdx, casterPawn, targetPos)));
                     }
                     else
                     {
@@ -1037,14 +1044,23 @@ namespace Runefall.Presentation.Combat
                    && int.TryParse(signalName.Substring(prefix.Length), out index);
         }
 
-        private void SpawnSkillVFXCue(TimelineSkillData skill, int index, Transform casterPawn, Vector3 targetPos)
+        private static bool TryParseSfxCueIndex(string signalName, out int index)
         {
-            if (skill.vfxCues == null || index < 0 || index >= skill.vfxCues.Length)
+            index = -1;
+            const string prefix = "Skill_SFX_";
+            return signalName != null && signalName.StartsWith(prefix)
+                   && int.TryParse(signalName.Substring(prefix.Length), out index);
+        }
+
+        private void SpawnSkillVFXCue(SkillData skill, int index, Transform casterPawn, Vector3 targetPos)
+        {
+            var cues = (skill as ITimelineSkill)?.VfxCues;
+            if (cues == null || index < 0 || index >= cues.Length)
             {
                 Debug.LogWarning($"[CombatAnimationDriver] Skill_VFX_{index} fired but the skill has no vfxCues[{index}].");
                 return;
             }
-            var cue = skill.vfxCues[index];
+            var cue = cues[index];
             if (cue == null || cue.prefab == null) return;
 
             if (cue.anchor == VFXAnchor.AllEnemies)
@@ -1058,6 +1074,32 @@ namespace Runefall.Presentation.Combat
 
             InstantiateCue(cue, ResolveVFXAnchor(cue.anchor, casterPawn, targetPos), casterPawn, targetPos);
         }
+
+        // Plays a timed SFX cue (fired by a "Skill_SFX_<index>" timeline signal) through the
+        // AudioManager, at the cue's anchor. Same model as SpawnSkillVFXCue.
+        private void PlaySkillSFXCue(SkillData skill, int index, Transform casterPawn, Vector3 targetPos)
+        {
+            var cues = (skill as ITimelineSkill)?.SfxCues;
+            if (cues == null || index < 0 || index >= cues.Length)
+            {
+                Debug.LogWarning($"[CombatAnimationDriver] Skill_SFX_{index} fired but the skill has no sfxCues[{index}].");
+                return;
+            }
+            var cue = cues[index];
+            if (cue == null || cue.clip == null) return;
+
+            var audio = ResolveAudio();
+            if (audio == null) return;
+
+            Vector3 pos   = ResolveVFXAnchor(cue.anchor, casterPawn, targetPos);
+            float   pitch = cue.pitchJitter > 0f
+                ? 1f + UnityEngine.Random.Range(-cue.pitchJitter, cue.pitchJitter)
+                : 1f;
+            audio.PlayAt(cue.clip, pos, cue.volume, pitch);
+        }
+
+        private IAudioService _audio;
+        private IAudioService ResolveAudio() => _audio ??= AudioManager.GetOrCreate();
 
         private void InstantiateCue(SkillVFXCue cue, Vector3 basePos, Transform casterPawn, Vector3 targetPos)
         {

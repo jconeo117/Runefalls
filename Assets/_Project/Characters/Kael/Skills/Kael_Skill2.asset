@@ -16,8 +16,9 @@ MonoBehaviour:
   cardArt: {fileID: 21300000, guid: 04c1090bcc146dc40bcb2a6e98504abe, type: 3}
   type: 0
   element: 1
-  targetType: 0
-  isRanged: 0
+  description: 
+  targetType: 1
+  isRanged: 1
   ultimateChargeAmount: 20
   effectsByRank:
   - effects: []
@@ -36,6 +37,14 @@ MonoBehaviour:
     animationTrigger: 
     cameraSequence: {fileID: 0}
   skillTimeline: {fileID: 11400000, guid: 11aa11aa11aa11aa11aa11aa11aa1102, type: 2}
-  hitCount: 1
+  hitCount: 4
   vfxConfig: {fileID: 0}
-  vfxCues: []
+  vfxCues:
+  - label: 
+    prefab: {fileID: 7394551820270724940, guid: 506ab855c07575f439e8a0c86b1579ed, type: 3}
+    anchor: 2
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0.5, y: 0.5, z: 0.5}
+    faceTarget: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 2.5

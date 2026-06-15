@@ -16,22 +16,23 @@ MonoBehaviour:
   cardArt: {fileID: 21300000, guid: 086ef0ea70ff93b4284f19f77db963ff, type: 3}
   type: 0
   element: 3
+  description: 
   targetType: 0
   isRanged: 1
   ultimateChargeAmount: 20
   effectsByRank:
   - effects: []
-    damageMultiplier: 1.5
+    damageMultiplier: 2.1
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
-    damageMultiplier: 2.2
+    damageMultiplier: 3.08
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
-    damageMultiplier: 3.7
+    damageMultiplier: 5.18
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
@@ -39,3 +40,4 @@ MonoBehaviour:
   hitCount: 1
   vfxConfig: {fileID: 0}
   vfxCues: []
+  sfxCues: []

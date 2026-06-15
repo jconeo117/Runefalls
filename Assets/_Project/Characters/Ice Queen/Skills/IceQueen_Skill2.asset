@@ -23,19 +23,19 @@ MonoBehaviour:
   effectsByRank:
   - effects:
     - {fileID: 11400000, guid: eb21089f2d4ab664d833f57d2d618a6c, type: 2}
-    damageMultiplier: 1.4
+    damageMultiplier: 1.96
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects:
     - {fileID: 11400000, guid: eb21089f2d4ab664d833f57d2d618a6c, type: 2}
-    damageMultiplier: 2.2
+    damageMultiplier: 3.08
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects:
     - {fileID: 11400000, guid: eb21089f2d4ab664d833f57d2d618a6c, type: 2}
-    damageMultiplier: 3.8
+    damageMultiplier: 5.32
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
@@ -51,3 +51,4 @@ MonoBehaviour:
     faceTarget: 1
     rotationOffset: {x: 0, y: 0, z: 0}
     autoDestroyAfter: 1.5
+  sfxCues: []

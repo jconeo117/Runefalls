@@ -25,8 +25,29 @@ MonoBehaviour:
   effect:
     effects:
     - {fileID: 11400000, guid: b44c347fc2edddd4cb3639cff631db1f, type: 2}
-    damageMultiplier: 1
+    damageMultiplier: 1.4
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
+  ultimateTimeline: {fileID: 0}
+  hitCount: 1
+  vfxConfig: {fileID: 0}
+  vfxCues:
+  - label: 
+    prefab: {fileID: 5553282686423105297, guid: 7777e16916606af4c95211f312d012db, type: 3}
+    anchor: 2
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 0
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 2.5
+  - label: 
+    prefab: {fileID: 2598318851274290065, guid: e0e1b2851d5b705498823cddfb2f04b4, type: 3}
+    anchor: 3
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 0
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 1.5
+  sfxCues: []
   animSequence: []

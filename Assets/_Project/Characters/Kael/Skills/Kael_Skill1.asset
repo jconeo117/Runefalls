@@ -37,7 +37,7 @@ MonoBehaviour:
     animationTrigger: 
     cameraSequence: {fileID: 0}
   skillTimeline: {fileID: 11400000, guid: 11aa11aa11aa11aa11aa11aa11aa1101, type: 2}
-  hitCount: 3
+  hitCount: 4
   vfxConfig: {fileID: 0}
   vfxCues:
   - label: 
@@ -47,4 +47,4 @@ MonoBehaviour:
     scale: {x: 0, y: 0, z: 0}
     faceTarget: 1
     rotationOffset: {x: 0, y: 0, z: 0}
-    autoDestroyAfter: 2
+    autoDestroyAfter: 0.75

@@ -18,17 +18,17 @@ MonoBehaviour:
   element: 0
   stats:
     ofensivas:
-      ataque: 2125
+      ataque: 2975
       perforacion: 0.375
       critChance: 0.3125
       "critDa\xF1o": 1.4375
     defensivas:
-      defensa: 1875
+      defensa: 1218.75
       resistencia: 0.5
       defensaCrit: 0.4375
       resistenciaCrit: 0.5625
     vitales:
-      ps: 20000
+      ps: 13000
       roboDeVida: 0.15
       tasaRegen: 0.1875
       tasaRecuperacion: 0.225

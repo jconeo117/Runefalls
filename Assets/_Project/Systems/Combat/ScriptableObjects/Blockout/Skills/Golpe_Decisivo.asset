@@ -22,17 +22,17 @@ MonoBehaviour:
   ultimateChargeAmount: 0
   effectsByRank:
   - effects: []
-    damageMultiplier: 1.4
-    healPercent: 0
-    animationTrigger: 
-    cameraSequence: {fileID: 0}
-  - effects: []
-    damageMultiplier: 2
+    damageMultiplier: 1.96
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
     damageMultiplier: 2.8
+    healPercent: 0
+    animationTrigger: 
+    cameraSequence: {fileID: 0}
+  - effects: []
+    damageMultiplier: 3.92
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}

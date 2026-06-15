@@ -28,7 +28,7 @@ namespace Runefall.Data
     /// = bronze/silver/gold), so the numeric balance is shared with the rest of the skill system.
     /// </summary>
     [CreateAssetMenu(menuName = "Runefall/Cards/Timeline Skill")]
-    public class TimelineSkillData : SkillData
+    public class TimelineSkillData : SkillData, ITimelineSkill
     {
         [Header("Timeline Presentation")]
         [Tooltip("The choreography Timeline: camera-per-rank, animation, Damage/VFX signals.")]
@@ -47,6 +47,11 @@ namespace Runefall.Data
                  "place those signals in the Timeline to choreograph multiple effects (e.g. ground circle, then falling crystal).")]
         public SkillVFXCue[] vfxCues;
 
+        [Header("SFX Choreography")]
+        [Tooltip("Timed SFX cues. Cue at index N fires when the timeline signal 'Skill_SFX_N' triggers — " +
+                 "same model as the VFX cues, played through the AudioManager.")]
+        public SkillSFXCue[] sfxCues;
+
         public override void PlayPresentation(
             CombatAnimationDriver driver,
             ICombatActor caster,
@@ -59,6 +64,11 @@ namespace Runefall.Data
 
         public override int HitCount => hitCount;
         public override SkillVFXConfig VfxConfig => vfxConfig;
+
+        // ── ITimelineSkill ────────────────────────────────────────────────────────
+        public PlayableAsset SkillTimeline => skillTimeline;
+        public SkillVFXCue[] VfxCues       => vfxCues;
+        public SkillSFXCue[] SfxCues       => sfxCues;
     }
 
     /// <summary>Where a VFX cue spawns. Pawn positions are at ground/feet level.</summary>
@@ -88,5 +98,23 @@ namespace Runefall.Data
         public Vector3 rotationOffset;
         [Tooltip("Seconds before the spawned VFX auto-destroys. 0 = never.")]
         public float autoDestroyAfter = 4f;
+    }
+
+    /// <summary>
+    /// One timed sound effect in a skill's choreography. The driver plays it (via IAudioService /
+    /// AudioManager) when the matching timeline signal ("Skill_SFX_&lt;index&gt;") fires: the WHEN
+    /// comes from the Timeline, the WHAT/WHERE from this cue. Mirrors <see cref="SkillVFXCue"/>.
+    /// </summary>
+    [System.Serializable]
+    public class SkillSFXCue
+    {
+        [Tooltip("Editor note (e.g. 'Swing whoosh'). Fires from the timeline signal 'Skill_SFX_<this array index>'.")]
+        public string label;
+        public AudioClip clip;
+        [Range(0f, 1f)] public float volume = 1f;
+        [Tooltip("Variación aleatoria de pitch (+/-) para que no suene idéntico cada vez. 0 = sin variación.")]
+        [Range(0f, 0.5f)] public float pitchJitter = 0f;
+        [Tooltip("Posición de origen del sonido (3D depende del spatialBlend del AudioManager).")]
+        public VFXAnchor anchor = VFXAnchor.Caster;
     }
 }

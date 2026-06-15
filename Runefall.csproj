@@ -176,6 +176,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\SkillData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\IEnemyPhaseAnimator.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\CharacterStatsOverlay.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\ITimelineSkill.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Presentation\Player\ExplorationPlayer.cs" />
     <Compile Include="Assets\_Project\Systems\Dungeon\Scripts\Presentation\Dungeon\RoomRegistry.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\UI\EncounterPromptPresenter.cs" />
