@@ -54,10 +54,33 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: c45ac270fe0f1d4428ce7e38f3b01fa0, type: 2}
     - target: {fileID: 919132149155446097, guid: cef47cf3ec9631847b0cde4d423ac2fe, type: 3}
       propertyPath: m_Name
-      value: Kael_Rigged 1
+      value: Kael
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cef47cf3ec9631847b0cde4d423ac2fe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7396615896479551434}
   m_SourcePrefab: {fileID: 100100000, guid: cef47cf3ec9631847b0cde4d423ac2fe, type: 3}
+--- !u!1 &8470696167494107974 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: cef47cf3ec9631847b0cde4d423ac2fe, type: 3}
+  m_PrefabInstance: {fileID: 8740533158764805655}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7396615896479551434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8470696167494107974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0ac85ee5b4a94d44843f0536475e97e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _blendDuration: 0.12
+  weaponBone: {fileID: 0}
+  bladeRoot: {fileID: 0}

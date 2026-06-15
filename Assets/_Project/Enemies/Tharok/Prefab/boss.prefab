@@ -96,6 +96,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 280d130bc7aaa55498e74cbdb5f51fab, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1518237743835107995}
     - targetCorrespondingSourceObject: {fileID: 2344717106525918227, guid: 280d130bc7aaa55498e74cbdb5f51fab, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8496190687703023068}
@@ -2025,6 +2028,26 @@ CapsuleCollider:
   m_Height: 0.008198009
   m_Direction: 2
   m_Center: {x: -1.2245584e-19, y: -0.00003748017, z: 0.005555845}
+--- !u!1 &6657998494629072559 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 280d130bc7aaa55498e74cbdb5f51fab, type: 3}
+  m_PrefabInstance: {fileID: 5810944838958232574}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1518237743835107995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6657998494629072559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0ac85ee5b4a94d44843f0536475e97e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _blendDuration: 0.12
+  weaponBone: {fileID: 0}
+  bladeRoot: {fileID: 0}
 --- !u!1 &8083543800418199533 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2344717106525918227, guid: 280d130bc7aaa55498e74cbdb5f51fab, type: 3}

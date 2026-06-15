@@ -38,13 +38,14 @@ MonoBehaviour:
   encounterRange: 1.8
   patrolRadius: 4
   respawnsOnRoomExit: 1
-  skill1: {fileID: 0}
-  skill2: {fileID: 0}
-  ultimate: {fileID: 0}
-  animatorController: {fileID: 0}
-  animApproach: {fileID: 0}
-  animGetHit: {fileID: 0}
-  animDeath: {fileID: 0}
+  skill1: {fileID: 11400000, guid: 3d8453d377f893d4099881e68557f283, type: 2}
+  skill2: {fileID: 11400000, guid: dd8a9fc09573a1240b0995fef01b7d97, type: 2}
+  ultimate: {fileID: 11400000, guid: b68c55ebfae5f41418b57f51fe6b3e8c, type: 2}
+  animatorController: {fileID: 22100000, guid: ea61068ac34dab345b283a96180a8c58, type: 2}
+  animApproach: {fileID: 7400000, guid: 216bf759b6d8a7246b151807db8c61de, type: 3}
+  animGetHit: {fileID: 7400000, guid: 55e87de746eaa574a9affbbe173dcbbd, type: 3}
+  animDeath: {fileID: 7400000, guid: 9a26352c93a81e947b73b8e47cc931bb, type: 3}
+  hpBarFrame: {fileID: 21300000, guid: ce40b6c9b23aac44d9df6c606a6a4ac5, type: 3}
   behaviorTree: 0
   dropReward:
     goldMin: 0

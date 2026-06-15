@@ -37,6 +37,7 @@ MonoBehaviour:
   skill2: {fileID: 11400000, guid: b03cdc6cef32f50408cec7d5f9f474bc, type: 2}
   ultimate: {fileID: 11400000, guid: ee692069d3ec8694a8e1d2c7171e69f6, type: 2}
   passive: {fileID: 11400000, guid: 8b5d829bb3ed9004bab19f17c36d95b4, type: 2}
+  explorationAnimatorController: {fileID: 22100000, guid: 30b0d12d20c483349a325b573a79d5e7, type: 2}
   animatorController: {fileID: 0}
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}

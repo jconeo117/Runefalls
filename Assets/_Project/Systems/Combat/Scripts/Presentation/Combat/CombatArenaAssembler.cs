@@ -16,6 +16,8 @@ namespace Runefall.Presentation.Combat
     public class CombatArenaAssembler : MonoBehaviour
     {
         [SerializeField] private ArenaData _data;
+        [Tooltip("Target world height for combat pawns. Each pawn is uniformly scaled to this height via its humanoid scale, so combat models match exploration. 0 = keep prefab scale.")]
+        [SerializeField] private float _pawnTargetHeight = 1.87f;
 
         public Transform                PlayerRoot           { get; private set; }
         public Transform                EnemyRoot            { get; private set; }
@@ -119,6 +121,7 @@ namespace Runefall.Presentation.Combat
                 var pawn = Instantiate(solo.prefab, PlayerSlots[0]);
                 pawn.transform.localPosition = Vector3.zero;
                 pawn.transform.localRotation = Quaternion.identity;
+                ScalePawnToHeight(pawn);
                 if (solo.animatorController != null)
                 {
                     var anim = pawn.GetComponentInChildren<Animator>();
@@ -149,6 +152,7 @@ namespace Runefall.Presentation.Combat
                 var ePawn = Instantiate(eData.prefab, EnemySlots[i]);
                 ePawn.transform.localPosition = Vector3.zero;
                 ePawn.transform.localRotation = Quaternion.identity;
+                ScalePawnToHeight(ePawn);
                 if (eData.animatorController != null)
                 {
                     var anim = ePawn.GetComponentInChildren<Animator>();
@@ -156,6 +160,17 @@ namespace Runefall.Presentation.Combat
                 }
                 ePawn.AddComponent<EnemySlot>().data = eData;
             }
+        }
+
+        /// <summary>Uniformly scales a spawned pawn so it stands _pawnTargetHeight tall, using its
+        /// humanoid scale — keeps every model the same on-screen size in combat (matches exploration).</summary>
+        private void ScalePawnToHeight(GameObject pawn)
+        {
+            if (_pawnTargetHeight <= 0f || pawn == null) return;
+            var anim = pawn.GetComponentInChildren<Animator>();
+            if (anim == null || anim.humanScale <= 0.0001f) return;   // non-humanoid → keep prefab scale
+            float s = _pawnTargetHeight / anim.humanScale;
+            pawn.transform.localScale = new Vector3(s, s, s);
         }
 
         public void Teardown()

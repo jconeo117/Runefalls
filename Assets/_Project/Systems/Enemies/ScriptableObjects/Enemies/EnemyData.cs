@@ -52,6 +52,10 @@ namespace Runefall.Data
         public AnimationClip animDeath;
 
 
+        [Header("HP Bar")]
+        [Tooltip("Frame sprite drawn over the HP bar (difficulty-themed border). Null = plain bar.")]
+        public Sprite hpBarFrame;
+
         [Header("Combat")]
         public BehaviorTreeType behaviorTree;
         public EnemyReward dropReward;

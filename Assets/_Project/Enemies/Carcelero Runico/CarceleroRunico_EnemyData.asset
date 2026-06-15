@@ -41,10 +41,11 @@ MonoBehaviour:
   skill1: {fileID: 0}
   skill2: {fileID: 0}
   ultimate: {fileID: 0}
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 22100000, guid: f4ce4d26aa992564e8a1a4d4804daa5b, type: 2}
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}
+  hpBarFrame: {fileID: 21300000, guid: 62e7dec0b832ad64faed34cc96e06f26, type: 3}
   behaviorTree: 0
   dropReward:
     goldMin: 0

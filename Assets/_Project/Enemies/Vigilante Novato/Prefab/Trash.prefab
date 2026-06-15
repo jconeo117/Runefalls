@@ -50,10 +50,33 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e81dd73dc4559944eb7a96ce5459076c, type: 3}
       propertyPath: m_Name
-      value: Trash_Rigged
+      value: Trash
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e81dd73dc4559944eb7a96ce5459076c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3678144815202128732}
   m_SourcePrefab: {fileID: 100100000, guid: e81dd73dc4559944eb7a96ce5459076c, type: 3}
+--- !u!1 &5598245776067423449 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e81dd73dc4559944eb7a96ce5459076c, type: 3}
+  m_PrefabInstance: {fileID: 4715725170463560072}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3678144815202128732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5598245776067423449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0ac85ee5b4a94d44843f0536475e97e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _blendDuration: 0.12
+  weaponBone: {fileID: 0}
+  bladeRoot: {fileID: 0}

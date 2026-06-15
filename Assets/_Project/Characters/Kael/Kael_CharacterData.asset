@@ -37,9 +37,10 @@ MonoBehaviour:
   skill2: {fileID: 11400000, guid: e58676f1f2b35db4a9451792a66fd9f8, type: 2}
   ultimate: {fileID: 11400000, guid: ee692069d3ec8694a8e1d2c7171e69f6, type: 2}
   passive: {fileID: 0}
+  explorationAnimatorController: {fileID: 22100000, guid: 74f4465a377b2a34aa3cc3cd49e98a56, type: 2}
   animatorController: {fileID: 0}
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}
-  hpBarFrame: {fileID: 0}
+  hpBarFrame: {fileID: 21300000, guid: 8ae617384cd6bb242ba22aef341a14c1, type: 3}
   baseDropRate: 0

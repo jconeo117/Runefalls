@@ -90,6 +90,13 @@ namespace Runefall.Presentation.Combat
         protected readonly Dictionary<ICombatActor, CharacterData>   _actorCharData  = new();
         protected readonly Dictionary<ICombatActor, EnemyData>       _actorEnemyData = new();
 
+        [Header("Ultimate Aura")]
+        [Tooltip("VFX spawned on a pawn while its ultimate is charged (gauge full). E.g. Hovl 'Star aura'.")]
+        [SerializeField] protected GameObject _ultimateAuraPrefab;
+        [Tooltip("Local offset of the aura under the pawn (raise to chest/feet as needed).")]
+        [SerializeField] protected Vector3 _ultimateAuraOffset = Vector3.zero;
+        protected readonly Dictionary<ICombatActor, GameObject>      _ultimateAuras  = new();
+
         protected CharacterStatsOverlay _statsOverlay;   // hold-a-pawn inspection (player turn)
 
         // ── lifecycle ─────────────────────────────────────────────────────────────
@@ -251,6 +258,8 @@ namespace Runefall.Presentation.Combat
                 // Gold bar on the actor's HP bar = ultimate gauge (0..7 → 0..1 fill).
                 if (_actorHPBars.TryGetValue(actor, out var gaugeBar) && gaugeBar != null)
                     gaugeBar.SetSecondary(orbs / (float)TurnManager.UltimateGaugeMax);
+                // World-space aura while the ultimate is charged.
+                UpdateUltimateAura(actor, orbs);
             };
 
             _tm.OnPlayerActionsExhausted += () =>
@@ -360,6 +369,7 @@ namespace Runefall.Presentation.Combat
             _pendingFieldChars       = null;
             _playerWon               = false;
             _onActionPendingHandler  = null;
+            ClearUltimateAuras();
             _hpBars.Clear();
             _actorHPBars.Clear();
             _actorPawns.Clear();
@@ -570,10 +580,42 @@ namespace Runefall.Presentation.Combat
                 var bar   = AttachHPBar(_enemySlots[i], actor,
                     slot != null ? slot.hpBarOffset    : 3.5f,
                     slot != null ? slot.headBoneOffset : 0.5f,
-                    slot != null ? slot.headBone       : null);
+                    slot != null ? slot.headBone       : null,
+                    slot != null && slot.data != null ? slot.data.hpBarFrame : null);
                 _hpBars.Add(bar);
                 _actorHPBars[actor] = bar;
             }
+        }
+
+        /// <summary>Spawns the aura on the pawn while gauge is full; removes it otherwise.</summary>
+        protected void UpdateUltimateAura(ICombatActor actor, int orbs)
+        {
+            if (_ultimateAuraPrefab == null || actor == null) return;
+
+            bool charged = orbs >= TurnManager.UltimateGaugeMax;
+            bool has     = _ultimateAuras.TryGetValue(actor, out var aura) && aura != null;
+
+            if (charged && !has)
+            {
+                if (_actorPawns.TryGetValue(actor, out var pawn) && pawn != null)
+                {
+                    var go = Instantiate(_ultimateAuraPrefab, pawn);
+                    go.transform.localPosition = _ultimateAuraOffset;
+                    go.transform.localRotation = Quaternion.identity;
+                    _ultimateAuras[actor] = go;
+                }
+            }
+            else if (!charged && has)
+            {
+                Destroy(aura);
+                _ultimateAuras.Remove(actor);
+            }
+        }
+
+        protected void ClearUltimateAuras()
+        {
+            foreach (var kv in _ultimateAuras) if (kv.Value != null) Destroy(kv.Value);
+            _ultimateAuras.Clear();
         }
 
         protected void SetHPBarsVisible(bool visible)

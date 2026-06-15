@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Kael_ExplorationOverride
+  m_Controller: {fileID: 9100000, guid: f96bb48075204774d9312353fc99fbbb, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 94c75858633b4e04f9e28db3b52b2bba, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: a138de946036a6b4c836050bc5413468, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: a7e98d51bd73b0348b47acf6a9f02766, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: fdecf33786dedc840986e0f03698b81b, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: d05e1e87bea596f49b01fedb8c7da04c, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 216bf759b6d8a7246b151807db8c61de, type: 3}

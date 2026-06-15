@@ -23,6 +23,10 @@ namespace Runefall.Data
         public UltimateData ultimate;
         public PassiveDefinition passive;
 
+        [Header("Exploration Animations")]
+        [Tooltip("Animator controller for this character in the exploration scene (locomotion). Applied at runtime by ExplorationPlayer to the player model.")]
+        public RuntimeAnimatorController explorationAnimatorController;
+
         [Header("Combat Animations")]
         [Tooltip("Base animator controller applied to this character's pawn at spawn. Required for non-T-pose.")]
         public RuntimeAnimatorController animatorController;
