@@ -37,7 +37,20 @@ MonoBehaviour:
     animationTrigger: 
     cameraSequence: {fileID: 0}
   skillTimeline: {fileID: 11400000, guid: 22bb22bb22bb22bb22bb22bb22bb2201, type: 2}
-  hitCount: 1
+  hitCount: 5
   vfxConfig: {fileID: 0}
-  vfxCues: []
-  sfxCues: []
+  vfxCues:
+  - label: 
+    prefab: {fileID: 7389421938708674127, guid: 61227a6b4f61dda42b934defae1450db, type: 3}
+    anchor: 1
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 3
+  sfxCues:
+  - label: 
+    clip: {fileID: 8300000, guid: 1106d38482a459b4595f183eef4c2b91, type: 3}
+    volume: 0.3
+    pitchJitter: 0
+    anchor: 1

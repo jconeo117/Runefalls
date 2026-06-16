@@ -38,9 +38,9 @@ MonoBehaviour:
   encounterRange: 1.8
   patrolRadius: 4
   respawnsOnRoomExit: 1
-  skill1: {fileID: 0}
-  skill2: {fileID: 0}
-  ultimate: {fileID: 0}
+  skill1: {fileID: 11400000, guid: 5d944360c42b5114ab745718650e258e, type: 2}
+  skill2: {fileID: 11400000, guid: 31987216c9a742a439ddd2678e853c3c, type: 2}
+  ultimate: {fileID: 11400000, guid: 57c313fbe4cf3f24c8dc4428ccdeccd1, type: 2}
   animatorController: {fileID: 22100000, guid: 2be78feefca86524fbc053e34726276f, type: 2}
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}

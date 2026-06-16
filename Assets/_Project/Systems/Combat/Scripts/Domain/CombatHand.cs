@@ -107,28 +107,43 @@ namespace Runefall.Combat
 
         private bool ValidIndex(int i) => i >= 0 && i < _slots.Count;
 
-        // Scan left to right, merge first adjacent pair (same Skill, same Rank, Rank < 3).
-        // Restart after each merge — cascades until hand is stable.
+        // Index of the next non-reserved (visible) slot at or after 'start'. Reserved cards are queued
+        // and pulled out to the action slots, so they are GAPS in the visible row — neighbours on either
+        // side of a reserved card are visually adjacent and may merge across it.
+        private int NextVisible(int start)
+        {
+            for (int k = start; k < _slots.Count; k++)
+                if (!_reserved.Contains(_slots[k].Id)) return k;
+            return -1;
+        }
+
+        // Merge adjacent VISIBLE cards (same Skill/tag, same Rank, Rank < 3), skipping over reserved
+        // (queued) cards as gaps. Restart after each merge — cascades until the visible row is stable.
+        // Ultimates are visible blockers: they never merge and break adjacency.
         private void CheckMerges()
         {
             bool merged;
             do
             {
                 merged = false;
-                for (int i = 0; i < _slots.Count - 1; i++)
+                int i = NextVisible(0);
+                while (i >= 0)
                 {
+                    int j = NextVisible(i + 1);
+                    if (j < 0) break;
+
                     var a = _slots[i];
-                    var b = _slots[i + 1];
-
-                    if (a.IsUltimate || b.IsUltimate) continue;
-                    if (_reserved.Contains(a.Id) || _reserved.Contains(b.Id)) continue;   // queued card — never auto-merge it
-                    if (a.Skill != b.Skill || a.Rank != b.Rank || a.Rank >= 3) continue;
-
-                    _slots[i] = a.WithRank(a.Rank + 1);
-                    _slots.RemoveAt(i + 1);
-                    OnMerge?.Invoke(a.Skill, a.Rank + 1);
-                    merged = true;
-                    break;
+                    var b = _slots[j];
+                    if (!a.IsUltimate && !b.IsUltimate
+                        && a.Skill == b.Skill && a.Rank == b.Rank && a.Rank < 3)
+                    {
+                        _slots[i] = a.WithRank(a.Rank + 1);
+                        _slots.RemoveAt(j);
+                        OnMerge?.Invoke(a.Skill, a.Rank + 1);
+                        merged = true;
+                        break;   // restart scan from the left
+                    }
+                    i = j;       // advance (b — incl. ultimates — becomes the new left card)
                 }
             } while (merged);
         }
@@ -193,7 +208,7 @@ namespace Runefall.Combat
 
         /// <summary>Mark a queued card so a card MOVE never merges it with a twin while it waits in the
         /// action queue. Presentation reserves on queue and frees it on commit / turn start.</summary>
-        public void Reserve(int cardId)   => _reserved.Add(cardId);
+        public void Reserve(int cardId)   { _reserved.Add(cardId); CheckMerges(); }   // queued card leaves the visible row → neighbours cascade now
         public void Unreserve(int cardId) => _reserved.Remove(cardId);
         public void ClearReservations()   => _reserved.Clear();
 

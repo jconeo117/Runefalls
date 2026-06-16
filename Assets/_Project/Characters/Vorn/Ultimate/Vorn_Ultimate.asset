@@ -17,8 +17,8 @@ MonoBehaviour:
   type: 0
   element: 3
   description: 
-  targetType: 0
-  isRanged: 0
+  targetType: 1
+  isRanged: 1
   ultimateChargeAmount: 0
   effectsByRank: []
   ultimateName: Vacio Absoluto
@@ -28,12 +28,12 @@ MonoBehaviour:
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  ultimateTimeline: {fileID: 0}
+  ultimateTimeline: {fileID: 11400000, guid: 22bb22bb22bb22bb22bb22bb22bb2203, type: 2}
   hitCount: 6
   vfxConfig: {fileID: 0}
   vfxCues:
   - label: 
-    prefab: {fileID: 2880140810431346510, guid: 57be7de18272cb049bf32ddffdf04034, type: 3}
+    prefab: {fileID: 7202037676252773923, guid: 25f62c724c01bf049a5541e0cb097e30, type: 3}
     anchor: 2
     worldOffset: {x: 0, y: 0, z: 0}
     scale: {x: 0, y: 0, z: 0}

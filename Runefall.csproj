@@ -61,6 +61,7 @@
     <Analyzer Include="A:\Unity_Engines\6000.0.73f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CardSfxInstaller.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\ImpactContext.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatClimaxDirector.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\PawnVisualManager.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Assets\_Project\Systems\Audio\Scripts\Presentation\IAudioService.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\EffectExecutionContext.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\BossTransitionPresenter.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CardSfx.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\HPBarPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Enemies\Scripts\Domain\EnemyAgent.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\ICombatActor.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\EnemyStatsProvider.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\ComposablePassive.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Cards\UltimateData.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\TotalDamagePresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ArrebatoEffectDef.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatHUDPresenter.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DepletarEffectDef.cs" />

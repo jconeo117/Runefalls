@@ -677,6 +677,7 @@ GameObject:
   - component: {fileID: 6538406481286204856}
   - component: {fileID: 4468030013780807605}
   - component: {fileID: 5408581123039410164}
+  - component: {fileID: 3732149277868373268}
   m_Layer: 0
   m_Name: IceQueen
   m_TagString: Untagged
@@ -738,6 +739,19 @@ MonoBehaviour:
   _blendDuration: 0.12
   weaponBone: {fileID: 0}
   bladeRoot: {fileID: 0}
+--- !u!114 &3732149277868373268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3346838965486991349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f742af84656714b8daae07531fd5dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 0}
 --- !u!1 &3497464091348802654
 GameObject:
   m_ObjectHideFlags: 0

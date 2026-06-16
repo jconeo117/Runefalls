@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 using TMPro;
 
 namespace Runefall.Presentation.Combat
@@ -27,6 +28,14 @@ namespace Runefall.Presentation.Combat
         [Tooltip("Optional child TMP for 'Critical' text shown on crits.")]
         [SerializeField] private TextMeshPro _critLabel;
 
+        [Header("Visibility")]
+        [Tooltip("Dibuja el número ignorando profundidad y después de las partículas, " +
+                 "para que el VFX nunca lo tape. Render queue debe ser > el de los VFX (~3000).")]
+        [SerializeField] private bool _alwaysOnTop = true;
+        [SerializeField] private int  _onTopRenderQueue = 4500;
+
+        private static readonly int ZTestModeID = Shader.PropertyToID("_ZTestMode");
+
         private TextMeshPro _tmp;
         private Camera      _cam;
 
@@ -34,6 +43,23 @@ namespace Runefall.Presentation.Combat
         {
             _tmp = GetComponent<TextMeshPro>();
             _cam = Camera.main;
+        }
+
+        // Forces this label's material instance to draw over the VFX: no depth test + late queue.
+        private void ApplyAlwaysOnTop()
+        {
+            if (!_alwaysOnTop) return;
+            SetOnTop(_tmp);
+            SetOnTop(_critLabel);
+        }
+
+        private void SetOnTop(TextMeshPro tmp)
+        {
+            if (tmp == null) return;
+            var mat = tmp.fontMaterial;          // per-instance material (does not touch the shared asset)
+            if (mat == null) return;
+            mat.SetFloat(ZTestModeID, (float)CompareFunction.Always);
+            mat.renderQueue = _onTopRenderQueue;
         }
 
         void LateUpdate()
@@ -60,6 +86,8 @@ namespace Runefall.Presentation.Combat
                     _critLabel.alpha = 0f;
                 }
             }
+
+            ApplyAlwaysOnTop();
 
             transform.localScale = Vector3.zero;
             StartCoroutine(Animate());

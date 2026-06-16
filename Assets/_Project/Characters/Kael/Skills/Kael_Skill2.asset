@@ -48,3 +48,9 @@ MonoBehaviour:
     faceTarget: 1
     rotationOffset: {x: 0, y: 0, z: 0}
     autoDestroyAfter: 2.5
+  sfxCues:
+  - label: 
+    clip: {fileID: 8300000, guid: 14a906ff07b85f64cab647374b6eb898, type: 3}
+    volume: 0.3
+    pitchJitter: 0
+    anchor: 2

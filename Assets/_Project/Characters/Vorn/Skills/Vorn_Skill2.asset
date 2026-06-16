@@ -17,7 +17,7 @@ MonoBehaviour:
   type: 0
   element: 3
   description: 
-  targetType: 0
+  targetType: 1
   isRanged: 1
   ultimateChargeAmount: 20
   effectsByRank:
@@ -37,7 +37,20 @@ MonoBehaviour:
     animationTrigger: 
     cameraSequence: {fileID: 0}
   skillTimeline: {fileID: 11400000, guid: 22bb22bb22bb22bb22bb22bb22bb2202, type: 2}
-  hitCount: 1
+  hitCount: 6
   vfxConfig: {fileID: 0}
-  vfxCues: []
-  sfxCues: []
+  vfxCues:
+  - label: 
+    prefab: {fileID: 190475710433245044, guid: 698d03e194297c847847107dd915a0e7, type: 3}
+    anchor: 2
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 0
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 2
+  sfxCues:
+  - label: 
+    clip: {fileID: 8300000, guid: 42c5e244d8c3b4840b9e3075bcb3b5fa, type: 3}
+    volume: 0.35
+    pitchJitter: 0
+    anchor: 2

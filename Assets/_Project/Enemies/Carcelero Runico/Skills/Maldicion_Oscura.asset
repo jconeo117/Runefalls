@@ -10,24 +10,38 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 420638d998f77e0488fcd7b2dff27720, type: 3}
-  m_Name: Nova_Sombria
+  m_Name: Maldicion_Oscura
   m_EditorClassIdentifier: 
-  skillName: Nova_Sombria
+  skillName: Maldicion_Oscura
   cardArt: {fileID: 0}
   type: 0
   element: 2
-  targetType: 1
+  description: 
+  targetType: 0
+  isRanged: 0
   ultimateChargeAmount: 0
   effectsByRank:
-  - damageMultiplier: 0.9
+  - effects: []
+    damageMultiplier: 1.4
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  - damageMultiplier: 1.4
+  - effects: []
+    damageMultiplier: 2
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  - damageMultiplier: 2
+  - effects: []
+    damageMultiplier: 2.8
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
+  impactAfterClipIndex: 0
+  returnAtClipIndex: -1
+  hitCount: 3
+  impactTrigger: {fileID: 11400000, guid: 28aab086fb07ce84ebb152dddb48e64b, type: 2}
+  vfxConfig: {fileID: 0}
+  animSequence:
+  - {fileID: 7400000, guid: 3414c515c6a2f334da03b4ab3d547691, type: 3}
+  - {fileID: 7400000, guid: 217b30b06aeaa9c45a61a7615917e30d, type: 3}
+  - {fileID: 7400000, guid: 95dc4fbaa01379f4f908847fb44054d4, type: 3}

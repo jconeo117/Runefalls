@@ -11,7 +11,7 @@ namespace Runefall.Presentation.Combat
     /// Position and layout are driven frame-by-frame by the presenter.
     /// </summary>
     [RequireComponent(typeof(Button))]
-    public class CardView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class CardView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [Header("Frame")]
         public Image  rankFrame;
@@ -30,6 +30,11 @@ namespace Runefall.Presentation.Combat
         public System.Action<CardView> OnReorderRequested;
         [HideInInspector] public float targetScale = 1f;
         [HideInInspector] public float restScaleY  = 1f;   // absolute Y scale at rest (taller cards)
+
+        [Header("Hover")]
+        [Tooltip("Escala extra al pasar el mouse por encima (acompaña el sonido de hover).")]
+        [SerializeField] private float _hoverScale = 1.12f;
+        private float _hoverFactor = 1f;   // 1 = normal; >1 while hovered. Folded into RestScale.
 
         private RectTransform _rt;
         private Canvas        _canvas;
@@ -145,17 +150,19 @@ namespace Runefall.Presentation.Combat
         // Resting scale: X/Z uniform, Y stretched independently (restScaleY). factor scales both
         // for pop-in / punch animations.
         public Vector3 RestScale(float uniform, float factor = 1f)
-            => new Vector3(uniform * factor, restScaleY * factor, uniform * factor);
+            => new Vector3(uniform * factor * _hoverFactor, restScaleY * factor * _hoverFactor, uniform * factor * _hoverFactor);
 
         public void StopAllAnimations()
         {
             StopAllCoroutines();
+            _hoverFactor = 1f;   // drop any hover enlargement (e.g. when the card is queued)
             transform.localScale = RestScale(targetScale);
             if (_cg != null) _cg.alpha = 1f;
         }
 
         public void PlayRankUpAnimation(Color elementColor, CardAnimationConfig cfg)
         {
+            CardSfx.Play(CardSfx.Upgrade);   // merge / rank-up feedback (cooldown collapses dupes)
             StopAllAnimations();
             StartCoroutine(AnimateRankUp(elementColor, cfg));
         }
@@ -199,6 +206,19 @@ namespace Runefall.Presentation.Combat
         }
 
         // ── Drag ─────────────────────────────────────────────────────────────
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            // Hover sound + slight scale, only on usable (hand) cards, not queued/disabled ones.
+            if (!GetComponent<Button>().interactable) return;
+            CardSfx.Play(CardSfx.Hover);
+            _hoverFactor = _hoverScale;   // presenter's per-frame layout lerps toward this via RestScale
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _hoverFactor = 1f;
+        }
 
         public void OnBeginDrag(PointerEventData eventData)
         {

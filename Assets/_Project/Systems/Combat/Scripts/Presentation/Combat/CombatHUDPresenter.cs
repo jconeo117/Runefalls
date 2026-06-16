@@ -201,6 +201,8 @@ namespace Runefall.Presentation.Combat
             int slotIndex = _pending.Count + _movesThisTurn;
             if (slotIndex >= _activeSlots.Count) return;
 
+            CardSfx.Play(CardSfx.Use);   // card committed to an action slot
+
             // Stop any in-flight animation before reparenting to the action slot.
             cv.StopAllAnimations();
 
@@ -543,12 +545,13 @@ namespace Runefall.Presentation.Combat
             }
         }
 
-        /// <summary>The rank a merge target lands on — its hand slot's rank, or one above its current rank.</summary>
+        /// <summary>The rank a merge target lands on. The RefreshCardHand diff already set the target
+        /// view's Card to the (possibly virtual/previewed) landed rank, so we use that. Reading the
+        /// domain slot here is wrong during a pending merge: the queued card is still reserved, so the
+        /// domain hasn't merged yet and would report the stale pre-merge rank, reverting the card.</summary>
         private int ResolveMergeFinalRank(CardView targetCv)
         {
-            if (_tm?.Hand != null && targetCv.HandIndex >= 0 && targetCv.HandIndex < _tm.Hand.Slots.Count)
-                return _tm.Hand.Slots[targetCv.HandIndex].Rank;
-            return targetCv.Card.Rank + 1;
+            return targetCv != null ? targetCv.Card.Rank : 1;
         }
 
         private Vector3 GetCardTargetLocalPos(int visualSlotIdx, int totalCards, float cardWidth)
@@ -591,37 +594,17 @@ namespace Runefall.Presentation.Combat
             var pendingIds = new HashSet<int>();
             foreach (var p in _pending) pendingIds.Add(p.cardId);
 
-            // Show every hand slot except the queued (pending) cards, then preview the merges that
-            // resolve once those queued cards leave the hand on commit.
+            // Show the real domain hand minus the queued (pending) cards. We intentionally do NOT
+            // preview speculative merges here: a previewed-merged card is a fiction (the domain hasn't
+            // merged yet because the trigger card is still reserved), and queuing it would reserve only
+            // one twin, leaving the other behind as a phantom and playing at the wrong rank. The merge
+            // shows truthfully once the queued cards commit and the domain actually merges.
             var vhand = new List<(int, int)>(slots.Count);
             for (int i = 0; i < slots.Count; i++)
                 if (!pendingIds.Contains(slots[i].Id))
                     vhand.Add((i, slots[i].Rank));
 
-            ApplyVirtualMerges(vhand, slots);
             return vhand;
-        }
-
-        private static void ApplyVirtualMerges(
-            List<(int domainIdx, int visRank)> vhand,
-            IReadOnlyList<BattleCard> slots)
-        {
-            bool merged;
-            do
-            {
-                merged = false;
-                for (int i = 0; i < vhand.Count - 1; i++)
-                {
-                    var (ia, ra) = vhand[i];
-                    var (ib, rb) = vhand[i + 1];
-                    if (slots[ia].IsUltimate || slots[ib].IsUltimate) continue;
-                    if (slots[ia].Skill != slots[ib].Skill || ra != rb || ra >= 3) continue;
-                    vhand[i] = (ia, ra + 1);
-                    vhand.RemoveAt(i + 1);
-                    merged = true;
-                    break;
-                }
-            } while (merged);
         }
 
         // ── Action slots ─────────────────────────────────────────────────────

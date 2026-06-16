@@ -43,6 +43,6 @@ MonoBehaviour:
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}
   voiceSet: {fileID: 11400000, guid: ddc36c5c33815a04ba7f4d66e05f5d19, type: 2}
-  combatScaleMultiplier: 1
+  combatScaleMultiplier: 0.8
   hpBarFrame: {fileID: 21300000, guid: 21d187d269d420b4da0a3eb76b103541, type: 3}
   baseDropRate: 0
