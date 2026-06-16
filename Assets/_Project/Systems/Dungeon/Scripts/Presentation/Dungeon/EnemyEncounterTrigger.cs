@@ -4,6 +4,10 @@ using Runefall.Data;
 
 namespace Runefall.Presentation.Dungeon
 {
+    /// <summary>
+    /// Dispara un encuentro cuando el jugador entra en rango.
+    /// Audio: adjuntar A_EnemyEncounterMusic al mismo GameObject para música de tensión.
+    /// </summary>
     [RequireComponent(typeof(SphereCollider))]
     public class EnemyEncounterTrigger : MonoBehaviour
     {
@@ -11,13 +15,16 @@ namespace Runefall.Presentation.Dungeon
         [SerializeField] private EncounterReadyEvent _encounterReadyEvent;
         [SerializeField] private int                 _enemyLevel = 1;
 
-        private SphereCollider _sphere;
-        private bool           _triggered;
+        private SphereCollider         _sphere;
+        private A_EnemyEncounterMusic  _encounterMusic; // opcional
+        private bool                   _triggered;
 
         private void Awake()
         {
             _sphere           = GetComponent<SphereCollider>();
             _sphere.isTrigger = true;
+            _encounterMusic   = GetComponent<A_EnemyEncounterMusic>();
+
             if (_enemyData != null)
                 _sphere.radius = _enemyData.encounterRange;
         }
@@ -28,6 +35,7 @@ namespace Runefall.Presentation.Dungeon
             if (_enemyData == null || _encounterReadyEvent == null) return;
 
             _triggered = true;
+            _encounterMusic?.OnEncounterActivated();
             _encounterReadyEvent.Raise(new EncounterData
             {
                 enemyData      = _enemyData,
@@ -38,7 +46,11 @@ namespace Runefall.Presentation.Dungeon
         }
 
         // Called by EnemyData.respawnsOnRoomExit flow or after combat ends
-        public void ResetTrigger() => _triggered = false;
+        public void ResetTrigger()
+        {
+            _triggered = false;
+            _encounterMusic?.OnEncounterReset();
+        }
 
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()

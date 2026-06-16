@@ -12,7 +12,7 @@ namespace Runefall.Presentation.Player
         [SerializeField] private InputReader input;
 
         [Header("Movimiento")]
-        [SerializeField] private float moveSpeed    = 5f;
+        [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float acceleration = 8f;
         [SerializeField] private float deceleration = 12f;
 
@@ -20,32 +20,35 @@ namespace Runefall.Presentation.Player
         [SerializeField] private float rotationSpeed = 10f;
 
         [Header("Dash")]
-        [SerializeField] private float dashDistance       = 4f;
-        [SerializeField] private float dashDuration       = 0.15f;
+        [SerializeField] private float dashDistance = 4f;
+        [SerializeField] private float dashDuration = 0.15f;
         [SerializeField] private float dashBetweenCooldown = 0.5f;   // espera entre dashs
-        [SerializeField] private float dashChargeRecovery  = 1.8f;   // recuperación por carga
+        [SerializeField] private float dashChargeRecovery = 1.8f;   // recuperación por carga
 
         // ── Estado interno ───────────────────────────────────────────────────
         private CharacterController _cc;
-        private Transform           _camTransform;
-        private Vector3             _moveDirection;
-        private float               _currentSpeed;
-        private float               _verticalVelocity;
+        private Transform _camTransform;
+        private Vector3 _moveDirection;
+        private float _currentSpeed;
+        private float _verticalVelocity;
 
-        private const float Gravity    = -20f;
-        private const int   MaxCharges = 3;
+        private const float Gravity = -20f;
+        private const int MaxCharges = 3;
 
-        private int         _charges          = MaxCharges;
-        private float       _betweenDashTimer = 0f;
-        private bool        _isDashing;
+        private int _charges = MaxCharges;
+        private float _betweenDashTimer = 0f;
+        private bool _isDashing;
         private readonly List<float> _chargeTimers = new();   // countdown por carga gastada
 
         // ── API pública ──────────────────────────────────────────────────────
-        public float CurrentSpeed  => _currentSpeed;
-        public bool  IsDashing     => _isDashing;
-        public int   DashCharges   => _charges;
+        public float CurrentSpeed => _currentSpeed;
+        public bool IsDashing => _isDashing;
+        public int DashCharges => _charges;
 
         // ── Ciclo de vida ────────────────────────────────────────────────────
+
+        private A_PlayerFootsteps _footsteps; // opcional; si no está adjunto, no hay pasos
+        private Vector3 _lastFootstepPos;
 
         private void Awake()
         {
@@ -61,9 +64,13 @@ namespace Runefall.Presentation.Player
             _camTransform = Camera.main != null ? Camera.main.transform : null;
             if (_camTransform == null)
                 Debug.LogError("[PlayerController] Camera.main no encontrada.", this);
+
+
+            _footsteps = GetComponent<A_PlayerFootsteps>(); // null si no está adjunto, y está bien
+            _lastFootstepPos = transform.position;
         }
 
-        private void OnEnable()  => input.DashEvent += OnDashInput;
+        private void OnEnable() => input.DashEvent += OnDashInput;
         private void OnDisable() => input.DashEvent -= OnDashInput;
 
         private void Update()
@@ -73,6 +80,11 @@ namespace Runefall.Presentation.Player
             if (!_isDashing)
                 HandleMovement();
             HandleRotation();
+        }
+
+        private void LateUpdate()
+        {
+            NotifyFootsteps();
         }
 
         // ── Input ────────────────────────────────────────────────────────────
@@ -89,7 +101,7 @@ namespace Runefall.Presentation.Player
         {
             if (_camTransform == null) return;
 
-            Vector3 camFwd   = Vector3.ProjectOnPlane(_camTransform.forward, Vector3.up).normalized;
+            Vector3 camFwd = Vector3.ProjectOnPlane(_camTransform.forward, Vector3.up).normalized;
             Vector3 camRight = _camTransform.right;
             Vector3 inputDir = camFwd * input.MoveInput.y + camRight * input.MoveInput.x;
 
@@ -106,7 +118,7 @@ namespace Runefall.Presentation.Player
         private void HandleRotation()
         {
             if (_moveDirection.sqrMagnitude < 0.01f) return;
-            Quaternion target  = Quaternion.LookRotation(_moveDirection);
+            Quaternion target = Quaternion.LookRotation(_moveDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, target, rotationSpeed * Time.deltaTime);
         }
 
@@ -153,9 +165,9 @@ namespace Runefall.Presentation.Player
             _betweenDashTimer = dashBetweenCooldown;
             _chargeTimers.Add(dashChargeRecovery);
 
-            Vector3 dir   = _moveDirection.sqrMagnitude > 0.01f ? _moveDirection : transform.forward;
-            float   speed = dashDistance / dashDuration;
-            float   timer = 0f;
+            Vector3 dir = _moveDirection.sqrMagnitude > 0.01f ? _moveDirection : transform.forward;
+            float speed = dashDistance / dashDuration;
+            float timer = 0f;
 
             while (timer < dashDuration)
             {
@@ -166,5 +178,30 @@ namespace Runefall.Presentation.Player
 
             _isDashing = false;
         }
+    
+
+            // ── Audio de pasos ───────────────────────────────────────────────────
+
+        private void NotifyFootsteps()
+        {
+            if (_footsteps == null) return;
+
+            bool canStep = !_isDashing
+                        && _cc.isGrounded
+                        && _currentSpeed > 0.01f
+                        && _moveDirection.sqrMagnitude > 0.01f;
+
+            if (!canStep)
+            {
+                _footsteps.OnStep(0f);
+                _lastFootstepPos = transform.position;
+                return;
+            }
+
+            Vector3 delta = transform.position - _lastFootstepPos;
+            delta.y = 0f;
+            _lastFootstepPos = transform.position;
+
+            _footsteps.OnStep(delta.magnitude);
+        } }
     }
-}

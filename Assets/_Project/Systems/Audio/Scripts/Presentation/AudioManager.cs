@@ -29,6 +29,8 @@ namespace Runefall.Audio
 
         private static AudioManager _instance;
 
+        public static object Instance { get; internal set; }
+
         private void Awake()
         {
             if (_instance != null && _instance != this)
