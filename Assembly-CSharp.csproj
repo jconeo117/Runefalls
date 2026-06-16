@@ -69,6 +69,7 @@
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\ThirdPersonController.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\ColorExtensions.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapPlayerController.cs" />
+    <Compile Include="Assets\Santiago\Scripts\SkillsInfo.cs" />
     <Compile Include="Assets\Santiago\Scripts\SelectedCharacterLoader.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ObjectMoveDestroy.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapCameraController.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ScaleFactorApplyToMaterial.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonUIPanel.cs" />
+    <Compile Include="Assets\Santiago\Scripts\DungeonEntryMessage.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousMouseOrbit.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ShieldActivate.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\WorldTooltipSystem.cs" />
