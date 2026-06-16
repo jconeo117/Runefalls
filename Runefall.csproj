@@ -127,6 +127,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\ActiveEffect.cs" />
     <Compile Include="Assets\_Project\Systems\Audio\Scripts\Presentation\CombatAudioPlayer.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Effects\DoTEffectDef.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\VeloDeMuerteBehavior.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\PassiveBehavior.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTimeDilationManager.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\BillboardCanvas.cs" />
@@ -194,6 +195,7 @@
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\CombatTransitionScreen.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\ScriptableObjects\Combat\ArenaData.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\IPawnMover.cs" />
+    <Compile Include="Assets\_Project\Systems\Combat\Scripts\Domain\Passives\CorazonDelFenixBehavior.cs" />
     <Compile Include="Assets\_Project\Systems\Combat\Scripts\Presentation\Combat\StatsOverlay\CombatantStatsSource.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\RarityType.cs" />
     <Compile Include="Assets\_Project\Systems\Characters\Scripts\Domain\CharacterModel.cs" />

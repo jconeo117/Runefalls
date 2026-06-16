@@ -170,6 +170,9 @@ namespace Runefall.Combat
                     caster.Element, target.Element);
 
                 damageDealt = dr.damage * effect.damageMultiplier * hitFraction;
+                // Apply the target's incoming-damage multiplier (Marca de la Muerte, guards, etc.) —
+                // same as the EffectDefinition pipeline (DamageEffectDef) does.
+                damageDealt *= target.Effects.DamageReceivedMultiplier();
                 isCrit      = dr.isCrit;
                 target.Model.TakeDamage(damageDealt);
 

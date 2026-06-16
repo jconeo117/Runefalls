@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a83d4d1b0a34e44a9df1b500339530d, type: 3}
+  m_Name: VeloDeLaMuerte
+  m_EditorClassIdentifier: 
+  passiveName: Velo de la Muerte
+  description: "Al inicio de cada turno de Vorn, todos los enemigos sufren Oscuridad
+    Rota (\u221220% a sus estad\xEDsticas defensivas) durante 1 turno, y un enemigo
+    al azar recibe Marca de la Muerte (+40% da\xF1o recibido). Cuando Vorn asesta
+    un golpe cr\xEDtico a un objetivo marcado, su prob. y da\xF1o cr\xEDticos aumentan
+    permanentemente (+5% y +8%) y recupera el 15% del da\xF1o infligido."
+  resonanceCompatible: 0
+  behaviors:
+  - {fileID: 11400000, guid: 03c9be0563c20a2478056849d8defbd6, type: 2}

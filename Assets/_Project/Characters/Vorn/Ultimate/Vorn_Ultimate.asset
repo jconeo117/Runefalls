@@ -24,7 +24,7 @@ MonoBehaviour:
   ultimateName: Vacio Absoluto
   effect:
     effects: []
-    damageMultiplier: 1.4
+    damageMultiplier: 8
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
@@ -40,5 +40,10 @@ MonoBehaviour:
     faceTarget: 1
     rotationOffset: {x: 0, y: 0, z: 0}
     autoDestroyAfter: 2.5
-  sfxCues: []
+  sfxCues:
+  - label: 
+    clip: {fileID: 8300000, guid: 5d903c8fbe13732449d69a2226883e33, type: 3}
+    volume: 0.35
+    pitchJitter: 0
+    anchor: 1
   animSequence: []

@@ -234,11 +234,19 @@ namespace Runefall.Presentation.Combat
 
             _pending.Add((cardId, _selectedTarget));
 
-            if (_tm.Hand.ActionsRemaining > 0 && _pending.Count >= _tm.Hand.ActionsRemaining)
+            // Commit the queue when it fills the remaining actions, OR when the hand has no more
+            // playable cards (queuing the last one) — otherwise the player would be stuck with
+            // actions left and nothing to fill them.
+            if (_tm.Hand.ActionsRemaining > 0
+                && (_pending.Count >= _tm.Hand.ActionsRemaining || NoPlayableCardsLeft()))
                 ExecuteQueue();
             else
                 RefreshCardHand();
         }
+
+        /// <summary>True when no non-queued cards remain in hand — the player can't fill more actions.</summary>
+        private bool NoPlayableCardsLeft()
+            => _tm?.Hand == null || (_tm.Hand.Slots.Count - _pending.Count) <= 0;
 
         private const float _queueStepDelay = 0.15f;   // gap between committed plays so the gauge fills section-by-section
 
@@ -268,6 +276,11 @@ namespace Runefall.Presentation.Combat
             _tm.Hand.ClearReservations();   // safety — drop any stragglers
 
             _isExecutingQueue = false;
+
+            // Auto-pass: the queue committed but actions remain and the hand is empty — burn the
+            // leftover actions so the turn ends instead of leaving the player stuck.
+            if (_tm.Phase == CombatPhase.PlayerTurn && _tm.Hand.ActionsRemaining > 0 && NoPlayableCardsLeft())
+                _tm.PassRemainingActions();
         }
 
         // ── Drag → reorder ───────────────────────────────────────────────────

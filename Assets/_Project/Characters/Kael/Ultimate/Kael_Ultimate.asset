@@ -23,9 +23,8 @@ MonoBehaviour:
   effectsByRank: []
   ultimateName: Alma de la Forja
   effect:
-    effects:
-    - {fileID: 11400000, guid: b44c347fc2edddd4cb3639cff631db1f, type: 2}
-    damageMultiplier: 1.4
+    effects: []
+    damageMultiplier: 6
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}

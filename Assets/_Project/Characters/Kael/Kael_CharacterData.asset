@@ -19,24 +19,24 @@ MonoBehaviour:
   element: 1
   baseStats:
     ofensivas:
-      ataque: 2687.5
-      perforacion: 0.225
-      critChance: 0.15
-      "critDa\xF1o": 1.75
+      ataque: 1600
+      perforacion: 0.1
+      critChance: 0.05
+      "critDa\xF1o": 1.25
     defensivas:
-      defensa: 4800
-      resistencia: 0.35
-      defensaCrit: 0.75
-      resistenciaCrit: 0.55
+      defensa: 6000
+      resistencia: 0.45
+      defensaCrit: 0.8
+      resistenciaCrit: 0.6
     vitales:
-      ps: 19500
-      roboDeVida: 0.09
-      tasaRegen: 0.07
-      tasaRecuperacion: 0.06
+      ps: 28000
+      roboDeVida: 0.12
+      tasaRegen: 0.1
+      tasaRecuperacion: 0.08
   skill1: {fileID: 11400000, guid: 33cc33cc33cc33cc33cc33cc33cc3301, type: 2}
   skill2: {fileID: 11400000, guid: 33cc33cc33cc33cc33cc33cc33cc3302, type: 2}
   ultimate: {fileID: 11400000, guid: 33cc33cc33cc33cc33cc33cc33cc3303, type: 2}
-  passive: {fileID: 0}
+  passive: {fileID: 11400000, guid: e733e628af2bb3245b760c6aef671b88, type: 2}
   explorationAnimatorController: {fileID: 22100000, guid: 74f4465a377b2a34aa3cc3cd49e98a56, type: 2}
   animatorController: {fileID: 0}
   animApproach: {fileID: 0}

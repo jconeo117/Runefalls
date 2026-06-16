@@ -319,6 +319,16 @@ namespace Runefall.Combat
                 ProcessEnemyPhase();
         }
 
+        /// <summary>Auto-pass: the player has actions left but no playable cards. Burns the remaining
+        /// actions and runs the normal end-of-turn flow (queued skill animations drain, then the turn
+        /// ends), so the player never gets stuck with an unusable action.</summary>
+        public virtual void PassRemainingActions()
+        {
+            if (Phase != CombatPhase.PlayerTurn) return;
+            Hand.SetActionsRemaining(0);
+            NotifyActionsExhausted();
+        }
+
         // ── private ───────────────────────────────────────────────────────────────
 
         private void NotifyActionsExhausted()
