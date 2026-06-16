@@ -60,7 +60,7 @@ MonoBehaviour:
   phase2Data: {fileID: 11400000, guid: 15638fccfb6fd144986b58b20a2cf52d, type: 2}
   phase3Data: {fileID: 11400000, guid: 52a952d770f7a0f4dbc740f936dd83f7, type: 2}
   phase1To2Timeline: {fileID: 11400000, guid: 0d75099349e543a8b323f2f42162bcaf, type: 2}
-  phase2To3Timeline: {fileID: 11400000, guid: f96d4842674a40b7a3bea94cdc7fcae1, type: 2}
+  phase2To3Timeline: {fileID: 11400000, guid: 0d75099349e543a8b323f2f42162bcaf, type: 2}
   transitionVfxPrefab: {fileID: 3744133877081091469, guid: a2a060732547fe64581bb0cb3c2bdf1d, type: 3}
   transitionVfxScale: 1.5
   transitionVfxLocalOffset: {x: 0, y: 0, z: 0}

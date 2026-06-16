@@ -11,33 +11,41 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ae50bb8ea424d884baa5e917bbddff89, type: 3}
   m_Name: Tharok_P2_Skill2
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   skillName: Coraza Soberana
   cardArt: {fileID: 0}
   type: 0
   element: 0
-  description:
+  description: 
   targetType: 0
   isRanged: 1
   ultimateChargeAmount: 0
   effectsByRank:
   - effects: []
-    damageMultiplier: 1.8
+    damageMultiplier: 2.25
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
-    damageMultiplier: 2.1
+    damageMultiplier: 2.625
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
-    damageMultiplier: 2.4
+    damageMultiplier: 3
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   skillTimeline: {fileID: 11400000, guid: efb61d479b10414fb50d5c10bd65033e, type: 2}
-  hitCount: 1
+  hitCount: 4
   vfxConfig: {fileID: 0}
-  vfxCues: []
+  vfxCues:
+  - label: 
+    prefab: {fileID: 5990112604267223275, guid: e18c351ac3f6ed7409f6cae5ba1302eb, type: 3}
+    anchor: 1
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 0
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 4.5
   sfxCues: []

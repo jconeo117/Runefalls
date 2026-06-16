@@ -11,33 +11,41 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ae50bb8ea424d884baa5e917bbddff89, type: 3}
   m_Name: Tharok_P3_Skill1
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   skillName: Sentencia Final
   cardArt: {fileID: 0}
   type: 0
   element: 0
-  description:
+  description: 
   targetType: 0
   isRanged: 1
   ultimateChargeAmount: 0
   effectsByRank:
   - effects: []
-    damageMultiplier: 2.6
+    damageMultiplier: 3.25
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
-    damageMultiplier: 3
+    damageMultiplier: 3.75
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
-    damageMultiplier: 3.4
+    damageMultiplier: 4.25
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   skillTimeline: {fileID: 11400000, guid: de7af61607044fce80350445e1594aaa, type: 2}
   hitCount: 1
   vfxConfig: {fileID: 0}
-  vfxCues: []
+  vfxCues:
+  - label: 
+    prefab: {fileID: 5921197867985272257, guid: 9d3d658504c896c448a616658632b0ed, type: 3}
+    anchor: 1
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 0
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 0
   sfxCues: []

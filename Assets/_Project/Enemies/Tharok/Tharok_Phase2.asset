@@ -28,12 +28,13 @@ MonoBehaviour:
       defensaCrit: 0.45
       resistenciaCrit: 0.5
     vitales:
-      ps: 16000
+      ps: 490000
       roboDeVida: 0.12
       tasaRegen: 0.18
       tasaRecuperacion: 0.2
   maxMP: 0
   combatClass: 13500
+  combatScaleMultiplier: 1
   detectionRange: 8
   encounterRange: 1.8
   patrolRadius: 4
@@ -45,6 +46,8 @@ MonoBehaviour:
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}
+  voiceSet: {fileID: 0}
+  hpBarFrame: {fileID: 21300000, guid: f26477f4f1563b4479ad0d6b6a16a085, type: 3}
   behaviorTree: 3
   dropReward:
     goldMin: 0

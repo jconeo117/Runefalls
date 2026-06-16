@@ -23,7 +23,7 @@ MonoBehaviour:
   ultimateName: Ocaso del Reino
   effect:
     effects: []
-    damageMultiplier: 3.5
+    damageMultiplier: 4.375
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}

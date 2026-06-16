@@ -337,8 +337,15 @@ namespace Runefall.Presentation.Combat
                                             
                                             // Set standard CinemachineCamera defaults so it displays beautifully
                                             vcam.Priority = 10;
-                                            
+
                                             playableDirector.SetReferenceValue(shot.VirtualCamera.exposedName, vcam);
+
+                                            // Dynamic head framing: aim the intro vcam at the target's HEAD
+                                            // bone so large models (the boss) show the face, not the torso.
+                                            if (clipName.Contains("enemy") && enemyAnimators.Count > 0)
+                                                AimVcamAtHead(vcam, enemyAnimators[0]);
+                                            else if ((clipName.Contains("player") || clipName.Contains("hero")) && playerAnimator != null)
+                                                AimVcamAtHead(vcam, playerAnimator);
                                         }
                                     }
                                 }
@@ -1017,6 +1024,22 @@ namespace Runefall.Presentation.Combat
                     vcam.transform.rotation = Quaternion.LookRotation(fieldCenterTarget - camPos);
                 }
             }
+        }
+
+        /// <summary>
+        /// Makes a Cinemachine vcam track the target's HEAD bone (humanoid) instead of a fixed height,
+        /// so the framing adapts to model size — a big boss shows its face, not its torso. Adds a
+        /// RotationComposer (the v3 aim) if the vcam has none. Falls back silently for non-humanoid rigs.
+        /// </summary>
+        private void AimVcamAtHead(Unity.Cinemachine.CinemachineCamera vcam, Animator targetAnim)
+        {
+            if (vcam == null || targetAnim == null || !targetAnim.isHuman) return;
+            var head = targetAnim.GetBoneTransform(HumanBodyBones.Head);
+            if (head == null) return;
+
+            vcam.LookAt = head;
+            if (vcam.GetComponent<Unity.Cinemachine.CinemachineRotationComposer>() == null)
+                vcam.gameObject.AddComponent<Unity.Cinemachine.CinemachineRotationComposer>();
         }
 
         private static float EaseOutExpo(float t)

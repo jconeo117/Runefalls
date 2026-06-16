@@ -75,7 +75,7 @@ namespace Runefall.Presentation.Combat
                     ScheduleTransitionVfx(timeline, boss, bossPawn);
                     yield return _coroutineRunner.StartCoroutine(PlayTransitionTimeline(timeline, bossPawn));
                     if (orbit != null) _coroutineRunner.StopCoroutine(orbit);
-                    RestoreBrain();
+                    RestoreGameplayCamera();
                 }
                 else
                 {
@@ -89,7 +89,11 @@ namespace Runefall.Presentation.Combat
             // 4. Update the visual of the boss
             UpdateBossVisualsForPhase(boss, nextPhase);
 
-            // 5. Restore HUD visibility
+            // 5. Hand the camera back to gameplay and restore the HUD (both were taken over / hidden for
+            // the cinematic). Without this the camera stays on the cinematic framing and the UI is gone.
+            RestoreGameplayCamera();
+            if (_presenter != null) _presenter.ShowAllUI();
+
             yield return new WaitForSeconds(0.5f);
         }
 
@@ -146,13 +150,23 @@ namespace Runefall.Presentation.Combat
 
             var brain = cam.GetComponent<Unity.Cinemachine.CinemachineBrain>();
             if (brain != null) brain.enabled = false;
+            // Take exclusive control of the camera during the orbit — otherwise the gameplay camera
+            // controller fights our manual posing every LateUpdate.
+            var camController = cam.GetComponent<CombatCameraController>();
+            if (camController != null) camController.enabled = false;
 
             _orbitSavedFov = cam.fieldOfView;
             _orbitFovSaved = true;
             float baseFov = _orbitSavedFov;
 
+            // Focus the orbit on the boss's HEAD bone (humanoid) so big models frame the face, not the
+            // torso — falls back to a fixed height for non-humanoid rigs.
+            var bossAnim = bossPawn.GetComponentInChildren<Animator>();
+            Transform headBone = (bossAnim != null && bossAnim.isHuman)
+                ? bossAnim.GetBoneTransform(HumanBodyBones.Head) : null;
+
             // Initial angle/radius from where the combat camera already is, so the orbit eases out of it.
-            Vector3 focus = bossPawn.position + Vector3.up * 1.4f;
+            Vector3 focus = headBone != null ? headBone.position : bossPawn.position + Vector3.up * 1.4f;
             Vector3 off   = cam.transform.position - focus; off.y = 0f;
             float startAngle  = Mathf.Atan2(off.z, off.x);
             float startRadius = Mathf.Clamp(off.magnitude, 3f, 7f);
@@ -180,7 +194,7 @@ namespace Runefall.Presentation.Combat
                 float k    = Mathf.Clamp01(t / duration);
                 float ease = Mathf.SmoothStep(0f, 1f, k);
 
-                focus = bossPawn.position + Vector3.up * 1.4f;   // re-read (boss may shift during getup)
+                focus = headBone != null ? headBone.position : bossPawn.position + Vector3.up * 1.4f;   // re-read (boss may move during getup)
 
                 float angle  = startAngle + sweepRad * ease;
                 // Dolly in toward the climax, then back out — adds weight.
@@ -225,17 +239,24 @@ namespace Runefall.Presentation.Combat
             }
 
             cam.fieldOfView = baseFov;
-            if (brain != null) brain.enabled = true;
+            // Leave the camera handoff to RestoreGameplayCamera (brain stays OFF — gameplay is driven by
+            // CombatCameraController, not the Cinemachine brain).
         }
 
-        private void RestoreBrain()
+        // Hand the camera back to gameplay: the combat camera is CombatCameraController (code-driven) with
+        // the Cinemachine brain OFF. Enabling the brain instead would snap to a leftover skill close-up
+        // vcam (the "stuck close-up of the character" bug). Also restores FOV.
+        private void RestoreGameplayCamera()
         {
             var cam = Camera.main;
-            var brain = cam != null ? cam.GetComponent<Unity.Cinemachine.CinemachineBrain>() : null;
-            if (brain != null) brain.enabled = true;
-            if (_orbitFovSaved && cam != null)
+            if (cam == null) return;
+            var brain = cam.GetComponent<Unity.Cinemachine.CinemachineBrain>();
+            if (brain != null) brain.enabled = false;
+            var camController = cam.GetComponent<CombatCameraController>();
+            if (camController != null) camController.enabled = true;
+            if (_orbitFovSaved)
             {
-                cam.fieldOfView = _orbitSavedFov;   // restore in case the orbit was stopped before its end
+                cam.fieldOfView = _orbitSavedFov;
                 _orbitFovSaved = false;
             }
         }
@@ -388,16 +409,11 @@ namespace Runefall.Presentation.Combat
             // 3. Update dictionary reference via callback
             _updatePawn?.Invoke(boss, newPawn);
 
-            // 4. Update HPBar target
-            if (_actorHPBars != null && _actorHPBars.TryGetValue(boss, out var hpBar))
+            // 4. Refresh the boss HP bar. It lives screen-space in the top-left (not following the pawn),
+            // so we must NOT SetFollow it to the new pawn — just refresh the fill against the persistent
+            // boss Model.
+            if (_actorHPBars != null && _actorHPBars.TryGetValue(boss, out var hpBar) && hpBar != null)
             {
-                float yOffset = 2.0f;
-                var slot = newPawn.GetComponent<EnemySlot>();
-                if (slot != null)
-                {
-                    yOffset = slot.hpBarOffset;
-                }
-                hpBar.SetFollow(newPawn, Vector3.up * yOffset);
                 hpBar.ForceRefresh();
             }
 

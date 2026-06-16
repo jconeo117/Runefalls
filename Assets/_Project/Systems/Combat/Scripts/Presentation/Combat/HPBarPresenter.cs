@@ -152,8 +152,8 @@ namespace Runefall.Presentation.Combat
             var rowGO = new GameObject("EffectIcons");
             rowGO.transform.SetParent(transform, false);
             _iconRow = rowGO.AddComponent<RectTransform>();
-            _iconRow.sizeDelta        = new Vector2(200f, 20f);
-            _iconRow.anchoredPosition = new Vector2(0f, 24f); // above 28px HP bar
+            _iconRow.sizeDelta        = new Vector2(160f, 12f);
+            _iconRow.anchoredPosition = new Vector2(0f, 16f); // above the HP bar (chips kept small)
         }
 
         private void RebuildEffectIcons()
@@ -172,8 +172,8 @@ namespace Runefall.Presentation.Combat
 
             if (count == 0) return;
 
-            const float size = 18f;
-            const float gap  = 3f;
+            const float size = 10f;
+            const float gap  = 2f;
             float totalW = count * size + (count - 1) * gap;
             float startX = -totalW * 0.5f + size * 0.5f;
 
@@ -190,7 +190,7 @@ namespace Runefall.Presentation.Combat
 
         private void SpawnIcon(float localX, Color tint, ActiveEffect e)
         {
-            const float size = 20f;
+            const float size = 10f;
 
             var iconGO = new GameObject("EffectIcon");
             iconGO.transform.SetParent(_iconRow, false);
@@ -213,7 +213,7 @@ namespace Runefall.Presentation.Combat
 
                 var outline = iconGO.AddComponent<Outline>();
                 outline.effectColor    = new Color(tint.r * 0.4f, tint.g * 0.4f, tint.b * 0.4f, 1f);
-                outline.effectDistance = new Vector2(1.4f, -1.4f);
+                outline.effectDistance = new Vector2(0.8f, -0.8f);
 
                 string glyph = !string.IsNullOrEmpty(e.Source?.effectName)
                     ? e.Source.effectName.Substring(0, 1).ToUpperInvariant()
@@ -233,7 +233,7 @@ namespace Runefall.Presentation.Combat
                 var glyphTxt      = glyphGO.AddComponent<Text>();
                 glyphTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
                 glyphTxt.text      = glyph;
-                glyphTxt.fontSize  = 12;
+                glyphTxt.fontSize  = 7;
                 glyphTxt.fontStyle = FontStyle.Bold;
                 glyphTxt.color     = Color.white;
                 glyphTxt.alignment = TextAnchor.MiddleCenter;
@@ -251,7 +251,7 @@ namespace Runefall.Presentation.Combat
                 var stackTxt      = stackGO.AddComponent<Text>();
                 stackTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
                 stackTxt.text      = e.Stacks.ToString();
-                stackTxt.fontSize  = 9;
+                stackTxt.fontSize  = 6;
                 stackTxt.fontStyle = FontStyle.Bold;
                 stackTxt.color     = Color.white;
                 stackTxt.alignment = TextAnchor.LowerRight;

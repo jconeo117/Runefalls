@@ -87,6 +87,9 @@ namespace Runefall.Presentation.Combat
         [SerializeField] protected GameObject _hpBarPrefab;
         protected readonly List<HPBarPresenter>                     _hpBars         = new();
         protected readonly Dictionary<ICombatActor, HPBarPresenter>  _actorHPBars    = new();
+        // Boss HP bar lives in a standalone screen-space canvas (top-left), not on the pawn — tracked
+        // here so it gets destroyed on teardown (pawn-child bars die with the arena automatically).
+        protected GameObject _bossHpBarCanvas;
         protected readonly Dictionary<ICombatActor, Transform>       _actorPawns     = new();
         protected readonly Dictionary<ICombatActor, CharacterData>   _actorCharData  = new();
         protected readonly Dictionary<ICombatActor, EnemyData>       _actorEnemyData = new();
@@ -276,7 +279,11 @@ namespace Runefall.Presentation.Combat
             if (cameraController != null)
             {
                 _tm.OnPlayerTurnBegin  += cameraController.OnPlayerTurnStarted;  // camera moves immediately
-                _tm.OnEnemyTurnStarted += cameraController.OnEnemyTurnStarted;
+                // In a boss fight the camera stays on the player side during the enemy turn — the boss's
+                // attack camera frames over the PLAYER's shoulder. Swinging the gameplay cam to the boss
+                // side first (then yanking back) looked erratic, so skip the enemy-side swing here.
+                if (!HasBossEnemy())
+                    _tm.OnEnemyTurnStarted += cameraController.OnEnemyTurnStarted;
             }
 
             _tm.PlayerTurnStartHandler = fire => StartCoroutine(PlayerTurnSettle(fire));
@@ -375,6 +382,8 @@ namespace Runefall.Presentation.Combat
             _playerWon               = false;
             _onActionPendingHandler  = null;
             ClearUltimateAuras();
+            if (_bossHpBarCanvas != null) Destroy(_bossHpBarCanvas);
+            _bossHpBarCanvas = null;
             _hpBars.Clear();
             _actorHPBars.Clear();
             _actorPawns.Clear();
@@ -582,11 +591,16 @@ namespace Runefall.Presentation.Combat
                 if (_enemySlots[i] == null) continue;
                 var actor = _ctx.Enemies[i];
                 var slot  = _enemySlots[i].GetComponent<EnemySlot>();
-                var bar   = AttachHPBar(_enemySlots[i], actor,
-                    slot != null ? slot.hpBarOffset    : 3.5f,
-                    slot != null ? slot.headBoneOffset : 0.5f,
-                    slot != null ? slot.headBone       : null,
-                    slot != null && slot.data != null ? slot.data.hpBarFrame : null);
+                var frame = slot != null && slot.data != null ? slot.data.hpBarFrame : null;
+
+                // The boss shows its HP bar screen-space in the top-left corner, not as a world billboard.
+                HPBarPresenter bar = actor is IMultiPhaseActor
+                    ? AttachBossScreenHPBar(actor, frame)
+                    : AttachHPBar(_enemySlots[i], actor,
+                        slot != null ? slot.hpBarOffset    : 3.5f,
+                        slot != null ? slot.headBoneOffset : 0.5f,
+                        slot != null ? slot.headBone       : null,
+                        frame);
                 _hpBars.Add(bar);
                 _actorHPBars[actor] = bar;
             }
@@ -730,6 +744,72 @@ namespace Runefall.Presentation.Combat
                 barGO.transform.localPosition = Vector3.zero;
                 hp.SetFollow(attachPoint, Vector3.up * offset);
             }
+            return hp;
+        }
+
+        /// <summary>True if any current enemy is a multi-phase boss.</summary>
+        private bool HasBossEnemy()
+        {
+            if (_ctx?.Enemies == null) return false;
+            for (int i = 0; i < _ctx.Enemies.Count; i++)
+                if (_ctx.Enemies[i] is IMultiPhaseActor) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Boss HP bar: rendered SCREEN-SPACE in the top-left corner (not a world-space billboard on the
+        /// pawn). Reuses the HP bar prefab but strips its world-space Canvas and mounts it under a
+        /// dedicated overlay canvas. No SetFollow — it stays fixed on screen.
+        /// </summary>
+        private HPBarPresenter AttachBossScreenHPBar(ICombatActor actor, Sprite frameSprite)
+        {
+            if (_hpBarPrefab == null)
+            {
+                Debug.LogWarning("[CombatBootstrapper] _hpBarPrefab not assigned — no boss HP bar.", this);
+                return null;
+            }
+
+            var canvasGO = new GameObject("BossHPBarCanvas");
+            var canvas   = canvasGO.AddComponent<Canvas>();
+            canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 200;
+            var scaler = canvasGO.AddComponent<UnityEngine.UI.CanvasScaler>();
+            scaler.uiScaleMode        = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            _bossHpBarCanvas = canvasGO;
+
+            var barGO = Instantiate(_hpBarPrefab, canvasGO.transform);
+
+            // The prefab is a self-contained WORLD-SPACE canvas — strip it so the bar renders under our
+            // overlay canvas as a normal UI element we can anchor to the corner.
+            var innerCanvas = barGO.GetComponent<Canvas>();
+            if (innerCanvas != null) Destroy(innerCanvas);
+            var rcaster = barGO.GetComponent<UnityEngine.UI.GraphicRaycaster>();
+            if (rcaster != null) Destroy(rcaster);
+
+            var rt = barGO.GetComponent<RectTransform>();
+            if (rt != null)
+            {
+                rt.localScale       = new Vector3(3.81f, 4.31f, 4f);   // tuned in-editor
+                rt.localRotation    = Quaternion.identity;
+                rt.anchorMin        = new Vector2(0f, 1f);
+                rt.anchorMax        = new Vector2(0f, 1f);
+                rt.pivot            = new Vector2(0f, 1f);
+                rt.anchoredPosition = new Vector2(7f, -13f);           // top-left, tuned in-editor
+            }
+
+            var hp = barGO.GetComponent<HPBarPresenter>();
+            if (hp == null)
+            {
+                Debug.LogError("[CombatBootstrapper] HP bar prefab is missing HPBarPresenter on its root.", this);
+                Destroy(canvasGO);
+                _bossHpBarCanvas = null;
+                return null;
+            }
+
+            hp.SetFrame(frameSprite);
+            hp.Bind(actor);
+            // No SetFollow → fixed screen-space position (top-left).
             return hp;
         }
 

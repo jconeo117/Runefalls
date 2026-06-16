@@ -22,17 +22,17 @@ MonoBehaviour:
   ultimateChargeAmount: 0
   effectsByRank:
   - effects: []
-    damageMultiplier: 2
+    damageMultiplier: 2.5
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
-    damageMultiplier: 2.4
+    damageMultiplier: 3
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
-    damageMultiplier: 2.8
+    damageMultiplier: 3.5
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
@@ -47,5 +47,5 @@ MonoBehaviour:
     scale: {x: 0, y: 0, z: 0}
     faceTarget: 1
     rotationOffset: {x: 0, y: 0, z: 0}
-    autoDestroyAfter: 0
+    autoDestroyAfter: 3
   sfxCues: []

@@ -371,8 +371,19 @@ namespace Runefall.Presentation.Combat
             Coroutine camOrbit = null;
             if (_useSkillCamera)
             {
-                SetActorHPBarVisible(pending.Caster, false);   // hide caster's bar during the skill camera
-                camOrbit = StartCoroutine(_cameraDirector.SkillCameraRoutine(pending.Rank, casterPawn, targetPos, SumClipDurations(clips, 0, clips.Length - 1)));
+                var bossTargetTf = GetTargetTransform(pending);
+                if (pending.Caster is IMultiPhaseActor && bossTargetTf != null)
+                {
+                    // Boss attack → over the PLAYER's shoulder looking at the boss (bronze-style). The boss
+                    // is too big for its own shoulder cam; this frames the strike from the player POV.
+                    SetActorHPBarVisible(pending.Target, false);
+                    camOrbit = StartCoroutine(_cameraDirector.SkillCameraRoutine(1, bossTargetTf, casterPawn.position, SumClipDurations(clips, 0, clips.Length - 1)));
+                }
+                else
+                {
+                    SetActorHPBarVisible(pending.Caster, false);   // hide caster's bar during the skill camera
+                    camOrbit = StartCoroutine(_cameraDirector.SkillCameraRoutine(pending.Rank, casterPawn, targetPos, SumClipDurations(clips, 0, clips.Length - 1)));
+                }
             }
 
             try
@@ -488,7 +499,7 @@ namespace Runefall.Presentation.Combat
                 }
                 // Restore unless the killing blow just ended combat (the outro hides all UI + HP bars).
                 if (_useSkillCamera && (_ctx == null || !_ctx.IsOver))
-                    SetActorHPBarVisible(pending.Caster, true);
+                    SetActorHPBarVisible(pending.Caster is IMultiPhaseActor ? pending.Target : pending.Caster, true);
             }
 
             onComplete?.Invoke();
@@ -606,8 +617,18 @@ namespace Runefall.Presentation.Combat
             // then move). It poses Camera.main directly and self-restores the gameplay camera when done.
             if (_useSkillCamera && cp != null)
             {
-                SetActorHPBarVisible(caster, false);   // hide caster's bar during the skill camera
-                StartCoroutine(_cameraDirector.SkillCameraRoutine(rank, cp, targetPos, duration));
+                if (caster is IMultiPhaseActor && tp != null)
+                {
+                    // Boss attack → over the PLAYER's shoulder looking at the boss (bronze-style). The boss
+                    // is too big for its own shoulder cam; this keeps the strike framed from the player POV.
+                    SetActorHPBarVisible(target, false);
+                    StartCoroutine(_cameraDirector.SkillCameraRoutine(1, tp, cp.position, duration));
+                }
+                else
+                {
+                    SetActorHPBarVisible(caster, false);   // hide caster's bar during the skill camera
+                    StartCoroutine(_cameraDirector.SkillCameraRoutine(rank, cp, targetPos, duration));
+                }
             }
 
             // Silver/gold open on a face close-up: hold the timeline content (anim + VFX + damage)
@@ -646,7 +667,7 @@ namespace Runefall.Presentation.Combat
             // Restore the caster's bar as gameplay resumes — but NOT if this was the killing blow:
             // combat is over and the victory/defeat outro already hid all combat UI + HP bars.
             if (_useSkillCamera && cp != null && (_ctx == null || !_ctx.IsOver))
-                SetActorHPBarVisible(caster, true);
+                SetActorHPBarVisible(caster is IMultiPhaseActor ? target : caster, true);
 
             onComplete?.Invoke();
         }
@@ -691,7 +712,7 @@ namespace Runefall.Presentation.Combat
             _timelineChoreographer.CleanupSkillVcams();
             if (cp != null && tp != null)
             {
-                _timelineChoreographer.CreateSkillVcams(cp, tp.position);
+                _timelineChoreographer.CreateSkillVcams(cp, tp.position, tp);
             }
 
             var director = _timelineChoreographer.ResolveSkillTimelineDirector();

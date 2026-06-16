@@ -137,25 +137,36 @@ namespace Runefall.Presentation.Combat
             }
         }
 
-        public void CreateSkillVcams(Transform caster, Vector3 targetPos)
+        public void CreateSkillVcams(Transform caster, Vector3 targetPos, Transform target = null)
         {
             if (caster == null) return;
             CleanupSkillVcams();
 
             Vector3 casterPos = caster.position;
             Vector3 dir = targetPos - casterPos; dir.y = 0f;
-            if (targetPos == Vector3.zero || dir.sqrMagnitude < 1.0f) 
+            if (targetPos == Vector3.zero || dir.sqrMagnitude < 1.0f)
                 dir = caster.forward;
             dir.Normalize();
             Vector3 right = Vector3.Cross(Vector3.up, dir);
             Vector3 mid = (casterPos + targetPos) * 0.5f;
 
-            _skillVcams.Add(MakeSkillVcam("cam_caster", casterPos - dir * 2.0f + Vector3.up * 1.8f, targetPos + Vector3.up * 1.2f));
-            _skillVcams.Add(MakeSkillVcam("cam_target", targetPos + dir * 2.2f + Vector3.up * 1.6f, targetPos + Vector3.up * 1.2f));
+            // The caster/target shots both frame the TARGET (over-shoulder / impact close-up). Track its
+            // HEAD bone so a big model (boss) shows its face, not its torso — same idea as the intro.
+            Transform targetHead = HeadBone(target);
+
+            _skillVcams.Add(MakeSkillVcam("cam_caster", casterPos - dir * 2.0f + Vector3.up * 1.8f, targetPos + Vector3.up * 1.2f, targetHead));
+            _skillVcams.Add(MakeSkillVcam("cam_target", targetPos + dir * 2.2f + Vector3.up * 1.6f, targetPos + Vector3.up * 1.2f, targetHead));
             _skillVcams.Add(MakeSkillVcam("cam_side", mid + right * 4.0f + Vector3.up * 1.8f, mid + Vector3.up * 1.2f));
         }
 
-        private CinemachineCamera MakeSkillVcam(string name, Vector3 pos, Vector3 lookAt)
+        private static Transform HeadBone(Transform pawn)
+        {
+            if (pawn == null) return null;
+            var a = pawn.GetComponentInChildren<Animator>();
+            return (a != null && a.isHuman) ? a.GetBoneTransform(HumanBodyBones.Head) : null;
+        }
+
+        private CinemachineCamera MakeSkillVcam(string name, Vector3 pos, Vector3 lookAt, Transform lookAtBone = null)
         {
             var go = new GameObject(name);
             go.transform.SetParent(_parent);
@@ -163,6 +174,14 @@ namespace Runefall.Presentation.Combat
             go.transform.LookAt(lookAt);
             var vcam = go.AddComponent<CinemachineCamera>();
             vcam.Priority = 5;
+            // Dynamic head tracking: bind LookAt to the head bone + a rotation composer so framing adapts
+            // to model size live. Falls back to the static LookAt above for non-humanoid rigs.
+            if (lookAtBone != null)
+            {
+                vcam.LookAt = lookAtBone;
+                if (go.GetComponent<CinemachineRotationComposer>() == null)
+                    go.AddComponent<CinemachineRotationComposer>();
+            }
             return vcam;
         }
 
