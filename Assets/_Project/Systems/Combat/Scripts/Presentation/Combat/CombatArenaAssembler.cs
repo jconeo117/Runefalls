@@ -19,6 +19,16 @@ namespace Runefall.Presentation.Combat
         [Tooltip("Target world height for combat pawns. Each pawn is uniformly scaled to this height via its humanoid scale, so combat models match exploration. 0 = keep prefab scale.")]
         [SerializeField] private float _pawnTargetHeight = 1.87f;
 
+        [Header("Ceiling Occlusion")]
+        [Tooltip("Hide overhead geometry above the arena during combat so a low room ceiling doesn't block the combat camera. Restored on Teardown.")]
+        [SerializeField] private bool  _hideCeilingDuringCombat = true;
+        [Tooltip("Horizontal size (X/Z) of the cleared volume above the arena, centered on FieldCenter.")]
+        [SerializeField] private float _ceilingClearWidth = 16f;
+        [Tooltip("Lower bound of the cleared volume, as a height above FieldCenter. Keep above pawn/HP-bar height so only overhead geometry is hidden.")]
+        [SerializeField] private float _ceilingClearBottom = 2.2f;
+        [Tooltip("Upper bound of the cleared volume, as a height above FieldCenter.")]
+        [SerializeField] private float _ceilingClearTop = 50f;
+
         public Transform                PlayerRoot           { get; private set; }
         public Transform                EnemyRoot            { get; private set; }
         public IReadOnlyList<Transform> PlayerSlots          { get; private set; }
@@ -36,6 +46,9 @@ namespace Runefall.Presentation.Combat
 
         private GameObject _environmentInstance;
         private GameObject _layoutInstance;
+
+        // Overhead pieces switched to ShadowsOnly during combat (original mode restored on Teardown).
+        private readonly List<(Renderer r, UnityEngine.Rendering.ShadowCastingMode mode)> _ceilingShadowEdits = new();
 
         /// <summary>
         /// Instantiates layoutPrefab at worldOffset and uses its PlayerLine/EnemyLine children
@@ -189,6 +202,8 @@ namespace Runefall.Presentation.Combat
 
         public void Teardown()
         {
+            RestoreCeiling();
+
             if (_layoutInstance != null)
             {
                 Destroy(_layoutInstance);
@@ -307,6 +322,46 @@ namespace Runefall.Presentation.Combat
                     _data.environmentPrefab, FieldCenter, Quaternion.identity, transform);
 
             IsReady = true;
+
+            HideCeilingAbove();
+        }
+
+        /// <summary>
+        /// Makes overhead geometry above the arena invisible during combat WITHOUT killing its shadow:
+        /// each piece is switched to ShadowCastingMode.ShadowsOnly — the mesh is not drawn by any camera
+        /// but still casts shadows / blocks the directional light, so there is no lighting leak (unlike
+        /// disabling the renderer). Only MeshRenderers whose bounds sit above the arena are affected
+        /// (ceilings/overhead); walls (which extend below) stay visible, and pawns (SkinnedMeshRenderer)
+        /// / HP bars (Canvas) are never touched. Restored in Teardown.
+        /// </summary>
+        private void HideCeilingAbove()
+        {
+            if (!_hideCeilingDuringCombat) return;
+
+            float bottom = FieldCenter.y + _ceilingClearBottom;
+            float top    = FieldCenter.y + _ceilingClearTop;
+            var   center = new Vector3(FieldCenter.x, (bottom + top) * 0.5f, FieldCenter.z);
+            var   half   = new Vector3(_ceilingClearWidth * 0.5f, (top - bottom) * 0.5f, _ceilingClearWidth * 0.5f);
+
+            var hits = Physics.OverlapBox(center, half, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
+            foreach (var col in hits)
+            {
+                var r = col.GetComponent<MeshRenderer>();
+                // Only fully-overhead pieces (ceilings). Walls cross below 'bottom' → kept visible.
+                if (r != null && r.bounds.min.y >= bottom &&
+                    r.shadowCastingMode != UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly)
+                {
+                    _ceilingShadowEdits.Add((r, r.shadowCastingMode));
+                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+                }
+            }
+        }
+
+        private void RestoreCeiling()
+        {
+            foreach (var (r, mode) in _ceilingShadowEdits)
+                if (r != null) r.shadowCastingMode = mode;
+            _ceilingShadowEdits.Clear();
         }
 
         private Transform CreateRoot(string rootName, Vector3 worldPos, Vector3 facing)

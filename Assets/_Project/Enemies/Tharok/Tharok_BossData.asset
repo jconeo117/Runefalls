@@ -48,6 +48,7 @@ MonoBehaviour:
   animDeath: {fileID: 0}
   voiceSet: {fileID: 0}
   hpBarFrame: {fileID: 21300000, guid: f26477f4f1563b4479ad0d6b6a16a085, type: 3}
+  preCombatPoster: {fileID: 21300000, guid: a881badb8aa186b40863375aacf09598, type: 3}
   behaviorTree: 3
   dropReward:
     goldMin: 0

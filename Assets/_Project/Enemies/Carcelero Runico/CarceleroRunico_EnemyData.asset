@@ -34,6 +34,7 @@ MonoBehaviour:
       tasaRecuperacion: 0.225
   maxMP: 0
   combatClass: 10119
+  combatScaleMultiplier: 1
   detectionRange: 8
   encounterRange: 1.8
   patrolRadius: 4
@@ -47,6 +48,7 @@ MonoBehaviour:
   animDeath: {fileID: 0}
   voiceSet: {fileID: 11400000, guid: 9ae8ec8eab3ac9842906f97807ab9433, type: 2}
   hpBarFrame: {fileID: 21300000, guid: 62e7dec0b832ad64faed34cc96e06f26, type: 3}
+  preCombatPoster: {fileID: 21300000, guid: 95011431cb6385c4994803e6c29ebf89, type: 3}
   behaviorTree: 0
   dropReward:
     goldMin: 0

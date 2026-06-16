@@ -1,35 +1,115 @@
 using UnityEngine;
+using Runefall.Data;
+using Runefall.Presentation.Player;
 
+/// <summary>
+/// Toma el modelo elegido en el gacha y lo integra como el modelo de exploraciÃ³n
+/// hijo del Player: lo reparenta, le aplica el explorationAnimatorController del
+/// CharacterData, cablea el CharacterAnimationController (puente root-motion â†’ PlayerController)
+/// y setea la party en ExplorationPlayer (para combate). Desactiva el rig placeholder.
+/// </summary>
 public class SelectedCharacterLoader : MonoBehaviour
 {
     [Header("Modelos en la escena (mismo orden que el gacha)")]
-    public GameObject KaelModel;   // índice 0 (carta izquierda)
-    public GameObject LyraModel;   // índice 1 (carta del medio)
-    public GameObject VornModel;   // índice 2 (carta derecha)
+    public GameObject KaelModel;   // Ã­ndice 0 (carta izquierda)
+    public GameObject LyraModel;   // Ã­ndice 1 (carta del medio)
+    public GameObject VornModel;   // Ã­ndice 2 (carta derecha)
+
+    [Header("CharacterData (mismo orden: 0=Kael, 1=Lyra, 2=Vorn)")]
+    [Tooltip("Usado para sacar explorationAnimatorController y setear ExplorationPlayer.Party.")]
+    public CharacterData[] characters;
+
+    [Header("Player")]
+    [Tooltip("Player root. VacÃ­o = busca por tag 'Player'.")]
+    public Transform playerRoot;
 
     void Start()
     {
-        // apagamos los 3 por las dudas (aunque ya estén apagados en la escena)
-        if (KaelModel != null) KaelModel.SetActive(false);
-        if (LyraModel != null) LyraModel.SetActive(false);
-        if (VornModel != null) VornModel.SetActive(false);
+        var player = playerRoot != null
+            ? playerRoot
+            : (GameObject.FindGameObjectWithTag("Player") != null
+                ? GameObject.FindGameObjectWithTag("Player").transform
+                : null);
 
-        // leemos qué salió en el gacha (sobrevivió al cambio de escena porque es static)
-        int idx = CardDrawAnimation.SelectedCharacterIndex;
-
-        GameObject elegido = GetModelForIndex(idx);
-
-        if (elegido != null)
+        if (player == null)
         {
-            elegido.SetActive(true);
-            Debug.Log("Modelo activado: " + elegido.name + " (índice " + idx + ")");
+            Debug.LogError("[SelectedCharacterLoader] Player no encontrado (asignÃ¡ playerRoot o tag 'Player').");
+            return;
+        }
+
+        // Apagar los 3 candidatos â€” nunca al Player (guarda contra refs mal asignadas).
+        SafeDeactivate(KaelModel, player);
+        SafeDeactivate(LyraModel, player);
+        SafeDeactivate(VornModel, player);
+
+        int        idx   = CardDrawAnimation.SelectedCharacterIndex;
+        GameObject model = GetModelForIndex(idx);
+        CharacterData data = (characters != null && idx >= 0 && idx < characters.Length)
+            ? characters[idx]
+            : null;
+
+        if (model == null || model == player.gameObject || model.GetComponent<PlayerController>() != null)
+        {
+            Debug.LogWarning($"[SelectedCharacterLoader] Modelo invÃ¡lido para Ã­ndice {idx} " +
+                             "(Â¿ref apunta al Player o falta el modelo?). No se cargÃ³ personaje.");
+            return;
+        }
+
+        var pc = player.GetComponent<PlayerController>();
+        var ep = player.GetComponent<ExplorationPlayer>();
+
+        // Desactivar rigs placeholder existentes bajo el Player (p.ej. RiggedIdle) para que
+        // no haya dos CharacterAnimationController moviendo al Player (doble root-motion).
+        foreach (var placeholder in player.GetComponentsInChildren<CharacterAnimationController>(true))
+            placeholder.gameObject.SetActive(false);
+
+        // Reparentar el modelo como hijo del Player, preservando su tamaÃ±o en mundo.
+        Vector3 worldScale = model.transform.lossyScale;
+        model.transform.SetParent(player, false);
+        model.transform.localPosition = Vector3.zero;
+        model.transform.localRotation = Quaternion.identity;
+        Vector3 ps = player.lossyScale;
+        model.transform.localScale = new Vector3(
+            Mathf.Approximately(ps.x, 0f) ? worldScale.x : worldScale.x / ps.x,
+            Mathf.Approximately(ps.y, 0f) ? worldScale.y : worldScale.y / ps.y,
+            Mathf.Approximately(ps.z, 0f) ? worldScale.z : worldScale.z / ps.z);
+        model.SetActive(true);
+
+        // Animator de exploraciÃ³n (locomociÃ³n + root motion).
+        var anim = model.GetComponentInChildren<Animator>(true);
+        if (anim != null)
+        {
+            if (data != null && data.explorationAnimatorController != null)
+                anim.runtimeAnimatorController = data.explorationAnimatorController;
+            else
+                Debug.LogWarning($"[SelectedCharacterLoader] '{model.name}' sin explorationAnimatorController " +
+                                 "en su CharacterData â€” no habrÃ¡ locomociÃ³n.");
+            anim.applyRootMotion = true;
         }
         else
         {
-            // esto solo pasaría si entrás a la escena sin pasar por el gacha (índice -1)
-            Debug.LogWarning("SelectedCharacterLoader: índice inválido (" + idx + "). " +
-                             "¿Entraste sin pasar por el gacha? No se activó ningún modelo.");
+            Debug.LogWarning($"[SelectedCharacterLoader] '{model.name}' no tiene Animator.");
         }
+
+        // Puente root-motion â†’ PlayerController (en el GO del Animator para recibir OnAnimatorMove).
+        if (anim != null && pc != null)
+        {
+            var bridge = anim.GetComponent<CharacterAnimationController>();
+            if (bridge == null) bridge = anim.gameObject.AddComponent<CharacterAnimationController>();
+            bridge.Bind(anim, pc);
+        }
+
+        // Party para combate + controller de exploraciÃ³n consistente (Primary = elegido).
+        if (ep != null && data != null) ep.SetParty(new[] { data }, anim);
+
+        Debug.Log($"[SelectedCharacterLoader] '{model.name}' cargado como personaje de exploraciÃ³n (Ã­ndice {idx}).");
+    }
+
+    static void SafeDeactivate(GameObject go, Transform player)
+    {
+        if (go == null) return;
+        if (go == player.gameObject || go.GetComponent<PlayerController>() != null) return; // nunca apagar al Player
+        go.SetActive(false);
     }
 
     GameObject GetModelForIndex(int idx)

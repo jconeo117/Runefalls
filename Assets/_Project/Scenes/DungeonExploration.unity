@@ -6360,9 +6360,17 @@ MonoBehaviour:
   _playerController: {fileID: 2051917426}
   _cursorController: {fileID: 2051917427}
   _cameraInput: {fileID: 1275606997}
-  _panelBg: {r: 0.06, g: 0.06, b: 0.1, a: 0.92}
-  _accentColor: {r: 0.8, g: 0.3, b: 0.2, a: 1}
-  _buttonHover: {r: 0.95, g: 0.4, b: 0.2, a: 1}
+  _enfrentarNormal: {fileID: 21300000, guid: a35826d928407bb49b0d4f27c6e067ff, type: 3}
+  _enfrentarHover: {fileID: 21300000, guid: 7cca2c13c477fb5478e7be4107dea0b3, type: 3}
+  _enfrentarBossNormal: {fileID: 21300000, guid: 8f82be6d7bb802d4882fe8efbffefe42, type: 3}
+  _enfrentarBossHover: {fileID: 21300000, guid: 1e4e045be7273764784d9203ba566825, type: 3}
+  _posterHeight: 360
+  _enfrentarPos: {x: 0.5, y: 0.24}
+  _enfrentarSize: {x: 200, y: 64}
+  _ccPos: {x: 0.5, y: 0.46}
+  _ccFontSize: 20
+  _ccColor: {r: 0.18, g: 0.1, b: 0.04, a: 1}
+  _backdropColor: {r: 0, g: 0, b: 0, a: 0.55}
 --- !u!4 &796790520 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8e472cf82bb5d994292025d18225af3a, type: 3}

@@ -31,7 +31,10 @@ namespace Runefall.Presentation.Dungeon
             if (_col == null) _col = GetComponent<BoxCollider>();
 
             var b      = WorldBounds;
-            var center = new Vector3(b.center.x, 0f, b.center.z);
+            // Use the box floor (bottom face) as the arena ground Y so pawns stand on the room's
+            // floor regardless of world height. For a box sitting on a y=0 floor (center.y=half),
+            // b.min.y == 0 → identical to the old hardcoded 0.
+            var center = new Vector3(b.center.x, b.min.y, b.center.z);
 
             // Orient along longest horizontal axis
             bool zLonger = b.size.z >= b.size.x;

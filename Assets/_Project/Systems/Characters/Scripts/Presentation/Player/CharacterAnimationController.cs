@@ -43,6 +43,15 @@ namespace Runefall.Presentation.Player
             animator.SetFloat(SpeedHash, playerController.CurrentSpeed);
         }
 
+        /// <summary>Runtime wiring for selection-driven model swaps (gacha loader).
+        /// Sets the model Animator + PlayerController and (re)enables the bridge.</summary>
+        public void Bind(Animator modelAnimator, PlayerController controller)
+        {
+            animator         = modelAnimator;
+            playerController = controller;
+            enabled          = animator != null && playerController != null;
+        }
+
         private void OnAnimatorMove()
         {
             if (animator != null && playerController != null)

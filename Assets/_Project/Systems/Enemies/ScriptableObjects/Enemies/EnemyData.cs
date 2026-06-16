@@ -64,6 +64,11 @@ namespace Runefall.Data
         [Tooltip("Frame sprite drawn over the HP bar (difficulty-themed border). Null = plain bar.")]
         public Sprite hpBarFrame;
 
+        [Header("Pre-Combat Poster")]
+        [Tooltip("Cartel personalizado mostrado en el panel de encuentro (trae el nombre grabado). " +
+                 "Mostrado por EncounterPromptPresenter al detectar este EnemyData. Null = panel sin cartel.")]
+        public Sprite preCombatPoster;
+
         [Header("Combat")]
         public BehaviorTreeType behaviorTree;
         public EnemyReward dropReward;

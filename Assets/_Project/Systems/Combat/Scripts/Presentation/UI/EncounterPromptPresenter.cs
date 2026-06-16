@@ -37,16 +37,38 @@ namespace Runefall.Presentation.UI
         [SerializeField] private CursorController              _cursorController;
         [SerializeField] private CinemachineInputAxisController _cameraInput;
 
-        [Header("Visual")]
-        [SerializeField] private Color _panelBg       = new Color(0.06f, 0.06f, 0.10f, 0.92f);
-        [SerializeField] private Color _accentColor   = new Color(0.80f, 0.30f, 0.20f, 1f);
-        [SerializeField] private Color _buttonHover   = new Color(0.95f, 0.40f, 0.20f, 1f);
+        [Header("Poster Buttons (shared sprites)")]
+        [Tooltip("Sprite del botón ENFRENTAR (estado normal) para enemigos regulares.")]
+        [SerializeField] private Sprite _enfrentarNormal;
+        [Tooltip("Sprite del botón ENFRENTAR iluminado (hover/pressed) para enemigos regulares.")]
+        [SerializeField] private Sprite _enfrentarHover;
+        [Tooltip("Sprite del botón ENFRENTAR (estado normal) para jefes (BossEnemyData).")]
+        [SerializeField] private Sprite _enfrentarBossNormal;
+        [Tooltip("Sprite del botón ENFRENTAR iluminado (hover/pressed) para jefes.")]
+        [SerializeField] private Sprite _enfrentarBossHover;
+
+        [Header("Poster Layout")]
+        [Tooltip("Altura objetivo del cartel en px. El ancho se calcula preservando el aspecto del sprite.")]
+        [SerializeField] private float   _posterHeight  = 360f;
+        [Tooltip("Posición normalizada del botón ENFRENTAR dentro del cartel (0-1).")]
+        [SerializeField] private Vector2 _enfrentarPos  = new Vector2(0.5f, 0.24f);
+        [Tooltip("Tamaño del botón ENFRENTAR en px.")]
+        [SerializeField] private Vector2 _enfrentarSize = new Vector2(200f, 64f);
+        [Tooltip("Posición normalizada del texto Combat Class dentro del cartel (0-1).")]
+        [SerializeField] private Vector2 _ccPos         = new Vector2(0.5f, 0.46f);
+        [SerializeField] private int     _ccFontSize    = 20;
+        [Tooltip("Color del texto CC — tinta oscura para leerse sobre el pergamino.")]
+        [SerializeField] private Color   _ccColor       = new Color(0.18f, 0.10f, 0.04f, 1f);
+        [SerializeField] private Color   _backdropColor = new Color(0f, 0f, 0f, 0.55f);
 
         // ── Runtime ──────────────────────────────────────────────────────────────
 
         private EncounterData _pending;
         private Canvas        _canvas;
-        private Text          _nameLabel;
+        private Image         _posterImage;
+        private RectTransform _posterRect;
+        private Image         _enfrentarImage;
+        private Button        _enfrentarButton;
         private Text          _ccLabel;
 
         // ── Lifecycle ────────────────────────────────────────────────────────────
@@ -60,11 +82,37 @@ namespace Runefall.Presentation.UI
 
         private void OnEncounterReady(EncounterData data)
         {
-            _pending        = data;
-            _nameLabel.text = data.enemyData != null ? data.enemyData.enemyName : "???";
-            _ccLabel.text   = data.enemyData != null
-                ? $"CC  {data.enemyData.combatClass:F0}"
-                : "CC  —";
+            _pending = data;
+            var enemy = data.enemyData;
+            bool isBoss = enemy is BossEnemyData;
+
+            // Poster — custom per enemy (name baked into the art). Size to target height, keep aspect.
+            var poster = enemy != null ? enemy.preCombatPoster : null;
+            if (poster != null)
+            {
+                _posterImage.enabled = true;
+                _posterImage.sprite  = poster;
+                float aspect = poster.rect.height > 0f ? poster.rect.width / poster.rect.height : 1f;
+                _posterRect.sizeDelta = new Vector2(_posterHeight * aspect, _posterHeight);
+            }
+            else
+            {
+                _posterImage.enabled = false;
+                Debug.LogWarning($"[EncounterPrompt] '{enemy?.enemyName}' has no preCombatPoster assigned.", this);
+            }
+
+            // Combat Class over the parchment.
+            _ccLabel.text = enemy != null ? $"CC  {enemy.combatClass:F0}" : "CC  —";
+
+            // Enfrentar button — swap sprite set for boss vs regular.
+            var normal = isBoss ? _enfrentarBossNormal : _enfrentarNormal;
+            var hover  = isBoss ? _enfrentarBossHover  : _enfrentarHover;
+            if (normal != null) _enfrentarImage.sprite = normal;
+            var ss = _enfrentarButton.spriteState;
+            ss.highlightedSprite = hover;
+            ss.pressedSprite     = hover;
+            ss.selectedSprite    = normal;
+            _enfrentarButton.spriteState = ss;
 
             SetBlocking(true);
             _canvas.gameObject.SetActive(true);
@@ -188,58 +236,66 @@ namespace Runefall.Presentation.UI
                 CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvasGO.AddComponent<GraphicRaycaster>();
 
-            // Darkened full-screen backdrop (blocks clicks behind panel)
+            // Darkened full-screen backdrop (blocks clicks behind panel; click empty area = dismiss)
             var backdrop = MakeImage(canvasGO.transform, "Backdrop",
-                new Color(0f, 0f, 0f, 0.45f),
+                _backdropColor,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             backdrop.gameObject.AddComponent<Button>().onClick.AddListener(OnDismiss);
 
-            // Centered panel — 320 × 220 px
-            var panel = MakePanel(canvasGO.transform, new Vector2(320f, 220f));
+            // Poster — custom per-enemy art, centered. Size + sprite set in OnEncounterReady.
+            var posterGO = new GameObject("Poster");
+            posterGO.transform.SetParent(canvasGO.transform, false);
+            _posterRect            = posterGO.AddComponent<RectTransform>();
+            _posterRect.anchorMin  = new Vector2(0.5f, 0.5f);
+            _posterRect.anchorMax  = new Vector2(0.5f, 0.5f);
+            _posterRect.pivot      = new Vector2(0.5f, 0.5f);
+            _posterRect.sizeDelta  = new Vector2(_posterHeight, _posterHeight);
+            _posterRect.anchoredPosition = Vector2.zero;
+            _posterRect.localScale = Vector3.one * 1.65f;
+            _posterImage           = posterGO.AddComponent<Image>();
+            _posterImage.preserveAspect = true;
+            _posterImage.raycastTarget  = true; // absorb clicks over the poster (don't dismiss)
 
-            // Close [X] button — top-right corner
-            MakeCloseButton(panel, OnDismiss);
+            // Close [X] button — top-right of the poster
+            MakeCloseButton(_posterRect, OnDismiss);
 
-            // Enemy name label
-            _nameLabel = MakeLabel(panel, "EnemyName",
-                anchorMin: new Vector2(0f, 0.62f), anchorMax: new Vector2(1f, 0.90f),
-                fontSize: 22, style: FontStyle.Bold, color: Color.white);
+            // Combat Class — over the parchment (poster already carries the name)
+            _ccLabel = MakeLabel(_posterRect, "CCLabel",
+                anchorMin: _ccPos, anchorMax: _ccPos,
+                fontSize: _ccFontSize, style: FontStyle.Bold, color: _ccColor);
+            var ccRT = _ccLabel.rectTransform;
+            ccRT.pivot     = new Vector2(0.5f, 0.5f);
+            ccRT.sizeDelta = new Vector2(240f, 40f);
 
-            // CC label
-            _ccLabel = MakeLabel(panel, "CCLabel",
-                anchorMin: new Vector2(0f, 0.40f), anchorMax: new Vector2(1f, 0.62f),
-                fontSize: 16, style: FontStyle.Normal, color: new Color(0.85f, 0.75f, 0.40f));
-
-            // Divider line
-            MakeImage(panel, "Divider", new Color(1f, 1f, 1f, 0.10f),
-                new Vector2(0.05f, 0.36f), new Vector2(0.95f, 0.37f),
-                Vector2.zero, Vector2.zero);
-
-            // Enfrentar button
-            MakeActionButton(panel, "ENFRENTAR", _accentColor, _buttonHover,
-                new Vector2(0.10f, 0.06f), new Vector2(0.90f, 0.32f),
-                OnEnfrentar);
+            // Enfrentar button — sprite-swap (normal/iluminado), set per encounter
+            BuildEnfrentarButton(_posterRect);
 
             canvasGO.SetActive(false);
         }
 
-        // ── Builder helpers ──────────────────────────────────────────────────────
-
-        private Transform MakePanel(Transform parent, Vector2 size)
+        private void BuildEnfrentarButton(Transform parent)
         {
-            var go = new GameObject("Panel");
+            var go = new GameObject("Btn_Enfrentar");
             go.transform.SetParent(parent, false);
 
-            var rt         = go.AddComponent<RectTransform>();
-            rt.anchorMin   = new Vector2(0.5f, 0.5f);
-            rt.anchorMax   = new Vector2(0.5f, 0.5f);
-            rt.pivot       = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta   = size;
-            rt.anchoredPosition = Vector2.zero;
+            var rt       = go.AddComponent<RectTransform>();
+            rt.anchorMin = _enfrentarPos;
+            rt.anchorMax = _enfrentarPos;
+            rt.pivot     = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = _enfrentarSize;
+            rt.anchoredPosition = new Vector2(0f, 45f);
+            rt.localScale = Vector3.one * 0.5f;
 
-            go.AddComponent<Image>().color = _panelBg;
-            return go.transform;
+            _enfrentarImage = go.AddComponent<Image>();
+            _enfrentarImage.preserveAspect = true;
+
+            _enfrentarButton = go.AddComponent<Button>();
+            _enfrentarButton.transition    = Selectable.Transition.SpriteSwap;
+            _enfrentarButton.targetGraphic = _enfrentarImage;
+            _enfrentarButton.onClick.AddListener(OnEnfrentar);
         }
+
+        // ── Builder helpers ──────────────────────────────────────────────────────
 
         private static Image MakeImage(Transform parent, string goName, Color color,
             Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax)
@@ -278,44 +334,6 @@ namespace Runefall.Presentation.UI
             return txt;
         }
 
-        private void MakeActionButton(Transform parent, string label,
-            Color normalColor, Color highlightColor,
-            Vector2 anchorMin, Vector2 anchorMax, UnityEngine.Events.UnityAction onClick)
-        {
-            var go = new GameObject("Btn_" + label);
-            go.transform.SetParent(parent, false);
-
-            var rt       = go.AddComponent<RectTransform>();
-            rt.anchorMin = anchorMin;
-            rt.anchorMax = anchorMax;
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
-
-            var img   = go.AddComponent<Image>();
-            img.color = normalColor;
-
-            var btn = go.AddComponent<Button>();
-            var colors          = btn.colors;
-            colors.normalColor  = normalColor;
-            colors.highlightedColor = highlightColor;
-            colors.pressedColor = normalColor * 0.7f;
-            btn.colors          = colors;
-            btn.onClick.AddListener(onClick);
-
-            var txtGO  = new GameObject("Label");
-            txtGO.transform.SetParent(go.transform, false);
-            var txtRT      = txtGO.AddComponent<RectTransform>();
-            txtRT.anchorMin = Vector2.zero;
-            txtRT.anchorMax = Vector2.one;
-            txtRT.offsetMin = txtRT.offsetMax = Vector2.zero;
-            var txt           = txtGO.AddComponent<Text>();
-            txt.font          = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            txt.text          = label;
-            txt.fontSize      = 15;
-            txt.fontStyle     = FontStyle.Bold;
-            txt.color         = Color.white;
-            txt.alignment     = TextAnchor.MiddleCenter;
-        }
-
         private static void MakeCloseButton(Transform panel, UnityEngine.Events.UnityAction onClick)
         {
             var go = new GameObject("Btn_Close");
@@ -326,7 +344,7 @@ namespace Runefall.Presentation.UI
             rt.anchorMax = new Vector2(1f, 1f);
             rt.pivot     = new Vector2(1f, 1f);
             rt.sizeDelta = new Vector2(30f, 30f);
-            rt.anchoredPosition = new Vector2(-4f, -4f);
+            rt.anchoredPosition = new Vector2(-85f, -54f);
 
             go.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.06f);
             var btn = go.AddComponent<Button>();

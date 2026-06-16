@@ -20,6 +20,16 @@ namespace Runefall.Presentation.Player
 
         private void Start() => ApplyExplorationController();
 
+        /// <summary>Runtime party + model swap entry point for the selection loader.
+        /// Sets the active party (slot 0 = primary fighter) and the explicit model Animator,
+        /// then applies the primary's exploration controller to it.</summary>
+        public void SetParty(CharacterData[] party, Animator modelAnimator = null)
+        {
+            _party = party;
+            if (modelAnimator != null) _modelAnimator = modelAnimator;
+            ApplyExplorationController();
+        }
+
         /// <summary>Sets the player model's Animator to the primary character's exploration controller.
         /// Call again after swapping the model at runtime (selection-driven loader).</summary>
         public void ApplyExplorationController()
