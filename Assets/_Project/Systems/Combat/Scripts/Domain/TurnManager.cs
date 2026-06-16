@@ -27,6 +27,13 @@ namespace Runefall.Combat
         public CombatPhase   Phase   { get; protected set; } = CombatPhase.Idle;
         public int           Round   { get; protected set; }
 
+        /// <summary>
+        /// When set, the NEXT EndPlayerTurn skips the enemy phase entirely and goes straight to the next
+        /// player turn. Used by a boss phase transition: the transition cinematic IS the boss's turn, so
+        /// the boss does not also attack that round. Auto-clears after one use.
+        /// </summary>
+        public bool SkipNextEnemyPhase { get; set; }
+
         /// <summary>Fires immediately when player turn logic begins. Use for camera repositioning.</summary>
         public event Action<int>                OnPlayerTurnBegin;
         /// <summary>Fires after PlayerTurnStartHandler delay (or immediately if handler is null). Use for passives, UI, card display.</summary>
@@ -310,6 +317,17 @@ namespace Runefall.Combat
         {
             if (Phase != CombatPhase.PlayerTurn) return;
             if (Context.IsOver) { FinishCombat(); return; }
+
+            // Boss phase transition consumed the boss's turn this round → skip enemy actions, go to the
+            // next player turn (still run end-of-round maintenance: effect ticks, regen, refill).
+            if (SkipNextEnemyPhase)
+            {
+                SkipNextEnemyPhase = false;
+                Phase = CombatPhase.EnemyTurn;
+                EndOfRound();
+                return;
+            }
+
             Phase = CombatPhase.EnemyTurn;
             OnEnemyTurnStarted?.Invoke();
 

@@ -217,7 +217,8 @@ namespace Runefall.Presentation.Combat
                 _postPlayerTurnDelay,
                 _betweenSkillsDelay,
                 _bossTransitionPresenter,
-                () => _ctx);
+                () => _ctx,
+                () => { if (_tm != null) _tm.SkipNextEnemyPhase = true; });
 
             _climaxDirector.OnVictoryOutroTriggered += () => OnVictoryOutroTriggered?.Invoke();
 

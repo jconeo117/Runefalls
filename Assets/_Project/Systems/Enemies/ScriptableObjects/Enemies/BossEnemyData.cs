@@ -29,5 +29,16 @@ namespace Runefall.Data
         public PlayableAsset phase1To2Timeline;
         [Tooltip("Timeline to play when transitioning from Phase 2 to Phase 3.")]
         public PlayableAsset phase2To3Timeline;
+
+        [Header("Transition VFX (spawned as a CHILD of the boss)")]
+        [Tooltip("Effect prefab (e.g. magic circle) instanced as a child of the boss when the transition " +
+                 "timeline fires a 'Boss_VFX' signal. Child = always centered on the boss + scalable here.")]
+        public GameObject transitionVfxPrefab;
+        [Tooltip("Uniform scale of the transition VFX. Make it big/imposing.")]
+        public float transitionVfxScale = 1f;
+        [Tooltip("Local offset from the boss pivot (e.g. raise Y a touch off the ground).")]
+        public Vector3 transitionVfxLocalOffset;
+        [Tooltip("Seconds before the spawned VFX auto-destroys. 0 = lives until the pawn is replaced.")]
+        public float transitionVfxAutoDestroy = 4f;
     }
 }

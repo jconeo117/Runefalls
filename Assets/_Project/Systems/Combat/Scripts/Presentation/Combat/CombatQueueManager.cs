@@ -19,6 +19,7 @@ namespace Runefall.Presentation.Combat
         private readonly float _betweenSkillsDelay;
         private readonly BossTransitionPresenter _bossTransitionPresenter;
         private readonly Func<CombatContext> _getContext;
+        private readonly Action _onBossPhaseTransitioned;
 
         private bool _isDraining;
 
@@ -34,7 +35,8 @@ namespace Runefall.Presentation.Combat
             float postPlayerTurnDelay,
             float betweenSkillsDelay,
             BossTransitionPresenter bossTransitionPresenter,
-            Func<CombatContext> getContext)
+            Func<CombatContext> getContext,
+            Action onBossPhaseTransitioned = null)
         {
             _coroutineRunner = coroutineRunner;
             _playActionGroup = playActionGroup;
@@ -45,6 +47,7 @@ namespace Runefall.Presentation.Combat
             _betweenSkillsDelay = betweenSkillsDelay;
             _bossTransitionPresenter = bossTransitionPresenter;
             _getContext = getContext;
+            _onBossPhaseTransitioned = onBossPhaseTransitioned;
             _isDraining = false;
         }
 
@@ -88,6 +91,7 @@ namespace Runefall.Presentation.Combat
                         {
                             yield return _coroutineRunner.StartCoroutine(_bossTransitionPresenter.RunBossPhaseTransition(boss));
                         }
+                        _onBossPhaseTransitioned?.Invoke();   // transition = boss's turn → skip its enemy phase
                         break;
                     }
 
@@ -104,6 +108,7 @@ namespace Runefall.Presentation.Combat
                     {
                         yield return _coroutineRunner.StartCoroutine(_bossTransitionPresenter.RunBossPhaseTransition(lastBoss));
                     }
+                    _onBossPhaseTransitioned?.Invoke();   // transition = boss's turn → skip its enemy phase
                 }
 
                 if (_isCombatOver())
