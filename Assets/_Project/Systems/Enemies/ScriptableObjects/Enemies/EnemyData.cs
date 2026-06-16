@@ -31,6 +31,10 @@ namespace Runefall.Data
         [Tooltip("Valor asignado manualmente. Determina orden de turno.")]
         public float combatClass;
 
+        [Tooltip("Multiplicador de escala del pawn en COMBATE, aplicado tras normalizar la altura. " +
+                 "1 = sin cambio. >1 = más grande (p. ej. jefe ligeramente más imponente).")]
+        public float combatScaleMultiplier = 1f;
+
         [Header("Exploration")]
         public float detectionRange  = 8f;
         [Tooltip("Radio del trigger que abre el panel de encuentro. Debe ser menor que detectionRange.")]

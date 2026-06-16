@@ -53,14 +53,28 @@ namespace Runefall.Presentation.Combat
 
             // 2. Play transition cinematic
             int nextPhase = boss.CurrentPhase + 1;
-            
+
+            // Advance the DOMAIN phase NOW: this increments CurrentPhase, swaps CurrentPhaseData
+            // (stats + skills) to the next phase, and ARMS the completion callback that
+            // CompleteTransitionCinematic() runs below (ResetStats + ClearAll). Nothing else calls this,
+            // so without it the boss keeps the previous phase's stats/skills/AOC even though the
+            // cinematic plays — exactly the "still phase 1 after dying" bug.
+            boss.CheckPhaseTransition(null);
+
             if (_actorPawns.TryGetValue(boss, out var bossPawn))
             {
                 PlayableAsset timeline = boss.GetTransitionTimeline(nextPhase);
 
                 if (timeline != null)
                 {
+                    // The authored timeline drives anim + magic-circle VFX. We layer a cinematic
+                    // CAMERA ORBIT + flash bursts on top (Camera.main, Cinemachine brain off), running
+                    // for the timeline's duration so both finish together.
+                    float dur = (timeline as TimelineAsset)?.duration is double d && d > 0.05 ? (float)d : 4f;
+                    var orbit = _coroutineRunner.StartCoroutine(CinematicOrbit(bossPawn, dur));
                     yield return _coroutineRunner.StartCoroutine(PlayTransitionTimeline(timeline, bossPawn));
+                    if (orbit != null) _coroutineRunner.StopCoroutine(orbit);
+                    RestoreBrain();
                 }
                 else
                 {
@@ -82,6 +96,90 @@ namespace Runefall.Presentation.Combat
         {
             if (_timelineChoreographer == null) yield break;
             yield return _coroutineRunner.StartCoroutine(_timelineChoreographer.PlayTransitionTimeline(timeline, bossPawn));
+        }
+
+        // Cinematic camera orbit around the boss with periodic flash bursts, layered over an authored
+        // transition timeline. Disables the Cinemachine brain so it can pose Camera.main directly; the
+        // brain is restored by RestoreBrain() once the timeline finishes.
+        private IEnumerator CinematicOrbit(Transform bossPawn, float duration)
+        {
+            var cam = Camera.main;
+            if (cam == null || bossPawn == null) yield break;
+
+            var brain = cam.GetComponent<Unity.Cinemachine.CinemachineBrain>();
+            if (brain != null) brain.enabled = false;
+
+            // Initial angle/radius from where the combat camera already is, so the orbit eases out of it.
+            Vector3 focus = bossPawn.position + Vector3.up * 1.4f;
+            Vector3 off   = cam.transform.position - focus; off.y = 0f;
+            float startAngle = Mathf.Atan2(off.z, off.x);
+            float startRadius = Mathf.Clamp(off.magnitude, 3f, 7f);
+
+            const float endRadius = 4.5f;
+            const float baseHeight = 2.1f;
+            const float sweepDeg = 300f;                // total orbit arc
+            float sweepRad = sweepDeg * Mathf.Deg2Rad;
+
+            float t = 0f;
+            float nextFlash = 0.35f;
+            // A brighter flash at the climax (~60% through, when the magic circle peaks).
+            float climax = duration * 0.6f;
+            bool climaxFlashed = false;
+
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                float k    = Mathf.Clamp01(t / duration);
+                float ease = Mathf.SmoothStep(0f, 1f, k);
+
+                focus = bossPawn.position + Vector3.up * 1.4f;   // re-read (boss may shift during getup)
+
+                float angle  = startAngle + sweepRad * ease;
+                // Dolly in toward the climax, then back out — adds drama.
+                float radius = Mathf.Lerp(startRadius, endRadius, ease) * (1f - 0.20f * Mathf.Sin(k * Mathf.PI));
+                float height = baseHeight + 0.7f * Mathf.Sin(k * Mathf.PI);
+
+                Vector3 pos = focus + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius
+                              + Vector3.up * height;
+                cam.transform.position = pos;
+                cam.transform.rotation = Quaternion.LookRotation(focus - pos);
+
+                if (!climaxFlashed && t >= climax) { climaxFlashed = true; SpawnFlash(0.95f, 0.45f); }
+                else if (t >= nextFlash)
+                {
+                    SpawnFlash(UnityEngine.Random.Range(0.4f, 0.7f), 0.22f);
+                    nextFlash = t + UnityEngine.Random.Range(0.45f, 0.8f);
+                }
+
+                yield return null;
+            }
+
+            if (brain != null) brain.enabled = true;
+        }
+
+        private void RestoreBrain()
+        {
+            var cam = Camera.main;
+            var brain = cam != null ? cam.GetComponent<Unity.Cinemachine.CinemachineBrain>() : null;
+            if (brain != null) brain.enabled = true;
+        }
+
+        private void SpawnFlash(float intensity, float dur)
+        {
+            var img = CreateFlashOverlay();
+            if (img != null) _coroutineRunner.StartCoroutine(FadeFlash(img, intensity, dur));
+        }
+
+        private IEnumerator FadeFlash(UnityEngine.UI.Image img, float intensity, float dur)
+        {
+            float e = 0f;
+            while (e < dur && img != null)
+            {
+                e += Time.deltaTime;
+                img.color = new Color(1f, 1f, 1f, Mathf.Lerp(intensity, 0f, e / dur));
+                yield return null;
+            }
+            if (img != null && img.canvas != null) UnityEngine.Object.Destroy(img.canvas.gameObject);
         }
 
         private IEnumerator PlayProgrammaticTransitionCinematic(IMultiPhaseActor boss, Transform bossPawn, int nextPhase)
@@ -195,6 +293,7 @@ namespace Runefall.Presentation.Combat
             Transform slotParent = oldPawn.parent;
             Vector3 oldPos = oldPawn.position;
             Quaternion oldRot = oldPawn.rotation;
+            Vector3 oldScale = oldPawn.localScale;   // keep the combat-normalized size across phases
 
             // 1. Destroy old pawn
             UnityEngine.Object.Destroy(oldPawn.gameObject);
@@ -206,6 +305,7 @@ namespace Runefall.Presentation.Combat
 
             newPawnGo.transform.position = oldPos;
             newPawnGo.transform.rotation = oldRot;
+            newPawnGo.transform.localScale = oldScale;   // phases share the boss prefab → same scale
 
             Transform newPawn = newPawnGo.transform;
 
@@ -229,6 +329,15 @@ namespace Runefall.Presentation.Combat
             var anim = newPawn.GetComponentInChildren<CombatPawnAnimator>();
             if (anim != null && boss.CurrentPhaseData != null)
             {
+                // Apply the phase's combat AOC FIRST so InitFromEnemy unwraps it as the override source
+                // (the arena assembler does the same at initial spawn). Without this, a per-phase
+                // animatorController — e.g. Tharok's wizard AOC for phases 2/3 — would be ignored.
+                if (boss.CurrentPhaseData.animatorController != null)
+                {
+                    var animator = newPawn.GetComponentInChildren<Animator>();
+                    if (animator != null)
+                        animator.runtimeAnimatorController = boss.CurrentPhaseData.animatorController;
+                }
                 anim.InitFromEnemy(boss.CurrentPhaseData, _combatBaseController);
             }
         }

@@ -12,6 +12,10 @@ namespace Runefall.Data
                  "start. EnemyData has no passive field — only bosses carry one.")]
         public PassiveDefinition phasesPassive;
 
+        [Tooltip("Actions the boss takes per enemy phase. 3 = the boss attacks three times (passive: +2 acciones). " +
+                 "TurnManager repeats the boss in the enemy turn order this many times.")]
+        public int actionsPerTurn = 3;
+
         [Header("Boss Multi-Phase Setup")]
         [Tooltip("Data for Phase 1. If null, falls back to this BossEnemyData asset's stats/skills.")]
         public EnemyData phase1Data;

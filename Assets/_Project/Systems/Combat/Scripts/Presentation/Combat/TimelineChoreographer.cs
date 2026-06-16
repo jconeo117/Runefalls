@@ -46,11 +46,24 @@ namespace Runefall.Presentation.Combat
                     {
                         director.SetGenericBinding(output.sourceObject, brain);
                     }
-                    else if (output.streamName == "Animation Track")
+                    // Bind the boss Animator to the transition's animation track. Accept the default
+                    // "Animation Track" name OR any track whose name contains "caster" (same convention
+                    // as the skill timelines), so the death/getup choreography plays on the boss.
+                    else if (output.streamName == "Animation Track"
+                             || (output.streamName != null && output.streamName.ToLower().Contains("caster")))
                     {
                         var bossAnimator = bossPawn.GetComponentInChildren<Animator>();
                         if (bossAnimator != null)
                             director.SetGenericBinding(output.sourceObject, bossAnimator);
+                    }
+                    // Audio Track → needs an AudioSource bound so authored SFX clips play. Control Tracks
+                    // (VFX prefabs) are self-contained and need no binding. Get/add an AudioSource on the
+                    // boss pawn so the transition's choreographed sounds come from the boss.
+                    else if (output.outputTargetType == typeof(AudioSource) && bossPawn != null)
+                    {
+                        var src = bossPawn.GetComponentInChildren<AudioSource>();
+                        if (src == null) src = bossPawn.gameObject.AddComponent<AudioSource>();
+                        director.SetGenericBinding(output.sourceObject, src);
                     }
                 }
             }

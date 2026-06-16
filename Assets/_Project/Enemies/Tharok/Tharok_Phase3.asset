@@ -18,7 +18,7 @@ MonoBehaviour:
   element: 0
   stats:
     ofensivas:
-      ataque: 3400
+      ataque: 1700
       perforacion: 0.5
       critChance: 0.45
       "critDa\xF1o": 1.9
@@ -41,7 +41,7 @@ MonoBehaviour:
   skill1: {fileID: 11400000, guid: 55ee55ee55ee55ee55ee55ee55ee5531, type: 2}
   skill2: {fileID: 11400000, guid: 55ee55ee55ee55ee55ee55ee55ee5532, type: 2}
   ultimate: {fileID: 11400000, guid: 55ee55ee55ee55ee55ee55ee55ee5503, type: 2}
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 22100000, guid: f00f625fdb4646ac8d5f6b351acc27d7, type: 2}
   animApproach: {fileID: 0}
   animGetHit: {fileID: 0}
   animDeath: {fileID: 0}

@@ -15,6 +15,7 @@ namespace Runefall.Combat
         public ElementType    Element     => _data.element;
         public ActorEffects   Effects     { get; }
         public float          CombatClass => Model.Stats.ClaseDeCombate;
+        public int            ActionsPerTurn => 1;
 
         public PlayerActor(CharacterData data)
         {

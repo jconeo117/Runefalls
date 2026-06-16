@@ -9,13 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 420638d998f77e0488fcd7b2dff27720, type: 3}
+  m_Script: {fileID: 11500000, guid: ae50bb8ea424d884baa5e917bbddff89, type: 3}
   m_Name: Tharok_P2_Skill1
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   skillName: Embate Real
   cardArt: {fileID: 0}
   type: 0
   element: 0
+  description:
   targetType: 0
   isRanged: 1
   ultimateChargeAmount: 0
@@ -23,21 +24,20 @@ MonoBehaviour:
   - effects: []
     damageMultiplier: 2.2
     healPercent: 0
-    animationTrigger: 
+    animationTrigger:
     cameraSequence: {fileID: 0}
   - effects: []
     damageMultiplier: 2.6
     healPercent: 0
-    animationTrigger: 
+    animationTrigger:
     cameraSequence: {fileID: 0}
   - effects: []
     damageMultiplier: 3
     healPercent: 0
-    animationTrigger: 
+    animationTrigger:
     cameraSequence: {fileID: 0}
-  impactAfterClipIndex: 0
-  returnAtClipIndex: -1
+  skillTimeline: {fileID: 11400000, guid: cbca438e034043318239b0ad25e97810, type: 2}
   hitCount: 1
-  impactTrigger: {fileID: 0}
   vfxConfig: {fileID: 0}
-  animSequence: []
+  vfxCues: []
+  sfxCues: []

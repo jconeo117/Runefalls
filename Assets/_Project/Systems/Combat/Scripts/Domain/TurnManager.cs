@@ -471,11 +471,20 @@ namespace Runefall.Combat
 
         private List<ICombatActor> BuildEnemyTurnOrder()
         {
-            var list = new List<ICombatActor>(Context.Enemies.Count);
+            var alive = new List<ICombatActor>(Context.Enemies.Count);
             for (int i = 0; i < Context.Enemies.Count; i++)
-                if (Context.Enemies[i].IsAlive) list.Add(Context.Enemies[i]);
-            list.Sort((a, b) => b.CombatClass.CompareTo(a.CombatClass));
-            return list;
+                if (Context.Enemies[i].IsAlive) alive.Add(Context.Enemies[i]);
+            alive.Sort((a, b) => b.CombatClass.CompareTo(a.CombatClass));
+
+            // Expand by ActionsPerTurn: an actor acting N times appears N times consecutively.
+            // The phase animator runs one animated turn per list entry (boss passive: +2 acciones).
+            var order = new List<ICombatActor>(alive.Count);
+            for (int i = 0; i < alive.Count; i++)
+            {
+                int actions = Math.Max(1, alive[i].ActionsPerTurn);
+                for (int k = 0; k < actions; k++) order.Add(alive[i]);
+            }
+            return order;
         }
 
         private ICombatActor RandomAliveEnemy()

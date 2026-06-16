@@ -24,6 +24,8 @@ namespace Runefall.Enemies
         public ElementType    Element     => _currentPhaseData.element;
         public ActorEffects   Effects     { get; }
         public float          CombatClass => _currentPhaseData.combatClass;
+        // Boss passive "+2 acciones": the boss acts this many times per enemy phase.
+        public int            ActionsPerTurn => Math.Max(1, _bossData.actionsPerTurn);
 
         public event Action<int> OnPhaseTransitionStarted;
         public event Action<int> OnPhaseTransitionCompleted;

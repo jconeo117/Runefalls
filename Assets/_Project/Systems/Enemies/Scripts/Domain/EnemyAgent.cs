@@ -24,6 +24,7 @@ namespace Runefall.Enemies
 
         // Manual value set in EnemyData SO — not calculated from stats.
         public float          CombatClass => _data.combatClass;
+        public int            ActionsPerTurn => 1;
 
         public EnemyAgent(EnemyData data)
         {

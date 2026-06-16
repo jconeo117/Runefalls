@@ -90,15 +90,22 @@ namespace Runefall.Presentation.Combat
                 return;
             }
 
-            // MVP: always 1 player slot, 1-3 enemies of the same type.
+            // MVP: always 1 player slot. Normal fights roll 1-3 enemies of the same type;
+            // a boss battle is ALWAYS solo (the boss alone — no random roster).
             // Lock the rolled count in EncounterState so Retry rebuilds the SAME arena (same enemy count)
             // instead of re-rolling — a player who lost vs 3 enemies retries vs 3, not a cheaper 1.
             var party       = state.ResolvedParty;
             int playerCount = 1;
+            bool isBoss     = state.Encounter?.enemyData is BossEnemyData;
             int enemyCount;
             if (state.LockedEnemyCount >= 1)
             {
                 enemyCount = state.LockedEnemyCount;
+            }
+            else if (isBoss)
+            {
+                enemyCount = 1;                          // boss battle = 1 enemy, no random generation
+                state.LockedEnemyCount = enemyCount;
             }
             else
             {
@@ -157,6 +164,9 @@ namespace Runefall.Presentation.Combat
                 ePawn.transform.localPosition = Vector3.zero;
                 ePawn.transform.localRotation = Quaternion.identity;
                 ScalePawnToHeight(ePawn);
+                // Per-enemy combat size tweak (e.g. a slightly larger boss), applied after height normalize.
+                if (eData.combatScaleMultiplier > 0f && !Mathf.Approximately(eData.combatScaleMultiplier, 1f))
+                    ePawn.transform.localScale *= eData.combatScaleMultiplier;
                 if (eData.animatorController != null)
                 {
                     var anim = ePawn.GetComponentInChildren<Animator>();

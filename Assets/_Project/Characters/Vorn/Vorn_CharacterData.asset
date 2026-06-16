@@ -29,7 +29,7 @@ MonoBehaviour:
       defensaCrit: 0.35
       resistenciaCrit: 0.3
     vitales:
-      ps: 8000
+      ps: 14000
       roboDeVida: 0.14
       tasaRegen: 0.03
       tasaRecuperacion: 0.04

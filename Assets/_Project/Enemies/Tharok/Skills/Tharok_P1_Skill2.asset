@@ -9,13 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 420638d998f77e0488fcd7b2dff27720, type: 3}
+  m_Script: {fileID: 11500000, guid: ae50bb8ea424d884baa5e917bbddff89, type: 3}
   m_Name: Tharok_P1_Skill2
   m_EditorClassIdentifier: 
   skillName: Marca del Condenado
   cardArt: {fileID: 0}
   type: 0
   element: 0
+  description: 
   targetType: 0
   isRanged: 1
   ultimateChargeAmount: 0
@@ -35,9 +36,16 @@ MonoBehaviour:
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  impactAfterClipIndex: 0
-  returnAtClipIndex: -1
+  skillTimeline: {fileID: 11400000, guid: fe7bd8608edb48418856c708af724a05, type: 2}
   hitCount: 1
-  impactTrigger: {fileID: 0}
   vfxConfig: {fileID: 0}
-  animSequence: []
+  vfxCues:
+  - label: 
+    prefab: {fileID: 1314787664237178328, guid: dfb9a2c27cd89544f893a9cbb1c88b62, type: 3}
+    anchor: 1
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 0
+  sfxCues: []
