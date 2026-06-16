@@ -24,11 +24,11 @@ MonoBehaviour:
   ultimateName: Glacial eterno
   effect:
     effects: []
-    damageMultiplier: 6
+    damageMultiplier: 7.3
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
-  ultimateTimeline: {fileID: 0}
+  ultimateTimeline: {fileID: 11400000, guid: c3a4b5d6e7f80910213a4b5c6d7e8f03, type: 2}
   hitCount: 1
   vfxConfig: {fileID: 0}
   vfxCues:

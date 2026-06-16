@@ -24,7 +24,7 @@ MonoBehaviour:
   ultimateName: Alma de la Forja
   effect:
     effects: []
-    damageMultiplier: 6
+    damageMultiplier: 9.375
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}

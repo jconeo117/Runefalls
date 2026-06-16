@@ -20,9 +20,9 @@ MonoBehaviour:
   baseStats:
     ofensivas:
       ataque: 3007.5
-      perforacion: 0.3375
-      critChance: 0.3625
-      "critDa\xF1o": 1.875
+      perforacion: 0.48
+      critChance: 0.5
+      "critDa\xF1o": 2.3
     defensivas:
       defensa: 3426
       resistencia: 0.2

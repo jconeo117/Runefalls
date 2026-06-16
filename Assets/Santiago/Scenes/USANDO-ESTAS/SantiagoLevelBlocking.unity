@@ -1895,7 +1895,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!136 &108400461
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2349,7 +2349,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &120010323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10035,6 +10035,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Column_Half (19)
       objectReference: {fileID: 0}
+    - target: {fileID: 178811535428721102, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4611546835596687341, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -10434,6 +10438,10 @@ PrefabInstance:
     - target: {fileID: 178811535428721102, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
       propertyPath: m_Name
       value: Column_Half (17)
+      objectReference: {fileID: 0}
+    - target: {fileID: 178811535428721102, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4611546835596687341, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -12135,8 +12143,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 16, y: 16, z: 16}
-  m_Center: {x: 0, y: 8, z: 0}
+  m_Size: {x: 92.35581, y: 16, z: 86.59273}
+  m_Center: {x: 1.2922478, y: 8, z: -0.2310257}
 --- !u!4 &398212969
 Transform:
   m_ObjectHideFlags: 0
@@ -13925,8 +13933,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 16, y: 16, z: 16}
-  m_Center: {x: 0, y: 8, z: 0}
+  m_Size: {x: 16, y: 5.6033435, z: 19.741928}
+  m_Center: {x: 0, y: 2.8016717, z: 1.870964}
 --- !u!4 &476954892
 Transform:
   m_ObjectHideFlags: 0
@@ -16867,7 +16875,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &552815506
 Transform:
   m_ObjectHideFlags: 0
@@ -19862,6 +19870,10 @@ PrefabInstance:
     - target: {fileID: 178811535428721102, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
       propertyPath: m_Name
       value: Column_Half (18)
+      objectReference: {fileID: 0}
+    - target: {fileID: 178811535428721102, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4611546835596687341, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -28050,7 +28062,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &885253951
 RectTransform:
   m_ObjectHideFlags: 0
@@ -28379,6 +28391,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _data: {fileID: 11400000, guid: dd081a3f66af226408ce3fc701de5f23, type: 2}
   _pawnTargetHeight: 1.87
+  _hideCeilingDuringCombat: 1
+  _ceilingClearWidth: 16
+  _ceilingClearBottom: 2.2
+  _ceilingClearTop: 50
 --- !u!4 &889346777
 Transform:
   m_ObjectHideFlags: 0
@@ -31845,7 +31861,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1008020699
 Transform:
   m_ObjectHideFlags: 0
@@ -32659,7 +32675,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1032751249
 Transform:
   m_ObjectHideFlags: 0
@@ -45624,6 +45640,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Carcelero_2
       objectReference: {fileID: 0}
+    - target: {fileID: 2972009945314407985, guid: b2439a2c8f6c8804295cb7e4f5993536, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8400707767314757361, guid: b2439a2c8f6c8804295cb7e4f5993536, type: 3}
       propertyPath: m_Controller
       value: 
@@ -51267,8 +51287,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 16, y: 16, z: 16}
-  m_Center: {x: 0, y: 8, z: 0}
+  m_Size: {x: 16, y: 5.9929695, z: 30.68996}
+  m_Center: {x: 0, y: 2.9964848, z: -0.98223305}
 --- !u!4 &1566083957
 Transform:
   m_ObjectHideFlags: 0
@@ -59276,8 +59296,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 16, y: 16, z: 16}
-  m_Center: {x: 0, y: 8, z: 0}
+  m_Size: {x: 35.54894, y: 16, z: 33.674576}
+  m_Center: {x: -2.559576, y: 8, z: -7.389346}
 --- !u!4 &1792836670
 Transform:
   m_ObjectHideFlags: 0
@@ -59930,7 +59950,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1815559734
 Transform:
   m_ObjectHideFlags: 0
@@ -62176,6 +62196,10 @@ PrefabInstance:
     - target: {fileID: 178811535428721102, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
       propertyPath: m_Name
       value: Column_Half (16)
+      objectReference: {fileID: 0}
+    - target: {fileID: 178811535428721102, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4611546835596687341, guid: f8c0297a8d99e2747baeb5697c8ecb66, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

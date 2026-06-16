@@ -23,19 +23,19 @@ MonoBehaviour:
   effectsByRank:
   - effects:
     - {fileID: 11400000, guid: 64746bc4355c3af4c9b9eb385dbf578d, type: 2}
-    damageMultiplier: 2.1
+    damageMultiplier: 2.4
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects:
     - {fileID: 11400000, guid: 64746bc4355c3af4c9b9eb385dbf578d, type: 2}
-    damageMultiplier: 3.08
+    damageMultiplier: 3.6
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects:
     - {fileID: 11400000, guid: 64746bc4355c3af4c9b9eb385dbf578d, type: 2}
-    damageMultiplier: 5.18
+    damageMultiplier: 6
     healPercent: 0
     animationTrigger: 
     cameraSequence: {fileID: 0}
