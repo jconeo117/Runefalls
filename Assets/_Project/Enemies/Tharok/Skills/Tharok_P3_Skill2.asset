@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ae50bb8ea424d884baa5e917bbddff89, type: 3}
   m_Name: Tharok_P3_Skill2
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   skillName: "Llamado del Vac\xEDo"
   cardArt: {fileID: 0}
   type: 0
   element: 0
-  description:
+  description: 
   targetType: 0
   isRanged: 1
   ultimateChargeAmount: 0
@@ -24,20 +24,28 @@ MonoBehaviour:
   - effects: []
     damageMultiplier: 3
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
     damageMultiplier: 3.5
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   - effects: []
     damageMultiplier: 4
     healPercent: 0
-    animationTrigger:
+    animationTrigger: 
     cameraSequence: {fileID: 0}
   skillTimeline: {fileID: 11400000, guid: 1401e4cf1c4f4fb79f63ab677dffdb90, type: 2}
-  hitCount: 1
+  hitCount: 6
   vfxConfig: {fileID: 0}
-  vfxCues: []
+  vfxCues:
+  - label: 
+    prefab: {fileID: 5511052677990246615, guid: 34d0599d37e35ac4ebeab64c18d00ccc, type: 3}
+    anchor: 1
+    worldOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    faceTarget: 0
+    rotationOffset: {x: 0, y: 0, z: 0}
+    autoDestroyAfter: 0
   sfxCues: []

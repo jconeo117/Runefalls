@@ -37,7 +37,7 @@ MonoBehaviour:
     animationTrigger: 
     cameraSequence: {fileID: 0}
   skillTimeline: {fileID: 11400000, guid: de7af61607044fce80350445e1594aaa, type: 2}
-  hitCount: 1
+  hitCount: 5
   vfxConfig: {fileID: 0}
   vfxCues:
   - label: 
