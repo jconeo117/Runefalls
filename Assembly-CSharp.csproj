@@ -65,6 +65,7 @@
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousTranslateMove.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousRotateObject.cs" />
     <Compile Include="Assets\Santiago\Scripts\GachaSceneScripts\ButtonEffect.cs" />
+    <Compile Include="Assets\Santiago\Scenes\USANDO-ESTAS\A_WorldMapFootsteps.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\CrosshairSystem.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\ThirdPersonController.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\ColorExtensions.cs" />
@@ -75,25 +76,32 @@
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\WorldMapCameraController.cs" />
     <Compile Include="Assets\Santiago\Scripts\GachaSceneScripts\CardDrawAnimation.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\MultipleObjectsMake.cs" />
+    <Compile Include="Assets\Santiago\Scenes\USANDO-ESTAS\A_ButtonAudio.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\IInteractable.cs" />
+    <Compile Include="Assets\Santiago\Scenes\USANDO-ESTAS\A_DungeonInteractableAudio.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\LookAtTarget.cs" />
+    <Compile Include="Assets\Santiago\Scripts\PlayerElevator.cs" />
+    <Compile Include="Assets\Santiago\Scripts\A_SkillsInfoAudio.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\PlayerInteractionRaycaster.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\NewMaterialChange.cs" />
     <Compile Include="Assets\Santiago\Scripts\PlayerScripts\TopDownCameraController.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ScaleFactorApplyToMaterial.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
-    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonUIPanel.cs" />
     <Compile Include="Assets\Santiago\Scripts\DungeonEntryMessage.cs" />
+    <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonUIPanel.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousMouseOrbit.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ShieldActivate.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\WorldTooltipSystem.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\_ObjectsMakeBase.cs" />
+    <Compile Include="Assets\Santiago\Scenes\USANDO-ESTAS\AudioManager.cs" />
     <Compile Include="Assets\Santiago\Scripts\WorldMapSystem\DungeonInteractable.cs" />
     <Compile Include="Assets\Santiago\Scripts\MainMenuScripts\TextScroller.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ChangeSizeColor.cs" />
     <Compile Include="Assets\Santiago\Scripts\MainMenuScripts\MainMenu.cs" />
+    <Compile Include="Assets\Santiago\Scenes\USANDO-ESTAS\A_CardDrawAudio.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\VariousEffectsScene.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\DestroyObject.cs" />
+    <Compile Include="Assets\Santiago\Scenes\USANDO-ESTAS\A_TextScrollerAudio.cs" />
     <Compile Include="Assets\SpecialSkillsEffectsPack\Scripts\ForEffects\ObjectMove.cs" />
   </ItemGroup>
   <ItemGroup>

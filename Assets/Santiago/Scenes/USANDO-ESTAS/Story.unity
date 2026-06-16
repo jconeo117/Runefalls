@@ -952,6 +952,7 @@ GameObject:
   m_Component:
   - component: {fileID: 986654156}
   - component: {fileID: 986654155}
+  - component: {fileID: 986654157}
   m_Layer: 0
   m_Name: TextScroller
   m_TagString: Untagged
@@ -994,6 +995,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &986654157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 986654154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa5e0ab2de5dc5e4a867ac86625a8abe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverSound: {fileID: 8300000, guid: 458eb9a0a699cd746b94d6892d5361ac, type: 3}
+  hoverUseGlobalVolume: 1
+  hoverVolume: 0.88
+  clickSound: {fileID: 8300000, guid: 0dd272b0ec7a6f74fb9b9f1b922a42a6, type: 3}
+  clickUseGlobalVolume: 1
+  clickVolume: 0.88
 --- !u!1 &1039879911
 GameObject:
   m_ObjectHideFlags: 0
@@ -1684,6 +1703,7 @@ GameObject:
   - component: {fileID: 1758528998}
   - component: {fileID: 1758529000}
   - component: {fileID: 1758528999}
+  - component: {fileID: 1758529001}
   m_Layer: 5
   m_Name: Letter
   m_TagString: Untagged
@@ -1745,6 +1765,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1758528997}
   m_CullTransparentMesh: 1
+--- !u!114 &1758529001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1758528997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f35bec3a17954e94693a6bfbcdff20ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverSound: {fileID: 0}
+  hoverUseGlobalVolume: 1
+  hoverVolume: 1
+  clickSound: {fileID: 0}
+  clickUseGlobalVolume: 1
+  clickVolume: 1
 --- !u!1 &1794163449
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,47 +1,60 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
+
 
 /// <summary>
 /// ButtonEffect
-/// Al pasar el mouse por encima del bot�n, se agranda un poco;
-/// al sacar el mouse, vuelve a su tama�o de forma suave (lerp).
+/// Al pasar el mouse por encima del botón, se agranda un poco;
+/// al sacar el mouse, vuelve a su tamaño de forma suave (lerp).
+/// Al hacer click izquierdo, notifica al componente de audio.
 ///
-/// Adjuntar a: el mismo GameObject del bot�n.
-/// Requiere: un EventSystem en la escena (se crea solo al hacer un Canvas)
-/// y que el Graphic del bot�n tenga "Raycast Target" activado (viene activado por defecto).
+/// Audio: adjuntar A_ButtonAudio al mismo GameObject para configurar los sonidos.
+/// Adjuntar a: el mismo GameObject del botón.
 /// </summary>
 [RequireComponent(typeof(RectTransform))]
-public class ButtonEffect : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ButtonEffect : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
 {
     [Header("Objetivo (opcional)")]
-    [Tooltip("Qu� se agranda. Si lo dej�s vac�o, usa este mismo objeto (el bot�n).")]
+    [Tooltip("Qué se agranda. Si lo dejás vacío, usa este mismo objeto (el botón).")]
     public RectTransform target;
 
+
     [Header("Escala")]
-    [Tooltip("Cu�nto se agranda al pasar el mouse. 1.1 = 10% m�s grande.")]
+    [Tooltip("Cuánto se agranda al pasar el mouse. 1.1 = 10% más grande.")]
     public float hoverScale = 1.1f;
 
-    [Tooltip("Qu� tan r�pido y suave interpola (mayor = m�s r�pido).")]
+
+    [Tooltip("Qué tan rápido y suave interpola (mayor = más rápido).")]
     public float lerpSpeed = 12f;
 
-    [Tooltip("Usar tiempo sin escala (sirve si el men� aparece con el juego en pausa / timeScale 0).")]
+
+    [Tooltip("Usar tiempo sin escala (sirve si el menú aparece con el juego en pausa / timeScale 0).")]
     public bool useUnscaledTime = true;
 
+
+    // ── Privado ───────────────────────────────────────────────────────────────
     private Vector3 _baseScale;
     private Vector3 _targetScale;
+    private A_ButtonAudio _audio; // opcional; si no está en el GO, simplemente no suena
 
+
+    // ── Unity ─────────────────────────────────────────────────────────────────
     private void Awake()
     {
         if (target == null) target = GetComponent<RectTransform>();
         _baseScale = target.localScale;
         _targetScale = _baseScale;
+
+
+        _audio = GetComponent<A_ButtonAudio>(); // null si no está adjunto, y está bien
     }
+
 
     private void OnEnable()
     {
-        // Por si el bot�n se reactiva, arrancar siempre desde la escala base
         _targetScale = _baseScale;
     }
+
 
     private void Update()
     {
@@ -49,19 +62,30 @@ public class ButtonEffect : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         target.localScale = Vector3.Lerp(target.localScale, _targetScale, dt * lerpSpeed);
     }
 
+
+    // ── Pointer events ────────────────────────────────────────────────────────
     public void OnPointerEnter(PointerEventData eventData)
     {
         _targetScale = _baseScale * hoverScale;
+        _audio?.OnHover();
     }
+
 
     public void OnPointerExit(PointerEventData eventData)
     {
         _targetScale = _baseScale;
     }
 
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left) return;
+        _audio?.OnClick();
+    }
+
+
     private void OnDisable()
     {
-        // Evitar que quede "agrandado" si se desactiva mientras el mouse estaba encima
         if (target != null) target.localScale = _baseScale;
         _targetScale = _baseScale;
     }

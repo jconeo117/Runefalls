@@ -1,86 +1,127 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+
+/// <summary>
+/// TextScroller
+/// Sube una hoja (RawImage) hasta el centro del canvas y habilita hover + click.
+/// Al hacer click izquierdo, hace fade a negro y carga una escena.
+///
+/// Audio: adjuntar A_TextScrollerAudio al mismo GameObject para configurar los sonidos.
+/// </summary>
 public class TextScroller : MonoBehaviour
 {
     [Header("La hoja (RawImage) que sube")]
     public GameObject Lines;
 
+
     [Header("Velocidad de subida")]
     public float speed = 300f;
 
-    [Header("D�nde se frena en Y (0 = centro del canvas si est� anclada al centro)")]
+
+    [Header("Dónde se frena en Y (0 = centro del canvas si está anclada al centro)")]
     public float centerY = 0f;
 
-    [Header("Hover (solo despu�s de llegar al medio)")]
-    public float hoverScale = 1.1f;        // cu�nto se agranda al pasar el mouse
-    public float scaleLerpSpeed = 10f;     // qu� tan r�pido lerpea el tama�o
+
+    [Header("Hover (solo después de llegar al medio)")]
+    public float hoverScale = 1.1f;
+    public float scaleLerpSpeed = 10f;
+
 
     [Header("Escena a cargar al hacer click")]
     public string sceneToLoad = "";
 
+
     [Header("Fade a negro antes de cambiar de escena")]
-    public Image fadeOverlay;              // Image negro que cubre toda la pantalla (empieza transparente)
+    public Image fadeOverlay;
     public float fadeDuration = 0.88f;
 
-    private RectTransform rect;
-    private Camera canvasCam;
-    private bool arrived = false;          // true cuando ya se ancl� en el medio
-    private bool loading = false;          // true cuando ya se toc� (evita doble click)
-    private Vector3 baseScale;
 
-    void Start()
+    // ── Privado ───────────────────────────────────────────────────────────────
+    private RectTransform _rect;
+    private Camera _canvasCam;
+    private bool _arrived = false;
+    private bool _loading = false;
+    private Vector3 _baseScale;
+    private bool _wasMouseOver = false;
+    private A_TextScrollerAudio _audio;   // opcional; si no está en el GO, no suena
+
+
+    // ── Unity ─────────────────────────────────────────────────────────────────
+    private void Start()
     {
         if (Lines == null) return;
 
-        rect = Lines.GetComponent<RectTransform>();
-        if (rect == null) return;
 
-        baseScale = rect.localScale;
+        _rect = Lines.GetComponent<RectTransform>();
+        if (_rect == null) return;
 
-        // si el canvas NO es Screen Space - Overlay, necesitamos su c�mara para detectar el mouse
+
+        _baseScale = _rect.localScale;
+
+
         Canvas canvas = Lines.GetComponentInParent<Canvas>();
         if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
-            canvasCam = canvas.worldCamera;
+            _canvasCam = canvas.worldCamera;
+
+
+        _audio = GetComponent<A_TextScrollerAudio>();
     }
 
-    void Update()
-    {
-        if (rect == null) return;
 
-        // ----- sube hasta el medio -----
-        if (!arrived)
+    private void Update()
+    {
+        if (_rect == null) return;
+
+
+        // Sube hasta el centro
+        if (!_arrived)
         {
-            Vector2 p = rect.anchoredPosition;
+            Vector2 p = _rect.anchoredPosition;
             p.y += speed * Time.deltaTime;
+
 
             if (p.y >= centerY)
             {
                 p.y = centerY;
-                arrived = true;   // a partir de ac� se habilita el hover y el click
+                _arrived = true;
             }
 
-            rect.anchoredPosition = p;
+
+            _rect.anchoredPosition = p;
             return;
         }
 
-        // si ya estamos cargando, no hacemos nada m�s
-        if (loading) return;
 
-        // ----- ya est� anclada en el medio: hover + click -----
+        if (_loading) return;
 
+
+        // Hover + click
         bool mouseOver = RectTransformUtility.RectangleContainsScreenPoint(
-            rect, Input.mousePosition, canvasCam);
+            _rect, Input.mousePosition, _canvasCam);
 
-        // se agranda suave si el mouse est� encima, vuelve a su tama�o si no
-        Vector3 targetScale = mouseOver ? baseScale * hoverScale : baseScale;
-        rect.localScale = Vector3.Lerp(rect.localScale, targetScale, scaleLerpSpeed * Time.deltaTime);
 
-        // click sobre la carta -> fade a negro y cambia de escena
+        // Flanco de entrada: solo la primera vez que entra el mouse
+        if (mouseOver && !_wasMouseOver)
+            _audio?.OnHover();
+
+
+        _wasMouseOver = mouseOver;
+
+
+        // Escala suave
+        Vector3 targetScale = mouseOver ? _baseScale * hoverScale : _baseScale;
+        _rect.localScale = Vector3.Lerp(_rect.localScale, targetScale, scaleLerpSpeed * Time.deltaTime);
+
+
+        // Click izquierdo
         if (mouseOver && Input.GetMouseButtonDown(0))
         {
+            _audio?.OnClick();
+
+
             if (!string.IsNullOrEmpty(sceneToLoad))
                 StartCoroutine(FadeAndLoad());
             else
@@ -88,30 +129,37 @@ public class TextScroller : MonoBehaviour
         }
     }
 
-    IEnumerator FadeAndLoad()
+
+    // ── Fade y carga ──────────────────────────────────────────────────────────
+    private IEnumerator FadeAndLoad()
     {
-        loading = true;
+        _loading = true;
+
 
         if (fadeOverlay != null)
         {
             fadeOverlay.gameObject.SetActive(true);
 
+
             Color c = fadeOverlay.color;
-            c.a = 0f;                         // arranca transparente
+            c.a = 0f;
             fadeOverlay.color = c;
+
 
             float elapsed = 0f;
             while (elapsed < fadeDuration)
             {
                 elapsed += Time.deltaTime;
-                c.a = Mathf.Clamp01(elapsed / fadeDuration);   // de 0 a 1 (se pone negro)
+                c.a = Mathf.Clamp01(elapsed / fadeDuration);
                 fadeOverlay.color = c;
                 yield return null;
             }
 
+
             c.a = 1f;
             fadeOverlay.color = c;
         }
+
 
         SceneManager.LoadScene(sceneToLoad);
     }

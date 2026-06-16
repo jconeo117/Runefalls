@@ -1389,6 +1389,7 @@ GameObject:
   - component: {fileID: 321072411}
   - component: {fileID: 321072410}
   - component: {fileID: 321072414}
+  - component: {fileID: 321072415}
   m_Layer: 6
   m_Name: DungeonEntryFight
   m_TagString: Untagged
@@ -1522,6 +1523,24 @@ MonoBehaviour:
   onOutOfRange:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &321072415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 321072409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b037d85fd45ab4b4da26e123b3ed4775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactSound: {fileID: 8300000, guid: 1174da772fffb9941a67934b4da0b473, type: 3}
+  interactUseGlobalVolume: 1
+  interactSoundVolume: 1
+  enterSound: {fileID: 8300000, guid: 1174da772fffb9941a67934b4da0b473, type: 3}
+  enterUseGlobalVolume: 1
+  enterSoundVolume: 1
 --- !u!1 &383037657
 GameObject:
   m_ObjectHideFlags: 0
@@ -1611,6 +1630,7 @@ GameObject:
   - component: {fileID: 428595158}
   - component: {fileID: 428595161}
   - component: {fileID: 428595162}
+  - component: {fileID: 428595163}
   m_Layer: 5
   m_Name: ButtonEnter
   m_TagString: Untagged
@@ -1758,6 +1778,24 @@ MonoBehaviour:
   hoverScale: 1.1
   lerpSpeed: 12
   useUnscaledTime: 1
+--- !u!114 &428595163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 428595156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f35bec3a17954e94693a6bfbcdff20ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverSound: {fileID: 8300000, guid: c26d3ba0e96492842a865cb3180cd932, type: 3}
+  hoverUseGlobalVolume: 1
+  hoverVolume: 1
+  clickSound: {fileID: 8300000, guid: adf0f5d7903d72049a8f569c5cb975de, type: 3}
+  clickUseGlobalVolume: 1
+  clickVolume: 1
 --- !u!1 &448774876 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8773184688824279198, guid: acdb90624a404aa438447006f1026065, type: 3}
@@ -1940,6 +1978,7 @@ GameObject:
   - component: {fileID: 616475694}
   - component: {fileID: 616475698}
   - component: {fileID: 616475699}
+  - component: {fileID: 616475700}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2118,6 +2157,24 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &616475700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 616475692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e5a04021911f5546919acf7a3cf245c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  footstepSound: {fileID: 8300000, guid: d7686893e3a7e0b49a03390570a4926a, type: 3}
+  footstepDistance: 4
+  useGlobalVolume: 0
+  footstepVolume: 0.88
+  pitchBase: 1
+  pitchVariation: 0.1
 --- !u!1 &629799461
 GameObject:
   m_ObjectHideFlags: 0
@@ -2347,6 +2404,7 @@ GameObject:
   - component: {fileID: 661182921}
   - component: {fileID: 661182920}
   - component: {fileID: 661182923}
+  - component: {fileID: 661182924}
   m_Layer: 5
   m_Name: ButtonClose
   m_TagString: Untagged
@@ -2472,6 +2530,24 @@ MonoBehaviour:
   hoverScale: 1.1
   lerpSpeed: 12
   useUnscaledTime: 1
+--- !u!114 &661182924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 661182918}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f35bec3a17954e94693a6bfbcdff20ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverSound: {fileID: 8300000, guid: c26d3ba0e96492842a865cb3180cd932, type: 3}
+  hoverUseGlobalVolume: 1
+  hoverVolume: 1
+  clickSound: {fileID: 8300000, guid: 3b78f2763a4a8144584152af33b4f4cd, type: 3}
+  clickUseGlobalVolume: 1
+  clickVolume: 1
 --- !u!1 &671481416
 GameObject:
   m_ObjectHideFlags: 0

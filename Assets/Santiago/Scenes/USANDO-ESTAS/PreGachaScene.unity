@@ -780,6 +780,7 @@ GameObject:
   - component: {fileID: 1060068981}
   - component: {fileID: 1060068980}
   - component: {fileID: 1060068983}
+  - component: {fileID: 1060068984}
   m_Layer: 5
   m_Name: SelectButton
   m_TagString: Untagged
@@ -918,6 +919,24 @@ MonoBehaviour:
   hoverScale: 1.1
   lerpSpeed: 12
   useUnscaledTime: 1
+--- !u!114 &1060068984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1060068978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f35bec3a17954e94693a6bfbcdff20ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverSound: {fileID: 8300000, guid: c26d3ba0e96492842a865cb3180cd932, type: 3}
+  hoverUseGlobalVolume: 0
+  hoverVolume: 0.44
+  clickSound: {fileID: 8300000, guid: 3b78f2763a4a8144584152af33b4f4cd, type: 3}
+  clickUseGlobalVolume: 0
+  clickVolume: 0.44
 --- !u!1 &1139611347
 GameObject:
   m_ObjectHideFlags: 0

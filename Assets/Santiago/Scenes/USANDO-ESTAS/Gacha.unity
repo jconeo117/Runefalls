@@ -413,6 +413,7 @@ GameObject:
   m_Component:
   - component: {fileID: 146137538}
   - component: {fileID: 146137537}
+  - component: {fileID: 146137539}
   m_Layer: 0
   m_Name: SkillsInfo
   m_TagString: Untagged
@@ -485,6 +486,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &146137539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146137536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6eb816e1be776554789d697c3468d4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverSound: {fileID: 8300000, guid: b50004d4df0f6604dbeada0be6fe749c, type: 3}
+  hoverUseGlobalVolume: 1
+  hoverVolume: 0.44
 --- !u!1 &152196308
 GameObject:
   m_ObjectHideFlags: 0
@@ -1402,6 +1418,7 @@ GameObject:
   - component: {fileID: 333224647}
   - component: {fileID: 333224646}
   - component: {fileID: 333224649}
+  - component: {fileID: 333224650}
   m_Layer: 5
   m_Name: ButtonReady
   m_TagString: Untagged
@@ -1527,6 +1544,24 @@ MonoBehaviour:
   hoverScale: 1.1
   lerpSpeed: 12
   useUnscaledTime: 1
+--- !u!114 &333224650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 333224644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f35bec3a17954e94693a6bfbcdff20ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverSound: {fileID: 8300000, guid: c26d3ba0e96492842a865cb3180cd932, type: 3}
+  hoverUseGlobalVolume: 0
+  hoverVolume: 0.44
+  clickSound: {fileID: 8300000, guid: 1174da772fffb9941a67934b4da0b473, type: 3}
+  clickUseGlobalVolume: 0
+  clickVolume: 0.44
 --- !u!1 &367954771
 GameObject:
   m_ObjectHideFlags: 0
@@ -2606,6 +2641,7 @@ GameObject:
   - component: {fileID: 611939459}
   - component: {fileID: 611939458}
   - component: {fileID: 611939462}
+  - component: {fileID: 611939463}
   m_Layer: 5
   m_Name: ButtonRollTheFates
   m_TagString: Untagged
@@ -2731,6 +2767,24 @@ MonoBehaviour:
   hoverScale: 1.1
   lerpSpeed: 12
   useUnscaledTime: 1
+--- !u!114 &611939463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 611939457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f35bec3a17954e94693a6bfbcdff20ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverSound: {fileID: 8300000, guid: c26d3ba0e96492842a865cb3180cd932, type: 3}
+  hoverUseGlobalVolume: 0
+  hoverVolume: 0.44
+  clickSound: {fileID: 8300000, guid: da151060a0b10b444b826355dd812f51, type: 3}
+  clickUseGlobalVolume: 0
+  clickVolume: 0.44
 --- !u!1 &625796535
 GameObject:
   m_ObjectHideFlags: 0
@@ -4212,6 +4266,7 @@ GameObject:
   - component: {fileID: 1191204744}
   - component: {fileID: 1191204743}
   - component: {fileID: 1191204745}
+  - component: {fileID: 1191204746}
   m_Layer: 0
   m_Name: CardDrawAnim
   m_TagString: Untagged
@@ -4252,13 +4307,6 @@ MonoBehaviour:
   Deactivate1: {fileID: 156713162}
   Deactivate2: {fileID: 152196308}
   Deactivate3: {fileID: 2078519885}
-  sfxSource: {fileID: 1191204745}
-  loopSource: {fileID: 0}
-  buttonClickSound: {fileID: 8300000, guid: 197b5991439eee84a94ef19439b89d5c, type: 3}
-  shufflingSound: {fileID: 0}
-  revealSound: {fileID: 8300000, guid: bdb932c32e93d9c45a5f7d5f7b0e8979, type: 3}
-  sfxVolume: 0.8
-  loopVolume: 0.6
   fadeOverlay: {fileID: 1392376218}
   fadeInDuration: 0.8
   fadeOutDuration: 0.88
@@ -4392,6 +4440,29 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1191204746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191204742}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35743e6924b6bfc4cb782bed44a83e6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttonClickSound: {fileID: 0}
+  revealSound: {fileID: 8300000, guid: e4221c73e71ed4343a2fa83ce62f653e, type: 3}
+  sfxUseGlobalVolume: 1
+  sfxVolume: 0.44
+  shuffleTickSound: {fileID: 0}
+  shuffleTickVariants: []
+  shuffleUseGlobalVolume: 1
+  shuffleTickVolume: 0.75
+  shufflePitchStart: 1.35
+  shufflePitchEnd: 0.85
+  shufflePitchJitter: 0.04
 --- !u!1 &1241478429
 GameObject:
   m_ObjectHideFlags: 0

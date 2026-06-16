@@ -11,17 +11,17 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4e933d52a6e2f44c9b8e27962d3ba91, type: 3}
   m_Name: Tharok_PhasesPassive
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   passiveName: Soberano Imparable
   description: "Cada turno, TODAS las estad\xEDsticas del jefe aumentan +1%. Act\xFAa
     3 veces por turno y, al comenzar su turno, se limpia todo efecto negativo. Fase
     1: recibe 20% menos da\xF1o. Fase 2: +1% de ataque por cada cr\xEDtico y reduce
-    la resistencia cr\xEDtica de los enemigos -2% por turno. Fase 3: al caer a 0 PS
-    revive una vez con 25% de vida y +15% a todas sus estad\xEDsticas."
+    la resistencia cr\xEDtica de los enemigos -2% por turno. Fase 3: al caer a 0
+    PS revive una vez con 25% de vida y +15% a todas sus estad\xEDsticas."
   resonanceCompatible: 0
   allStatsPerTurn: 0.01
-  phase1DamageReduction: 0.2
+  phase1DamageReduction: 0.1
   phase2AttackPerCrit: 0.01
   phase2EnemyCritResistPerTurn: 0.02
-  phase3ReviveHealPercent: 0.25
-  phase3ReviveStatBonus: 0.15
+  phase3ReviveHealPercent: 0.1
+  phase3ReviveStatBonus: 0.04
